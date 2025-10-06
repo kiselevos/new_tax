@@ -47,9 +47,9 @@ docker-down: ## Down docker conteiners
 	@docker compose down
 
 .PHONY: lint-all
-lint-all: ## Down docker conteiners
+lint-all: ## Run all linters
 	@go vet ./...
-	@golint ./...
+	@golangci-lint run ./...
 
 .PHONY: gofmt
 gofmt: ## Format code
