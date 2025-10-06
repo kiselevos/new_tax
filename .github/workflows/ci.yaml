@@ -10,16 +10,28 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/yourname/go-proto-ci:latest
+      image: golang:1.23
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Generate protobuf files
-        run: make proto
+        run: make codegen
+
+      - name: Check tidy
+        run: make tidy
+
+      - name: Lint
+        run: make lint-all
+
+      - name: Check formatting
+        run: make check-fmt
 
       - name: Build project
         run: make build
 
       - name: Run tests
-        run: make test
+        run: make test-all
+
+      - name: Check generated files committed
+        run: make check-generated
