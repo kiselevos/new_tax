@@ -12,17 +12,20 @@ jobs:
     container:
       image: ghcr.io/kiselevos/tax-ci:v1.2.0
 
+    env:
+      GOFLAGS: "-buildvcs=false"   # Глобально для всех make-команд (отключить VCS stamping)
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # git-метаданные доступны
 
       - name: Generate protobuf files
         run: make codegen
 
       - name: Lint
         run: make lint-all
-        env:
-          GOFLAGS: "-buildvcs=false"
       
       - name: Check formatting
         run: make check-fmt
