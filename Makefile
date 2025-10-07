@@ -9,6 +9,10 @@ codegen: ## Generate gRPC code
 	@echo "Generating gRPC code"
 	@mkdir -p gen/grpc/
 	@cd api && protoc \
+		-I . \
+		-I /usr/include \
+		-I /usr/local/include \
+		-I $(shell go list -f '{{ .Dir }}' -m google.golang.org/protobuf)/../ \
 		--experimental_allow_proto3_optional \
 		--go_out=../gen/grpc --go_opt=paths=source_relative \
 		--go-grpc_out=../gen/grpc --go-grpc_opt=paths=source_relative \
