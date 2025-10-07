@@ -7,7 +7,7 @@ help: ## Display this help screen
 .PHONY: codegen
 codegen: ## Generate gRPC code
 	@echo "Generating gRPC code"
-	@mkdir -p ../gen/grpc/
+	@mkdir -p gen/grpc/
 	@cd api && protoc \
 		--experimental_allow_proto3_optional \
 		--go_out=../gen/grpc --go_opt=paths=source_relative \
