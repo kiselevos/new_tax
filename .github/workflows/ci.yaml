@@ -21,7 +21,9 @@ jobs:
 
       - name: Lint
         run: make lint-all
-
+        env:
+          GOFLAGS: "-buildvcs=false"
+      
       - name: Check formatting
         run: make check-fmt
 
