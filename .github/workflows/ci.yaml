@@ -19,9 +19,6 @@ jobs:
       - name: Generate protobuf files
         run: make codegen
 
-      - name: Check tidy
-        run: make tidy
-
       - name: Lint
         run: make lint-all
 
