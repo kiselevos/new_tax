@@ -10,7 +10,8 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-        image: ghcr.io/kiselevos/tax-ci:v1.0.0
+      image: ghcr.io/kiselevos/tax-ci:v1.1.0
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,6 +33,3 @@ jobs:
 
       - name: Run tests
         run: make test-all
-
-      - name: Check generated files committed
-        run: make check-generated

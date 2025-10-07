@@ -1,0 +1,9 @@
+version: v1
+name: buf.build/kiselevos/tax
+
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE

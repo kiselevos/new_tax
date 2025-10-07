@@ -19,9 +19,10 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.5 && \
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
 
 # modern proto tool (buf)
-RUN curl -sSL https://github.com/bufbuild/buf/releases/download/v1.26.0/buf-Linux-x86_64 -o /usr/local/bin/buf && chmod +x /usr/local/bin/buf
+RUN curl -sSL https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Linux-x86_64 \
+    -o /usr/local/bin/buf && chmod +x /usr/local/bin/buf
 
-# gRPC test tool — версия 1.8.9 
+# gRPC test tool — версия 1.8.9
 RUN curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.9/grpcurl_1.8.9_linux_x86_64.tar.gz \
     -o grpcurl.tar.gz && tar -xzf grpcurl.tar.gz && mv grpcurl /usr/local/bin/ && rm grpcurl.tar.gz
 
@@ -29,4 +30,5 @@ WORKDIR /app
 
 # --- Sanity checks ---
 RUN go version && protoc --version && \
-    golangci-lint --version && grpcurl --version && echo "✅ CI image ready"
+    golangci-lint --version && grpcurl --version && buf --version && \
+    echo "✅ CI image ready"

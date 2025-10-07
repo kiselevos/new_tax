@@ -5,19 +5,10 @@ help: ## Display this help screen
 
 
 .PHONY: codegen
-codegen: ## Generate gRPC code
-	@echo "Generating gRPC code"
-	@mkdir -p gen/grpc/
-	@cd api && protoc \
-		-I . \
-		-I /usr/include \
-		-I /usr/local/include \
-		-I $(shell go list -f '{{ .Dir }}' -m google.golang.org/protobuf)/../ \
-		--experimental_allow_proto3_optional \
-		--go_out=../gen/grpc --go_opt=paths=source_relative \
-		--go-grpc_out=../gen/grpc --go-grpc_opt=paths=source_relative \
-		tax.proto
-	@echo "✅ gRPC code generated"
+codegen: ## Generate gRPC code via Buf
+	@echo "🧬 Generating gRPC code using Buf"
+	@buf generate
+	@echo "✅ gRPC code generated in gen/grpc/"
 
 .PHONY: run
 run: ## Run application
