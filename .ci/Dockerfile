@@ -13,7 +13,7 @@ ENV PATH="/go/bin:${PATH}"
 
 # protoc plugins
 RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.5 && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.4.0
 
 # linters — фиксированные версии
 RUN go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
@@ -28,11 +28,7 @@ RUN curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.9/g
 
 # --- Copy and prefetch Go modules ---
 WORKDIR /app
-
-# Только файлы зависимостей (без исходников)
 COPY go.mod go.sum ./
-
-# Предварительная установка зависимостей (кэшируется)
 RUN go mod download
 
 # --- Sanity checks ---
