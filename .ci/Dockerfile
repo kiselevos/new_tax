@@ -26,7 +26,14 @@ RUN curl -sSL https://github.com/bufbuild/buf/releases/download/v1.57.2/buf-Linu
 RUN curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.8.9/grpcurl_1.8.9_linux_x86_64.tar.gz \
     -o grpcurl.tar.gz && tar -xzf grpcurl.tar.gz && mv grpcurl /usr/local/bin/ && rm grpcurl.tar.gz
 
+# --- Copy and prefetch Go modules ---
 WORKDIR /app
+
+# Только файлы зависимостей (без исходников)
+COPY go.mod go.sum ./
+
+# Предварительная установка зависимостей (кэшируется)
+RUN go mod download
 
 # --- Sanity checks ---
 RUN go version && protoc --version && \
