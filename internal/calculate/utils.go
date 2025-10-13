@@ -31,11 +31,6 @@ func validateCoefficient(coeff uint64) bool {
 	return coeff >= 100 && coeff <= 200 && (coeff-100)%10 == 0
 }
 
-// ptr возвращает указатель на переданное значение.
-func ptr[T any](v T) *T {
-	return &v
-}
-
 // GetStartMonth возвращает номер месяца из переданной даты.
 func GetStartMonth(date time.Time) int {
 	return int(date.Month())
