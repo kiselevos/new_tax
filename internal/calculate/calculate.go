@@ -1,0 +1,308 @@
+package calculate
+
+import "time"
+
+// CalculateMonthlyTax рассчитывает помесячные значения налога на основе входных данных.
+// Учитывает районный (территориальный) коэффициент и северную надбавку, если они заданы.
+func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
+	grossSalary := input.GrossSalary
+	territorialMultiplier := input.TerritorialMultiplier
+	northernCoefficient := input.NorthernCoefficient
+	startDate := input.StartDate
+	startMonth := GetStartMonth(startDate)
+
+	noTerritorial := territorialMultiplier == 100
+	noNorthern := northernCoefficient == 100
+
+	// Оклад с учётом районного коэффициента (РК)
+	monthlyGrossWithTerritorial := grossSalary * territorialMultiplier / 100
+
+	switch {
+	case input.IsNotResident: // Для нерезидентов: 30% со всего дохода
+		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
+		return TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth)
+
+	case input.HasTaxPrivilege: // Для льготников (силовые ведомства): единая шкала 13%/15%
+		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
+		return TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth)
+
+	case noTerritorial && noNorthern: // Без РК и СН
+		return TaxCalculateOnlySalary(grossSalary, startDate, startMonth)
+
+	case noNorthern: // Есть РК, нет СН
+		return TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth)
+
+	case noTerritorial: // Нет РК, есть СН
+		northernAddition := grossSalary * (northernCoefficient - 100) / 100
+		return TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth)
+
+	default: // Есть и РК, и СН (СН начисляется на оклад с РК)
+		northernAddition := monthlyGrossWithTerritorial * (northernCoefficient - 100) / 100
+		return TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth)
+	}
+}
+
+// TaxCalculateForNotResident — расчёт налога для налоговых нерезидентов РФ (30% со всех доходов).
+// Округление выполняется на месячной дельте.
+func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
+	var (
+		result            []MonthlyTax
+		annualGrossIncome uint64
+		annualTaxRaw      uint64 // накопленный «сырой» налог (в копейках)
+		annualTaxAmount   uint64 // сумма округлённых месячных налогов
+	)
+
+	for m := startMonth; m <= 12; m++ {
+		annualGrossIncome += salary
+
+		newTaxRaw := CalculateNotResidentTax(annualGrossIncome) // YTD без округления
+		monthlyRaw := newTaxRaw - annualTaxRaw                  // «сырая» месячная дельта
+		monthlyRounded := RoundTaxAmount(monthlyRaw)            // округление по правилу 50 копеек
+
+		annualTaxRaw = newTaxRaw
+		annualTaxAmount += monthlyRounded
+
+		monthlyNetIncome := salary - monthlyRounded
+		annualNetIncome := annualGrossIncome - annualTaxAmount
+		month := IntMonthFromDate(m, startDate)
+
+		result = append(result, MonthlyTax{
+			Month:              month,
+			MonthlyGrossIncome: salary,
+			MonthlyNetIncome:   monthlyNetIncome,
+			MonthlyTaxAmount:   monthlyRounded,
+			AnnualGrossIncome:  annualGrossIncome,
+			AnnualNetIncome:    annualNetIncome,
+			AnnualTaxAmount:    annualTaxAmount,
+			TaxRate:            NotResident.Rate,
+		})
+	}
+	return result
+}
+
+// TaxCalculateWithPrivilege — расчёт для льготников (силовые ведомства) по упрощённой шкале 13%/15%.
+// Округление выполняется на месячной дельте.
+func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
+	var (
+		result            []MonthlyTax
+		annualGrossIncome uint64
+		annualTaxRaw      uint64 // YTD без округления
+		annualTaxAmount   uint64 // сумма округлённых месячных
+	)
+
+	for m := startMonth; m <= 12; m++ {
+		annualGrossIncome += salary
+
+		newTaxRaw := CalculateSimpleProgressiveTax(annualGrossIncome) // RAW 13/15
+		monthlyRaw := newTaxRaw - annualTaxRaw
+		monthlyRounded := RoundTaxAmount(monthlyRaw)
+
+		annualTaxRaw = newTaxRaw
+		annualTaxAmount += monthlyRounded
+
+		monthlyNetIncome := salary - monthlyRounded
+		annualNetIncome := annualGrossIncome - annualTaxAmount
+		currentRate := findSimpleCurrentRate(annualGrossIncome)
+		month := IntMonthFromDate(m, startDate)
+
+		result = append(result, MonthlyTax{
+			Month:              month,
+			MonthlyGrossIncome: salary,
+			MonthlyNetIncome:   monthlyNetIncome,
+			MonthlyTaxAmount:   monthlyRounded,
+			AnnualGrossIncome:  annualGrossIncome,
+			AnnualNetIncome:    annualNetIncome,
+			AnnualTaxAmount:    annualTaxAmount,
+			TaxRate:            currentRate,
+		})
+	}
+	return result
+}
+
+// TaxCalculateOnlySalary — расчёт по общей пятиступенчатой шкале (без учёта северной надбавки).
+// Округление выполняется на месячной дельте.
+func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
+	var (
+		result            []MonthlyTax
+		annualGrossIncome uint64
+		annualTaxRaw      uint64 // YTD без округления
+		annualTaxAmount   uint64 // сумма округлённых месячных
+	)
+
+	for m := startMonth; m <= 12; m++ {
+		annualGrossIncome += salary
+
+		newTaxRaw := CalculateProgressiveTax(annualGrossIncome) // RAW по 5-ступ. шкале
+		monthlyRaw := newTaxRaw - annualTaxRaw
+		monthlyRounded := RoundTaxAmount(monthlyRaw)
+
+		annualTaxRaw = newTaxRaw
+		annualTaxAmount += monthlyRounded
+
+		monthlyNetIncome := salary - monthlyRounded
+		annualNetIncome := annualGrossIncome - annualTaxAmount
+		currentRate := findCurrentRate(annualGrossIncome)
+		month := IntMonthFromDate(m, startDate)
+
+		result = append(result, MonthlyTax{
+			Month:              month,
+			MonthlyGrossIncome: salary,
+			MonthlyNetIncome:   monthlyNetIncome,
+			MonthlyTaxAmount:   monthlyRounded,
+			AnnualGrossIncome:  annualGrossIncome,
+			AnnualNetIncome:    annualNetIncome,
+			AnnualTaxAmount:    annualTaxAmount,
+			TaxRate:            currentRate,
+		})
+	}
+	return result
+}
+
+// TaxCalculateWithNorth — расчёт при наличии северной надбавки.
+// База A (оклад с РК) облагается по общей шкале; база B (северная надбавка) — по упрощённой 13%/15%.
+// Округление выполняется на месячной дельте по КАЖДОЙ базе отдельно.
+func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time, startMonth int) []MonthlyTax {
+	var (
+		result []MonthlyTax
+
+		// Доходы YTD по базам
+		annualBaseGrossIncome  uint64
+		annualNorthGrossIncome uint64
+
+		// Накопленные «сырые» налоги (в копейках) по базам
+		baseTaxRawYTD  uint64
+		northTaxRawYTD uint64
+
+		// Накопленные округлённые суммы налога по базам
+		annualBaseTaxAmount  uint64
+		annualNorthTaxAmount uint64
+	)
+
+	for m := startMonth; m <= 12; m++ {
+		// Доходы YTD по базам
+		annualBaseGrossIncome += salary
+		annualNorthGrossIncome += northernAddition
+
+		// «Сырые» YTD налоги по базам
+		newBaseRaw := CalculateProgressiveTax(annualBaseGrossIncome)         // RAW общая шкала
+		newNorthRaw := CalculateSimpleProgressiveTax(annualNorthGrossIncome) // RAW 13/15
+
+		// Месячные «сырые» дельты и их округление
+		monthlyBaseRaw := newBaseRaw - baseTaxRawYTD
+		monthlyNorthRaw := newNorthRaw - northTaxRawYTD
+		monthlyBaseRounded := RoundTaxAmount(monthlyBaseRaw)
+		monthlyNorthRounded := RoundTaxAmount(monthlyNorthRaw)
+
+		// Обновляем YTD
+		baseTaxRawYTD = newBaseRaw
+		northTaxRawYTD = newNorthRaw
+		annualBaseTaxAmount += monthlyBaseRounded
+		annualNorthTaxAmount += monthlyNorthRounded
+
+		// Итоги месяца/года
+		monthlyTaxAmount := monthlyBaseRounded + monthlyNorthRounded
+		monthlyGrossIncome := salary + northernAddition
+		monthlyNetIncome := monthlyGrossIncome - monthlyTaxAmount
+
+		annualGrossIncome := annualBaseGrossIncome + annualNorthGrossIncome
+		annualTaxAmount := annualBaseTaxAmount + annualNorthTaxAmount
+		annualNetIncome := annualGrossIncome - annualTaxAmount
+
+		currentRate := findCurrentRate(annualBaseGrossIncome) // маржинальная по базе A
+		month := IntMonthFromDate(m, startDate)
+
+		result = append(result, MonthlyTax{
+			Month: month,
+
+			MonthlyGrossIncome: monthlyGrossIncome,
+			MonthlyNetIncome:   monthlyNetIncome,
+			MonthlyTaxAmount:   monthlyTaxAmount,
+			TaxRate:            currentRate,
+
+			AnnualGrossIncome: annualGrossIncome,
+			AnnualNetIncome:   annualNetIncome,
+			AnnualTaxAmount:   annualTaxAmount,
+
+			MonthlyNorthGrossIncome: northernAddition,
+			MonthlyNorthTaxAmount:   monthlyNorthRounded,
+			MonthlyBaseGrossIncome:  salary,
+			MonthlyBaseTaxAmount:    monthlyBaseRounded,
+
+			AnnualNorthGrossIncome: annualNorthGrossIncome,
+			AnnualNorthTaxAmount:   annualNorthTaxAmount,
+			AnnualBaseGrossIncome:  annualBaseGrossIncome,
+			AnnualBaseTaxAmount:    annualBaseTaxAmount,
+		})
+	}
+	return result
+}
+
+// CalculateProgressiveTax — расчёт по пятиступенчатой шкале (без округления).
+// Не учитывает северную надбавку, облагаемую по упрощённой системе.
+func CalculateProgressiveTax(income uint64) uint64 {
+	var tax uint64
+	var prev uint64
+	for _, limit := range Limits {
+		if income > limit.UpperLimit {
+			diff := limit.UpperLimit - prev
+			tax += diff * limit.Rate / 100
+			prev = limit.UpperLimit
+		} else {
+			if income > prev {
+				diff := income - prev
+				tax += diff * limit.Rate / 100
+			}
+			break
+		}
+	}
+	return tax
+}
+
+// CalculateSimpleProgressiveTax — расчёт по упрощённой шкале 13%/15% (без округления).
+// До 5 млн — 13%, всё сверх — 15%.
+func CalculateSimpleProgressiveTax(income uint64) uint64 {
+	limit := SimpleLimits.UpperLimit
+	if income <= limit {
+		return income * 13 / 100
+	}
+	thirteen := uint64(limit * 13 / 100)
+	fifteen := (income - limit) * 15 / 100
+	return thirteen + fifteen
+}
+
+// CalculateNotResidentTax — расчёт налога для нерезидентов (30% на все доходы).
+func CalculateNotResidentTax(income uint64) uint64 {
+	return income * NotResident.Rate / 100
+}
+
+// findCurrentRate — текущая маржинальная ставка по общей шкале в зависимости от годового дохода.
+func findCurrentRate(income uint64) uint64 {
+	for _, limit := range Limits {
+		if income <= limit.UpperLimit {
+			return limit.Rate
+		}
+	}
+	return Limits[len(Limits)-1].Rate
+}
+
+// findSimpleCurrentRate — текущая ставка по упрощённой шкале (13% до 5 млн, далее 15%).
+func findSimpleCurrentRate(income uint64) uint64 {
+	if income <= SimpleLimits.UpperLimit {
+		return SimpleLimits.Rate // 13
+	}
+	return 15
+}
+
+/*
+Согласно п. 6 ст. 52 НК РФ сумма налога исчисляется в полных рублях:
+сумма менее 50 копеек отбрасывается, 50 копеек и более — округляется до полного рубля.
+*/
+
+// RoundTaxAmount — округляет налог до полных рублей по правилу 50 копеек.
+func RoundTaxAmount(value uint64) uint64 {
+	remainder := value % 100
+	if remainder < 50 {
+		return value - remainder
+	}
+	return value + (100 - remainder)
+}
