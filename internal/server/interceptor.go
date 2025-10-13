@@ -29,7 +29,7 @@ func UnaryLogger(base *slog.Logger) grpc.UnaryServerInterceptor {
 			}
 		}
 		if rid == "" {
-			rid = newRID()
+			rid = newRID(ctx)
 		}
 
 		logger := base.With("method", info.FullMethod, "rid", rid)
@@ -51,7 +51,23 @@ func UnaryLogger(base *slog.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
-func newRID() string {
+func UnaryRecovery(base *slog.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		defer func() {
+			if r := recover(); r != nil {
+				logx.From(ctx).Error("panic recovered", "method", info.FullMethod, "recover", r)
+			}
+		}()
+		return handler(ctx, req)
+	}
+}
+
+func newRID(ctx context.Context) string {
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		if vals := md.Get(requestIDKey); len(vals) > 0 && vals[0] != "" {
+			return vals[0]
+		}
+	}
 	b := make([]byte, 8)
 	_, _ = rand.Read(b)
 	return hex.EncodeToString(b)

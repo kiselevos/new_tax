@@ -2,23 +2,43 @@ package server
 
 import (
 	"context"
-	pb "new_tax/gen/grpc/api"
+	"log/slog"
+	"net"
 	"new_tax/pkg/logx"
 
+	pb "new_tax/gen/grpc/api"
+
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
-type serverStruct struct {
-	pb.UnimplementedTaxServiceServer
+type Server struct {
+	Grpc *grpc.Server
+	Lis  net.Listener
 }
 
-func NewGRPCServer() *serverStruct {
-	return &serverStruct{}
+func New(addr string, logger *slog.Logger) (*Server, error) {
+
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
+	}
+
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			UnaryRecovery(logger),
+			UnaryLogger(logger),
+		),
+	)
+
+	pb.RegisterTaxServiceServer(s, NewGRPCServer())
+	reflection.Register(s)
+
+	return &Server{Grpc: s, Lis: lis}, nil
 }
 
-func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb.HealthzResponse, error) {
-	logx.From(ctx).Info("healthz ok")
-	return &pb.HealthzResponse{Status: "ok"}, nil
+func (s *Server) Serve() error {
+	return s.Grpc.Serve(s.Lis)
 }
 
 // ShutdownGRPCServer завершает работу gRPC-сервера с использованием GracefulStop.
