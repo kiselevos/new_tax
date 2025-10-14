@@ -1,5 +1,26 @@
 services:
-  tax:
-    build: .
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tax-backend
     ports:
-      - "50051:50051" # gRPC
+      - "50051:50051"
+    networks:
+      - taxnet
+
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: tax-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - taxnet
+    depends_on:
+      - backend
+
+networks:
+  taxnet:
+    driver: bridge

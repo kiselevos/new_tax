@@ -1,4 +1,4 @@
-name: Go CI
+name: CI
 
 on:
   push:
@@ -10,28 +10,50 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kiselevos/tax-ci:v1.2.0
+      image: ghcr.io/kiselevos/tax-ci:v1.3.0
 
     env:
-      GOFLAGS: "-buildvcs=false"   # Глобально для всех make-команд (отключить VCS stamping)
+      GOFLAGS: "-buildvcs=false"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # git-метаданные доступны
+          fetch-depth: 0
 
+      # --- Backend checks ---
       - name: Generate protobuf files
         run: make codegen
 
-      - name: Lint
+      - name: Lint backend
         run: make lint-all
-      
+
       - name: Check formatting
         run: make check-fmt
 
-      - name: Build project
+      - name: Build backend
         run: make build
 
       - name: Run tests
         run: make test-all
+
+      # --- Frontend checks ---
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install frontend deps
+        working-directory: ./web
+        run: npm ci
+
+      - name: Type check frontend
+        working-directory: ./web
+        run: npm run type-check --if-present
+
+      - name: Lint frontend
+        working-directory: ./web
+        run: npm run lint --if-present
