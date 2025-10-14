@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { taxClient } from "./client";
 import { Link } from "react-router-dom";
+import { CalculatePrivateResponse } from "./gen/api/tax_pb";
 
 interface FormState {
   grossSalary: string;
@@ -39,11 +40,11 @@ export default function App() {
     isNotResident: false,
   });
 
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CalculatePrivateResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // универсальный обработчик
+  // универсальный обработчик для всех полей
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -55,7 +56,7 @@ export default function App() {
 
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked ?? false : value,
     }));
   };
 
@@ -137,8 +138,12 @@ export default function App() {
       });
 
       setResult(res);
-    } catch (err: any) {
-      setError(err.message || "Ошибка при запросе");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Ошибка при запросе");
+      }
     } finally {
       setLoading(false);
     }
@@ -147,132 +152,152 @@ export default function App() {
   return (
     <div className="container">
       <h1>Расчёт налога на текущий год</h1>
-      <h3><Link to="/how-it-works" className="field-link under-title">
-        (Как это работает)
-      </Link></h3>
+      <h3>
+        <Link to="/how-it-works" className="field-link under-title">
+          (Как это работает)
+        </Link>
+      </h3>
 
       <form onSubmit={handleSubmit} className="form">
         {/* --- оклад --- */}
         <div className="field-row">
-  <div className="field-left">
-    <label htmlFor="grossSalary">Оклад:</label>
-  </div>
-  <div className="field-right">
-    <div className="salary-field">
-    <input
-      type="text"
-      name="grossSalary"
-      id="grossSalary"
-      inputMode="decimal"
-      value={form.grossSalary}
-      onChange={handleSalaryInput}
-      onBlur={handleSalaryBlur}
-      required
-      placeholder="Введите сумму"
-    />
-          <span className="ruble">₽</span>
-    </div>
-  </div>
-</div>
-
+          <div className="field-left">
+            <label htmlFor="grossSalary">Оклад:</label>
+          </div>
+          <div className="field-right">
+            <div className="salary-field">
+              <input
+                type="text"
+                name="grossSalary"
+                id="grossSalary"
+                inputMode="decimal"
+                value={form.grossSalary}
+                onChange={handleSalaryInput}
+                onBlur={handleSalaryBlur}
+                required
+                placeholder="Введите сумму"
+              />
+              <span className="ruble">₽</span>
+            </div>
+          </div>
+        </div>
 
         {/* --- территориальный коэффициент --- */}
         <div className="field-row">
-  <div className="field-left">
-    <label htmlFor="territorialMultiplier">Территориальный коэффициент:</label>
-    <Link to="/regional-info" className="field-link under-title">справка →</Link>
-  </div>
-  <div className="field-right">
-
-  <select
-    id="territorialMultiplier"
-    name="territorialMultiplier"
-    value={form.territorialMultiplier}
-    onChange={handleChange}
-    className="field-select"
-  >
-    <option value=""> --без коэффициента-- </option>
-    {Array.from({ length: 21 }, (_, i) => (1 + i * 0.05).toFixed(2)).map(
-      (val) => (
-        <option key={val} value={val}>
-          {val}
-        </option>
-      )
-    )}
-  </select>
-</div>
-</div>
-
+          <div className="field-left">
+            <label htmlFor="territorialMultiplier">
+              Территориальный коэффициент:
+            </label>
+            <Link to="/regional-info" className="field-link under-title">
+              справка →
+            </Link>
+          </div>
+          <div className="field-right">
+            <select
+              id="territorialMultiplier"
+              name="territorialMultiplier"
+              value={form.territorialMultiplier}
+              onChange={handleChange}
+              className="field-select"
+            >
+              <option value=""> --без коэффициента-- </option>
+              {Array.from({ length: 21 }, (_, i) =>
+                (1 + i * 0.05).toFixed(2)
+              ).map((val) => (
+                <option key={val} value={val}>
+                  {val}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
 
         {/* --- северная надбавка --- */}
-<div className="field-row">
-  <div className="field-left">
-    <label htmlFor="northernCoefficient">Северная надбавка:</label>
-    <Link to="/regional-info" className="field-link under-title">справка →</Link>
-  </div>
-  <div className="field-right">
-  <select
-    id="northernCoefficient"
-    name="northernCoefficient"
-    value={form.northernCoefficient}
-    onChange={handleChange}
-    className="field-select"
-  >
-    <option value=""> --без надбавки-- </option>
-    {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map((val) => (
-      <option key={val} value={val}>
-        {val}%
-      </option>
-    ))}
-  </select>
-</div>
-</div>
+        <div className="field-row">
+          <div className="field-left">
+            <label htmlFor="northernCoefficient">Северная надбавка:</label>
+            <Link to="/regional-info" className="field-link under-title">
+              справка →
+            </Link>
+          </div>
+          <div className="field-right">
+            <select
+              id="northernCoefficient"
+              name="northernCoefficient"
+              value={form.northernCoefficient}
+              onChange={handleChange}
+              className="field-select"
+            >
+              <option value=""> --без надбавки-- </option>
+              {Array.from({ length: 10 }, (_, i) => (i + 1) * 10).map(
+                (val) => (
+                  <option key={val} value={val}>
+                    {val}%
+                  </option>
+                )
+              )}
+            </select>
+          </div>
+        </div>
 
         {/* --- дата начала расчёта --- */}
         <div className="field-row">
-  <div className="field-left">
-    <label>Дата начала расчёта:</label>
-  </div>
-  <div className="field-right">
-    <div className="date-field">
-    <span>01</span>
-    <select
-      name="startDate"
-      value={
-        form.startDate
-          ? form.startDate.split("-")[1]
-          : String(new Date().getMonth() + 1).padStart(2, "0")
-      }
-      onChange={(e) => handleMonthSelect(e.target.value)}
-    >
-      {months.map((m) => (
-        <option key={m.value} value={m.value}>
-          {m.label}
-        </option>
-      ))}
-    </select>
-    <span>{currentYear}</span>
-  </div>
-</div>
-</div>
+          <div className="field-left">
+            <label>Дата начала расчёта:</label>
+          </div>
+          <div className="field-right">
+            <div className="date-field">
+              <span>01</span>
+              <select
+                name="startDate"
+                value={
+                  form.startDate
+                    ? form.startDate.split("-")[1]
+                    : String(new Date().getMonth() + 1).padStart(2, "0")
+                }
+                onChange={(e) => handleMonthSelect(e.target.value)}
+              >
+                {months.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+              <span>{currentYear}</span>
+            </div>
+          </div>
+        </div>
+
         {/* --- чекбоксы --- */}
-<div className="field-row">
-  <div className="field-left">
-    <label>Параметры:</label>
-  </div>
-  <div className="field-right">
-    <div className="checkbox-column">
-      <label className="checkbox-inline">
-        <input type="checkbox" name="hasTaxPrivilege" /* ... */ />
-        <span>Льготы для силовых структур</span>
-      </label>
-      <label className="checkbox-inline">
-        <input type="checkbox" name="isNotResident" /* ... */ />
-        <span>Налоговый нерезидент</span>
-      </label>
-    </div>
-  </div>
-</div>        <button type="submit" disabled={loading}>
+        <div className="field-row">
+          <div className="field-left">
+            <label>Параметры:</label>
+          </div>
+          <div className="field-right">
+            <div className="checkbox-column">
+              <label className="checkbox-inline">
+                <input
+                  type="checkbox"
+                  name="hasTaxPrivilege"
+                  checked={form.hasTaxPrivilege}
+                  onChange={handleChange}
+                />
+                <span>Льготы для силовых структур</span>
+              </label>
+              <label className="checkbox-inline">
+                <input
+                  type="checkbox"
+                  name="isNotResident"
+                  checked={form.isNotResident}
+                  onChange={handleChange}
+                />
+                <span>Налоговый нерезидент</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" disabled={loading}>
           {loading ? "Расчёт..." : "Рассчитать"}
         </button>
       </form>

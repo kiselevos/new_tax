@@ -40,14 +40,13 @@ docker-compose.override.yml
 *.pid
 
 # === Web frontend ===
-web/node_modules/
+node_modules/
 web/dist/
 web/.vite/
 web/.cache/
 web/.temp/
 web/*.log
 web/coverage/
-web/package-lock.json
 
 # === TypeScript ===
 web/*.tsbuildinfo
@@ -60,6 +59,3 @@ web/tsconfig.tsbuildinfo
 
 # === Misc ===
 test-results/
-
-# dependencies
-node_modules/
