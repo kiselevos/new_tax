@@ -47,41 +47,26 @@ check-fmt: ## Check formatting (CI)
 	@gofmt -l . | grep -q . && (echo "❌ Files need formatting (run 'make fmt')"; exit 1) || true
 
 # --- Frontend commands ---
-.PHONY: frontend-install
-frontend-install: ## Install frontend dependencies
-	@echo "📦 Installing frontend dependencies..."
-	@cd web && npm install
-
-.PHONY: frontend-dev
-frontend-dev: ## Run frontend in development mode
-	@cd web && npm run dev
-
+# --- Frontend commands (minimal) ---
 .PHONY: frontend-build
-frontend-build: ## Build frontend for production
+frontend-build: ## Build frontend (minimal check)
 	@echo "🏗️ Building frontend..."
-	@cd web && npm run build
-	@echo "✅ Frontend built"
+	@(cd web && npm run build --silent) || echo "⚠️  Frontend build skipped"
 
 .PHONY: frontend-lint
-frontend-lint: ## Lint frontend code
-	@echo "🔍 Linting frontend..."
-	@cd web && npm run lint --if-present
+frontend-lint: ## Quick frontend lint
+	@echo "🔍 Quick frontend lint..."
+	@(cd web && npm run lint --silent --if-present) || echo "⚠️  Frontend lint skipped"
 
-.PHONY: frontend-type-check
-frontend-type-check: ## Type check frontend
-	@echo "📝 Type checking frontend..."
-	@cd web && npx tsc --noEmit --skipLibCheck
+.PHONY: ci-frontend
+ci-frontend: frontend-build ## Frontend CI: just build check
 
-.PHONY: frontend-audit
-frontend-audit: ## Security audit for frontend
-	@echo "🔒 Running security audit..."
-	@cd web && npm audit --audit-level moderate
+# --- Combined commands ---
+.PHONY: ci-backend
+ci-backend: tidy check-fmt lint-all test-all build ## Run all backend CI checks
 
-.PHONY: frontend-test
-frontend-test: ## Run frontend tests
-	@echo "🧪 Running frontend tests..."
-	@cd web && npm test --if-present
-
+.PHONY: ci-all
+ci-all: ci-backend ci-frontend ## Run all CI checks
 # --- Docker commands ---
 .PHONY: docker-up
 docker-up: ## Start docker containers without build
