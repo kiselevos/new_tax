@@ -3,7 +3,7 @@ default: help
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-
+# --- Backend commands ---
 .PHONY: codegen
 codegen: ## Generate gRPC code via Buf
 	@echo "🧬 Generating gRPC code using Buf"
@@ -29,18 +29,6 @@ build: ## Compile Go binary
 	@go build -o bin/tax ./cmd
 	@echo "✅ Binary built at bin/tax"
 
-.PHONY: docker-up
-docker-up: ## Start docker containers without build
-	@docker compose up -d
-
-.PHONY: docker-build
-docker-build: ## Build and start docker containers
-	@docker compose up --build
-
-.PHONY: docker-down
-docker-down: ## Down docker conteiners
-	@docker compose down
-
 .PHONY: lint-all
 lint-all: ## Run all linters
 	@go vet ./...
@@ -57,6 +45,65 @@ check-generated: ## Just check git diff
 .PHONY: check-fmt
 check-fmt: ## Check formatting (CI)
 	@gofmt -l . | grep -q . && (echo "❌ Files need formatting (run 'make fmt')"; exit 1) || true
+
+# --- Frontend commands ---
+.PHONY: frontend-install
+frontend-install: ## Install frontend dependencies
+	@echo "📦 Installing frontend dependencies..."
+	@cd web && npm install
+
+.PHONY: frontend-dev
+frontend-dev: ## Run frontend in development mode
+	@cd web && npm run dev
+
+.PHONY: frontend-build
+frontend-build: ## Build frontend for production
+	@echo "🏗️ Building frontend..."
+	@cd web && npm run build
+	@echo "✅ Frontend built"
+
+.PHONY: frontend-lint
+frontend-lint: ## Lint frontend code
+	@echo "🔍 Linting frontend..."
+	@cd web && npm run lint --if-present
+
+.PHONY: frontend-type-check
+frontend-type-check: ## Type check frontend
+	@echo "📝 Type checking frontend..."
+	@cd web && npx tsc --noEmit --skipLibCheck
+
+.PHONY: frontend-audit
+frontend-audit: ## Security audit for frontend
+	@echo "🔒 Running security audit..."
+	@cd web && npm audit --audit-level moderate
+
+.PHONY: frontend-test
+frontend-test: ## Run frontend tests
+	@echo "🧪 Running frontend tests..."
+	@cd web && npm test --if-present
+
+# --- Docker commands ---
+.PHONY: docker-up
+docker-up: ## Start docker containers without build
+	@docker compose up -d
+
+.PHONY: docker-build
+docker-build: ## Build and start docker containers
+	@docker compose up --build
+
+.PHONY: docker-down
+docker-down: ## Down docker containers
+	@docker compose down
+
+# --- Combined commands ---
+.PHONY: ci-backend
+ci-backend: tidy check-fmt lint-all test-all build ## Run all backend CI checks
+
+.PHONY: ci-frontend
+ci-frontend: frontend-type-check frontend-lint frontend-build ## Run all frontend CI checks
+
+.PHONY: ci-all
+ci-all: ci-backend ci-frontend ## Run all CI checks
 
 .PHONY: local-CI
 local-CI: ## Use act to check CI local
