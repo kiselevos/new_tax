@@ -1,6 +1,6 @@
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { createPromiseClient } from "@connectrpc/connect";
-import { TaxService } from "./gen/api/tax_connectweb";
+import { TaxService } from "./gen/api/tax_connect";
 
 const baseUrl = import.meta.env.VITE_API_URL || "/";
 
