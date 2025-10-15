@@ -47,6 +47,7 @@ web/.cache/
 web/.temp/
 web/*.log
 web/coverage/
+web/src/gen/*
 
 # === TypeScript ===
 web/*.tsbuildinfo
