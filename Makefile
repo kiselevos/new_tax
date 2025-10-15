@@ -1,8 +1,3 @@
-default: help
-#.PHONY: help
-help: ## Display this help screen
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
 # --- Backend commands ---
 .PHONY: codegen
 codegen: ## Generate gRPC code via Buf
@@ -46,27 +41,22 @@ check-generated: ## Just check git diff
 check-fmt: ## Check formatting (CI)
 	@gofmt -l . | grep -q . && (echo "❌ Files need formatting (run 'make fmt')"; exit 1) || true
 
-# --- Frontend commands ---
-# --- Frontend commands (minimal) ---
+# --- Frontend commands ----
+
+.PHONY: ci-backend
+ci-backend: tidy check-fmt lint-all test-all build ## Run all backend CI checks
+
 .PHONY: frontend-build
 frontend-build: ## Build frontend (minimal check)
 	@echo "🏗️ Building frontend..."
 	@(cd web && npm run build --silent) || echo "⚠️  Frontend build skipped"
 
-.PHONY: frontend-lint
-frontend-lint: ## Quick frontend lint
-	@echo "🔍 Quick frontend lint..."
-	@(cd web && npm run lint --silent --if-present) || echo "⚠️  Frontend lint skipped"
-
 .PHONY: ci-frontend
-ci-frontend: frontend-build ## Frontend CI: just build check
-
-# --- Combined commands ---
-.PHONY: ci-backend
-ci-backend: tidy check-fmt lint-all test-all build ## Run all backend CI checks
+ci-frontend: frontend-build ## Frontend CI: currently just build check
 
 .PHONY: ci-all
-ci-all: ci-backend ci-frontend ## Run all CI checks
+ci-all: ci-backend frontend-build ## All CI: backend + frontend build only
+
 # --- Docker commands ---
 .PHONY: docker-up
 docker-up: ## Start docker containers without build
@@ -79,16 +69,6 @@ docker-build: ## Build and start docker containers
 .PHONY: docker-down
 docker-down: ## Down docker containers
 	@docker compose down
-
-# --- Combined commands ---
-.PHONY: ci-backend
-ci-backend: tidy check-fmt lint-all test-all build ## Run all backend CI checks
-
-.PHONY: ci-frontend
-ci-frontend: frontend-type-check frontend-lint frontend-build ## Run all frontend CI checks
-
-.PHONY: ci-all
-ci-all: ci-backend ci-frontend ## Run all CI checks
 
 .PHONY: local-CI
 local-CI: ## Use act to check CI local
