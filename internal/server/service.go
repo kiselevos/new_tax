@@ -27,6 +27,8 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 
 	log := logx.From(ctx)
 
+	logx.From(ctx).Info("📨 CalculatePrivate called", "req", req)
+
 	input := calculate.FromPrivateRequest(req)
 
 	if err := calculate.ValidateCalculateInput(input); err != nil {

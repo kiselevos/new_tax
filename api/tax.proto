@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package tax;
 
-option go_package = "new_tax/gen/grpc;grpc";
+option go_package = "new_tax/gen/grpc/api;tax";
 
 import "google/protobuf/timestamp.proto";
 

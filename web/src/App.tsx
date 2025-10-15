@@ -118,35 +118,36 @@ export default function App() {
     }
 
     try {
-      const res = await taxClient.calculatePrivate({
-        grossSalary: BigInt(Math.round(salary * 100)),
-        territorialMultiplier: form.territorialMultiplier
-          ? BigInt(Math.round(parseFloat(form.territorialMultiplier) * 100))
-          : undefined,
-        northernCoefficient: form.northernCoefficient
-          ? BigInt(Number(form.northernCoefficient) + 100)
-          : undefined,
-        startDate: form.startDate
-          ? {
-              seconds: BigInt(
-                Math.floor(new Date(form.startDate).getTime() / 1000)
-              ),
-            }
-          : undefined,
-        hasTaxPrivilege: form.hasTaxPrivilege,
-        isNotResident: form.isNotResident,
-      });
+  const res = await taxClient.calculatePrivate({
+    grossSalary: BigInt(Math.round(salary * 100)), // ✅ BigInt
+    territorialMultiplier: form.territorialMultiplier
+      ? BigInt(Math.round(parseFloat(form.territorialMultiplier) * 100))
+      : BigInt(0),
+    northernCoefficient: form.northernCoefficient
+      ? BigInt(Number(form.northernCoefficient) + 100)
+      : BigInt(0),
+    startDate: form.startDate
+      ? {
+          seconds: BigInt(
+            Math.floor(new Date(form.startDate).getTime() / 1000)
+          ),
+        }
+      : undefined,
+    hasTaxPrivilege: form.hasTaxPrivilege,
+    isNotResident: form.isNotResident,
+  });
 
-      setResult(res);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Ошибка при запросе");
-      }
-    } finally {
-      setLoading(false);
-    }
+  setResult(res);
+} catch (err) {
+  if (err instanceof Error) {
+    setError(err.message);
+  } else {
+    setError("Ошибка при запросе");
+  }
+} finally {
+  setLoading(false);
+}
+
   }
 
   return (
