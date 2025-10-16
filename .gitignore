@@ -5,16 +5,22 @@ build/
 *.out
 *.test
 *.log
+*.o
+*.a
+*.so
 
 # === Go module cache ===
 *.modcache
 *.tmp
+*.cache
 
 # === IDE / OS ===
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+.AppleDouble
+.LSOverride
 
 # === Env / Config ===
 .env
@@ -25,6 +31,10 @@ Thumbs.db
 coverage.out
 *.cov
 *.coverprofile
+*.prof
+*.pprof
+*.svg
+test-results/
 
 # === buf / protobuf ===
 /buf
@@ -38,25 +48,31 @@ coverage.out
 .dockerignore
 docker-compose.override.yml
 *.pid
+*.tar
+*.img
+*.bak
 
 # === Web frontend ===
-node_modules/
+**/node_modules/
 web/dist/
 web/.vite/
 web/.cache/
 web/.temp/
+web/.eslintcache
+web/.parcel-cache/
+web/.turbo/
 web/*.log
 web/coverage/
 web/src/gen/*
-
-# === TypeScript ===
 web/*.tsbuildinfo
 web/tsconfig.tsbuildinfo
+web/yarn.lock
 
 # === Editor artifacts ===
 *.swp
 *.swo
 *.bak
 
-# === Misc ===
-test-results/
+# === CI / Temp ===
+tmp/
+.cache/
