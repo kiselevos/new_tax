@@ -45,7 +45,6 @@ test-results/
 /api/*.swagger.json
 
 # === Docker ===
-.dockerignore
 docker-compose.override.yml
 *.pid
 *.tar

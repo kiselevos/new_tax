@@ -1,0 +1,15 @@
+.git
+.gitignore
+README.md
+CONTRIBUTING.md
+Makefile
+*.proto
+buf.yaml
+go.mod
+go.sum
+cmd/
+internal/
+pkg/
+api/
+web/
+node_modules/
