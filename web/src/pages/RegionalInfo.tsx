@@ -1,40 +1,39 @@
 import { ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import "./InfoPages.css";
 
 export default function RegionalInfo() {
   const navigate = useNavigate();
 
   return (
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "40px auto",
-        fontFamily: "sans-serif",
-        color: "#333",
-      }}
-    >
-      <h1 style={{ fontSize: "28px", fontWeight: 700, textAlign: "center" }}>
-        Региональные коэффициенты и северные надбавки
+    <div className="info-page">
+      <h1 className="info-page-title">
+        Районные коэффициенты и северные надбавки
       </h1>
 
-      <p style={{ fontSize: "17px", color: "#555", textAlign: "center", marginBottom: "24px" }}>
-        Районный коэффициент и северная надбавка зависят от региона работы.
-        Эти показатели устанавливаются федеральными и региональными актами.
-        Ниже приведены официальные источники, где можно уточнить действующие значения.
+      <p className="info-page-subtitle">
+        В некоторых регионах России работники получают повышенную зарплату — 
+        это компенсация за работу в особых климатических условиях.  
+        Размер таких надбавок и коэффициентов установлен федеральными и региональными законами.
       </p>
 
       {/* Районный коэффициент */}
-      <div style={cardStyle}>
-        <h2 style={cardTitle}>📍 Районный коэффициент (РК)</h2>
-        <ul style={linkList}>
+      <div className="info-card">
+        <h2 className="info-card-title">📍 Районный коэффициент</h2>
+        <p className="info-card-text">
+          Районный коэффициент — это повышающий коэффициент к зарплате, 
+          установленный для работников в районах с суровыми климатическими условиями.  
+          Он применяется к окладу с первого дня работы и не зависит от стажа.
+        </p>
+        <ul className="info-link-list">
           <li>
             <a
               href="https://www.consultant.ru/document/cons_doc_LAW_256207/660c6bc7428f5eba28690e62cb42131f66d3b514/"
               target="_blank"
               rel="noopener noreferrer"
-              style={linkStyle}
+              className="info-link"
             >
-              <ExternalLink size={16} style={{ marginRight: 6 }} />
+              <ExternalLink size={16} className="info-link-icon" />
               Федеральная таблица районных коэффициентов (КонсультантПлюс)
             </a>
           </li>
@@ -43,9 +42,9 @@ export default function RegionalInfo() {
               href="https://www.consultant.ru/document/cons_doc_LAW_118861/"
               target="_blank"
               rel="noopener noreferrer"
-              style={linkStyle}
+              className="info-link"
             >
-              <ExternalLink size={16} style={{ marginRight: 6 }} />
+              <ExternalLink size={16} className="info-link-icon" />
               Закон РФ «О районных коэффициентах и надбавках»
             </a>
           </li>
@@ -53,18 +52,23 @@ export default function RegionalInfo() {
       </div>
 
       {/* Северная надбавка */}
-      <div style={cardStyle}>
-        <h2 style={cardTitle}>❄️ Северная надбавка (СН)</h2>
-        <ul style={linkList}>
+      <div className="info-card">
+        <h2 className="info-card-title">❄️ Северная надбавка</h2>
+        <p className="info-card-text">
+          Северная надбавка — это дополнительный процент к заработной плате за работу 
+          в районах Крайнего Севера и приравненных местностях.  
+          Её размер зависит от стажа работы в этих условиях и может достигать 100%.
+        </p>
+        <ul className="info-link-list">
           <li>
             <a
               href="https://www.nalog.gov.ru/rn29/news/activities_fts/15907099/"
               target="_blank"
               rel="noopener noreferrer"
-              style={linkStyle}
+              className="info-link"
             >
-              <ExternalLink size={16} style={{ marginRight: 6 }} />
-              Разъяснение ФНС о порядке налогообложения северных надбавок
+              <ExternalLink size={16} className="info-link-icon" />
+              Разъяснение ФНС России о порядке налогообложения северных надбавок
             </a>
           </li>
           <li>
@@ -72,9 +76,9 @@ export default function RegionalInfo() {
               href="https://www.consultant.ru/document/cons_doc_LAW_118861/"
               target="_blank"
               rel="noopener noreferrer"
-              style={linkStyle}
+              className="info-link"
             >
-              <ExternalLink size={16} style={{ marginRight: 6 }} />
+              <ExternalLink size={16} className="info-link-icon" />
               Обзор законодательства о северных надбавках (КонсультантПлюс)
             </a>
           </li>
@@ -83,77 +87,31 @@ export default function RegionalInfo() {
               href="https://www.buhsoft.ru/article/4542-severnaya-nadbavka-v-2025-godu-razmer-tablitsa"
               target="_blank"
               rel="noopener noreferrer"
-              style={linkStyle}
+              className="info-link"
             >
-              <ExternalLink size={16} style={{ marginRight: 6 }} />
-              Таблица северных надбавок по регионам (БухСофт)
+              <ExternalLink size={16} className="info-link-icon" />
+              Таблица размеров северных надбавок по регионам (БухСофт)
             </a>
           </li>
         </ul>
       </div>
 
       {/* Примечание */}
-      <div
-        style={{
-          background: "#fafafa",
-          border: "1px dashed #ccc",
-          padding: "12px 16px",
-          borderRadius: "8px",
-          marginBottom: "20px",
-          fontSize: "14px",
-          color: "#555",
-        }}
-      >
-        ⚠️ Обратите внимание: даже внутри одного региона коэффициенты и надбавки
-        могут различаться по районам. Для точных данных ориентируйтесь на
-        постановления местных органов власти.
+      <div className="info-note">
+        ⚠️ Обратите внимание: даже внутри одного субъекта Российской Федерации 
+        коэффициенты и надбавки могут отличаться по районам и населенным пунктам.  
+        Для точных данных рекомендуется проверять постановления местных органов власти 
+        или кадровую документацию вашего работодателя.
       </div>
 
-      <div style={{ textAlign: "center" }}>
+      <div className="info-button-container">
         <button
           onClick={() => navigate("/")}
-          style={{
-            background: "#2b70f7",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            padding: "10px 20px",
-            fontSize: "16px",
-            cursor: "pointer",
-          }}
+          className="info-button"
         >
-          🔙 Вернуться к калькулятору
+          Вернуться к калькулятору
         </button>
       </div>
     </div>
   );
 }
-
-const cardStyle = {
-  background: "#fff",
-  border: "1px solid #eee",
-  borderRadius: "10px",
-  padding: "16px 20px",
-  marginBottom: "20px",
-  boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
-};
-
-const cardTitle = {
-  fontSize: "20px",
-  marginBottom: "8px",
-  fontWeight: 600,
-};
-
-const linkList = {
-  listStyle: "none",
-  padding: 0,
-  margin: 0,
-};
-
-const linkStyle = {
-  display: "flex",
-  alignItems: "center",
-  color: "#2b70f7",
-  textDecoration: "none",
-  marginBottom: "6px",
-};

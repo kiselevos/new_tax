@@ -10,7 +10,7 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kiselevos/tax-ci:v1.4.0
+      image: ghcr.io/kiselevos/tax-ci:v1.5.0
     steps:
       - uses: actions/checkout@v4
       - run: make codegen
@@ -19,7 +19,7 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/kiselevos/tax-ci:v1.4.0
+      image: ghcr.io/kiselevos/tax-ci:v1.5.0
     steps:
       - uses: actions/checkout@v4
       - run: make ci-frontend
