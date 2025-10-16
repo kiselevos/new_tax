@@ -65,3 +65,8 @@ func withCORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// HttpHandler возвращает http.Handler для тестов
+func (s *Server) HttpHandler() http.Handler {
+	return s.httpServer.Handler
+}
