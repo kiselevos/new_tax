@@ -17,8 +17,7 @@ WORKDIR /app
 # Копируем бинарник из builder
 COPY --from=builder /app/tax .
 
-# Backend слушает gRPC (50051) и gRPC-Web (8081)
-EXPOSE 50051
+# Backend слушает ConnectRPC (HTTP/gRPC-Web)
 EXPOSE 8081
 
 # Запускаем

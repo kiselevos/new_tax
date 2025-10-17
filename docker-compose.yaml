@@ -7,14 +7,13 @@ services:
     env_file:
       - .env
     ports:
-      - "${BACKEND_PORT:-50051}:${BACKEND_PORT:-50051}"
-      - "${BACKEND_WEB_PORT:-8081}:${BACKEND_WEB_PORT:-8081}"
+      - "${BACKEND_GRPC_WEB_PORT:-8081}:${BACKEND_GRPC_WEB_PORT:-8081}"
     environment:
-      - PORT=${BACKEND_WEB_PORT:-8081}
+      - PORT=${BACKEND_GRPC_WEB_PORT:-8081}
     networks:
       - taxnet
     healthcheck:
-      test: ["CMD", "grpcurl", "-plaintext", "localhost:50051", "api.TaxService/Healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_GRPC_WEB_PORT:-8081}/tax.TaxService/Healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -31,7 +30,6 @@ services:
       - "${FRONTEND_PORT:-8080}:80"
     depends_on:
       - backend
-      
     networks:
       - taxnet
 
