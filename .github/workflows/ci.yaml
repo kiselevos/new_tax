@@ -30,6 +30,9 @@ jobs:
       - name: Ensure tidy modules
         run: make tidy
 
+      - name: Debug diff after tidy
+        run: git diff go.mod go.sum || true
+
       - name: Run backend CI checks
         run: make ci-backend
         continue-on-error: false
