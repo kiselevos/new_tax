@@ -24,11 +24,11 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: ${{ runner.os }}-go-
 
-      - name: Ensure tidy modules
-        run: make tidy
-
       - name: Generate gRPC code
         run: make codegen
+
+      - name: Ensure tidy modules
+        run: make tidy
 
       - name: Run backend CI checks
         run: make ci-backend
