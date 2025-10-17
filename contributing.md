@@ -1,122 +1,185 @@
-# Contributing to Tax Calculator
+# 🤝 Contributing Guide
 
 Спасибо, что решили внести вклад в проект **Tax Calculator** — gRPC-сервис на Go для расчёта прогрессивного подоходного налога в России начиная с 2025 года. Этот документ описывает, как локально поднять окружение, запустить тесты и внести изменения безопасно для продакшена.
 
 ---
 
-## Требования
+## 🧩 Общая структура проекта
 
-- Go 1.23.10.
-- gRPC runtime:
-    * google.golang.org/grpc v1.67.1
-    * google.golang.org/protobuf v1.34.2
-- (Для генерации кода) protoc или buf + плагины:
-    * protoc ≥ 3.21 или buf (CLI).
-    * protoc-gen-go (генератор protobuf-типов).
-    * protoc-gen-go-grpc (генератор gRPC-стабов).
-- (Опционально) инструменты разработчика:
-    * grpcurl — ручная проверка RPC.
-    * golangci-lint — линтер.
-    * make — Makefile.
-
----
-
-## Клонирование и базовая настройка
-
-```bash
-git clone <repo_url>
-cd <repo_dir>
-go mod download
-```
----
-
-## Установка зависимостей
-
-```bash
-make tidy
-```
-> Выполняет go mod tidy и проверяет, что go.mod и go.sum не содержат непроиндексированных изменений.
-
-## Генерация gRPC-кода
-
-```bash
-make codegen
-```
->Сгенерирует код из `api/tax.proto` в `gen/grpc/api`.
-
-Требуемые инструменты:
-
-```bash
-# buf (CLI)
-go install github.com/bufbuild/buf/cmd/buf@v1.45.0
-
-# генераторы (совместимы с protobuf v1.34.2 и grpc v1.67.1)
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
-
-# полезные утилиты (опционально)
-go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.8.9
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
+```text
+├── api/              # .proto контракты (Buf)
+├── cmd/              # точка входа Go-приложения
+├── internal/         # бизнес-логика (calculate, server)
+├── pkg/              # вспомогательные пакеты (helpers, logx)
+├── gen/              # сгенерированный код (Connect/gRPC)
+├── web/              # фронтенд (React + Vite)
+├── Dockerfile        # backend dockerfile
+├── docker-compose.yaml
+└── Makefile
 ```
 
 ---
 
-## Сборка и запуск сервера
+## ⚙️ Требования к окружению
 
-- Переменные окружения (.env)
-    * LOG_MODE — json (по умолчанию) или text
-    * LOG_LEVEL — debug|info|warn|error (по умолчанию info)
-    * PORT — адрес прослушивания, например :50051
+### Backend
+- **Go 1.23.10+**
+- **Buf CLI** (или `protoc ≥ 3.21` + `protoc-gen-go` + `protoc-gen-connect-go`)
+- **golangci-lint** для статического анализа
+- **grpcurl** (опционально, для проверки RPC)
 
-### Локально через Go
+### Frontend
+- **Node.js 20+**
+- **npm 10+** или **pnpm**
+- **Vite** (через `npm run dev`)
+- **eslint**, **typescript**
+
+### Опционально
+- **Docker** и **docker-compose** — для контейнерной сборки
+- **Make** — для удобного запуска команд
+
+---
+
+## 🚀 Быстрый старт для разработки
+
+```bash
+git clone https://github.com/kiselevos/new_tax
+cd new_tax
+```
+
+### Установка зависимостей
+
+```bash
+# Backend
+go mod tidy
+buf generate
+
+# Frontend
+cd web && npm ci
+```
+
+или одной командой:
+
+```bash
+make setup
+```
+
+---
+
+### Запуск локально
+
+```bash
+# Запустить backend
+go run ./cmd/main.go
+
+# Запустить frontend (в отдельном окне)
+cd web && npm run dev
+```
+
+или одной командой:
 
 ```bash
 make run
 ```
-> Запускает `cmd/main.go` с gRPC-сервером.
 
-### Через Docker Compose
-
-```bash
-make docker-build     # собрать и запустить
-make docker-up        # только запустить
-make docker-down      # остановить
-```
-
-### gRPC-сервер доступен по адресу:
-```
-localhost:50051
-```
-Можно проверить с помощью `grpcurl` или теста:
-
-```bash
-grpcurl -plaintext localhost:50051 list
-go test -run Test_Server_Healthz ./test
-```
-
-
-## Локальный запуск CI
-Если установлен [`act`](https://github.com/nektos/act):
-
-```bash
-make local-CI
-```
+> После запуска:  
+> - Backend: [http://localhost:8081](http://localhost:8081)  
+> - Frontend: [http://localhost:8080](http://localhost:8080)
 
 ---
 
-## 📁 Структура проекта
+## 🧬 Генерация кода (Buf / ConnectRPC)
 
+Все `.proto`-контракты хранятся в директории `api/`.  
+При изменении этих файлов нужно сгенерировать код:
+
+```bash
+make codegen
 ```
-.ci                — Dockerfile (образ для ci)
-.github/           — конфигурация CI (ci.yaml)
-cmd/               — точка входа (main.go)
-internal/          — server, calculator
-api/               — (tax.proto, buf.yaml)
-gen/               — сгенерированный gRPC-код
-test/              — интеграционные тесты
-pkg/               — логирование и утилиты
-Dockerfile         — Dockerfile
-Makefile           — сборка, тесты, генерация
+
+или вручную:
+
+```bash
+buf generate
 ```
+
+Сгенерированные файлы попадают в `gen/grpc/`.
+> ⚠️ Никогда не редактируйте файлы в `gen/` вручную — они пересоздаются автоматически.
+
+---
+
+## 🧹 Линтинг и форматирование
+
+```bash
+# Backend (Go)
+make vet           # go vet
+make check-fmt     # проверка форматирования
+make gofmt         # автоформатирование
+
+# Frontend (React)
+make lint          # cd web && npm run lint
+
+# All
+make lint-all
+```
+---
+
+## 🧪 Тестирование
+
+### Запуск всех тестов
+```bash
+make test-all
+```
+
+### Пример интеграционного теста Healthz
+```bash
+go test -run Test_Server_Healthz ./test
+```
+---
+
+## 🐳 Работа с Docker
+
+### Собрать и запустить контейнеры
+```bash
+docker compose up --build
+# или
+make docker-build
+```
+
+### Остановить контейнеры
+```bash
+make docker-down
+```
+
+> После сборки сервис будет доступен:  
+> - Backend → http://localhost:8081  
+> - Frontend → http://localhost:8080
+
+---
+
+## 🧱 CI/CD
+
+CI выполняет следующие шаги:
+- Генерацию gRPC/Connect-кода (`make codegen`)
+- Проверку зависимостей (`make tidy`)
+- Линтинг (`make lint-all`)
+- Тестирование (`make test-all`)
+- Сборку frontend и backend
+
+Используется кастомный CI-образ:  
+`ghcr.io/kiselevos/tax-ci:v1.5.0`
+
+---
+
+## 🧭 Полезные команды
+
+| Команда | Назначение |
+|----------|-------------|
+| `make setup` | установить все зависимости |
+| `make codegen` | сгенерировать protobuf-код |
+| `make run` | запустить backend и frontend |
+| `make test-all` | запустить все тесты |
+| `make docker-build` | собрать и запустить контейнеры |
+| `make docker-down` | остановить контейнеры |
 
 ---
