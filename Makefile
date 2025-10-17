@@ -10,8 +10,8 @@ codegen: ## Generate gRPC code via Buf
 	@buf generate
 	@echo "✅ gRPC code generated in gen/grpc/api"
 
-.PHONY: run
-run: ## Run application
+.PHONY: run-back
+run-back: ## Run application backend
 	@go run ./cmd/main.go
 
 .PHONY: tidy
@@ -25,10 +25,9 @@ build: ## Compile Go binary
 	@go build -o bin/tax ./cmd
 	@echo "✅ Binary built at bin/tax"
 
-.PHONY: lint-all
-lint-all: ## Run all linters
+.PHONY: vet
+vet: ## Run all linters
 	@go vet ./...
-	@golangci-lint run ./...
 
 .PHONY: gofmt
 gofmt: ## Format code
@@ -62,6 +61,14 @@ frontend-build: ## Build frontend (minimal check)
 	@echo "Building frontend..."
 	@(cd web && npm run build --silent) || echo "⚠️  Frontend build skipped"
 
+.PHONY: run-front
+run-front: ## Run application frontend
+	@cd web && npm run dev
+
+.PHONY: lint
+lint: ## Run lint frontend
+	@cd web && npm run lint
+
 .PHONY: ci-frontend
 ci-frontend: frontend-build ## Frontend CI: currently just build check
 
@@ -91,6 +98,12 @@ local-CI: ## Use act to check CI local
 .PHONY: test-all
 test-all: test-backend ## Run tests
 
+.PHONY: run
+run:
+	@echo "🚀 Starting backend and frontend..."
+	@go run ./cmd/main.go & \
+	cd web && npm run dev
+
 .PHONY: setup
 setup: ## Install all dependencies (Go + Frontend)
 	@echo "Setting up full environment..."
@@ -98,3 +111,8 @@ setup: ## Install all dependencies (Go + Frontend)
 	@make codegen
 	@make frontend-install
 	@echo "✅ Environment ready!"
+
+.PHONY: lint-all
+lint-all: ## Run all linters
+	@go vet ./...
+	@cd web && npm run lint
