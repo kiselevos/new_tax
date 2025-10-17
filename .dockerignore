@@ -1,0 +1,33 @@
+# === Git / system ===
+.git
+.gitignore
+.DS_Store
+Thumbs.db
+
+# === Docs / metadata ===
+README.md
+CONTRIBUTING.md
+LICENSE
+
+# === Build artifacts ===
+bin/
+dist/
+*.out
+*.exe
+*.log
+coverage.out
+test-results/
+
+# === Node.js ===
+web/node_modules/
+node_modules/
+
+# === Go cache ===
+*.test
+*.tmp
+*.cache
+
+# === Docker ===
+Dockerfile*
+docker-compose*.yaml
+.dockerignore

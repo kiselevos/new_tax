@@ -1,28 +1,24 @@
+# --- Build stage ---
 FROM golang:1.23-bookworm AS builder
-
 WORKDIR /app
 
-# Скачиваем зависимости
+# Кешируем зависимости
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Копируем весь код и собираем бинарь
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o tax ./cmd
 
-RUN go build -o bin/tax ./cmd
-
-# runtime
-FROM debian:bookworm-slim
-
+# --- Runtime stage ---
+FROM gcr.io/distroless/base-debian12 AS runtime
 WORKDIR /app
 
-# Устанавливаем базовые зависисмости в систему
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Копируем бинарник из builder
+COPY --from=builder /app/tax .
 
-COPY --from=builder /app/bin/tax .
+# Backend слушает ConnectRPC (HTTP/gRPC-Web)
+EXPOSE 8081
 
-EXPOSE 50051
-
-CMD ["./tax"]
-
+# Запускаем
+ENTRYPOINT ["/app/tax"]

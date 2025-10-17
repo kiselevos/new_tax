@@ -1,0 +1,99 @@
+.main-header.card {
+  padding: 0.5rem 1rem 1rem 1rem; /* Такие же отступы как у monthly-details.card */
+}
+
+.main-header > h2 {
+  margin-top: 1rem;
+  margin-bottom: 1rem; /* Такие же отступы как у monthly-details > h2 */
+}
+
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.field-left {
+  flex: 1;
+}
+
+.field-right {
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.field-label {
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.field-value {
+  font-size: 0.95rem;
+  color: #333;
+  text-align: right;
+}
+
+.field-value-bold {
+  font-weight: 500;
+}
+
+.parameters-section {
+  margin-top: 0.5rem;
+}
+
+.financial-results {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #eee;
+}
+
+.financial-row {
+  margin-bottom: 0.75rem;
+}
+
+.financial-label {
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.financial-value {
+  font-size: 1.1rem; /* Одинаковый размер для всех цифр */
+  font-family: 'Courier New', monospace; /* Одинаковый шрифт для всех цифр */
+  font-weight: 600;
+}
+
+.income-value {
+  color: #007bff;
+}
+
+.tax-value {
+  color: #dc3545;
+}
+
+.net-income-value {
+  color: #28a745;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .main-header.card {
+    padding: 1rem;
+  }
+  
+  .field-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .field-right {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+  
+  .financial-value {
+    font-size: 1rem; /* Сохраняем одинаковый размер на мобильных */
+  }
+}

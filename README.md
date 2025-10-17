@@ -1,284 +1,176 @@
-# Tax Calculator (gRPC, Go)
+# Tax Calculator — налоговый калькулятор (Go + React + ConnectRPC)
 
-**Tax Calculator** — gRPC-сервис на Go для расчёта подоходного налога в РФ (с 2025 года).  
-Поддерживает прогрессивную шкалу, «северную» надбавку, территориальный коэффициент, статус нерезидента и ежемесячное округление «как в бухгалтерии».
+**Tax Calculator** — это сервис для расчёта подоходного налога (НДФЛ) в России по правилам, действующим с 2025 года.  
+Он учитывает прогрессивную шкалу, северные надбавки, районные коэффициенты и статус налогового резидентства.  
 
-- Язык: **Go 1.23.10**
-- gRPC: **google.golang.org/grpc v1.67.1**
-- Protobuf: **google.golang.org/protobuf v1.34.2**
+Backend реализован на **Go (ConnectRPC)**, а frontend — на **React (Vite)**  
+с типизированным клиентом, сгенерированным из `.proto`-контрактов.
+
+> Backend использует **ConnectRPC**, совместимый с gRPC и gRPC-Web,  
+> всё работает на одном порту `8081` без отдельного gRPC-порта.  
+> Для браузера разрешены CORS-запросы (через middleware `withCORS()`).
+
+---
+
+## Технологический стек
+
+### Backend
+- **Go 1.23.10**
+- **ConnectRPC** (gRPC + gRPC-Web)
+- **Protobuf** (`google.golang.org/protobuf v1.34.2`)
+- **log/slog**
+- **Buf** для генерации `.proto`
+- **Docker**, **Makefile**
+
+### Frontend
+- **React + TypeScript**
+- **Vite**
+- **Connect Web Client** (`@connectrpc/connect`, `@bufbuild/protobuf`)
+- **Node.js 20+**
+- **Nginx** (в Docker)
 
 ---
 
 ## Возможности
 
-- Прогрессивная шкала (общая) + упрощённая шкала для «севера».
-- Ежемесячное округление налога на дельте (годовой итог = сумма округлённых месяцев).
-- Поддержка нерезидентов (30% плоско).
-- Public (усечённый) и Private (полный) ответы.
-- Помесячная детализация: gross/net/tax YTD, ставка периода, разбиение по базам (оклад+терр.к-т / север).
-- Логирование (`log/slog`), request-scoped контекст, перехват паник (`UnaryRecovery`), audit-лог (`UnaryLogger`).
-- Graceful shutdown gRPC-сервера с таймаутом.
+- Расчёт по новой прогрессивной шкале (5 уровней ставок).  
+- Отдельная шкала для северных надбавок.  
+- Помесячное округление налога по правилам НК РФ (п. 6 ст. 52).  
+- Поддержка статуса нерезидента (единая ставка 30 %).  
+- Подробная детализация помесячно (доход, ставка, налог, нетто).  
+- Встроенные middleware: логирование, graceful shutdown, recovery.  
 
 ---
 
-## Как считаем (модель)
+## Как считается налог
 
-- **Оклад (`gross_salary`)** — в копейках.
-- **`TerritorialMultiplier`** и **`NorthernCoefficient`** — мультипликаторы **100..200** (шаг 10):
-  - `100` = без надбавки/коэффициента.
-  - База A (оклад с РК): `baseA = gross_salary * TerritorialMultiplier / 100`
-  - Север (база B): `north = baseA * (NorthernCoefficient - 100) / 100`
-- **Округление** — *каждый месяц* округляется месячная дельта налога; итог за год = сумма округлённых месяцев.
-- **Период**:
-  - Private: можно передать `start_date` → расчёт **с этого месяца до декабря** текущего года.
-  - Public: по умолчанию — **с 1 января текущего года**.
-
----
-
----
-
-## 📀 Основные правила расчётов (понятно и просто)
-
-### 1) 📓 Округление налога
-- Сумма налога округляется до **полных рублей**:  
-  — если меньше 50 копеек → **отбрасывается**;  
-  — если 50 копеек и более → **округляется вверх**.  
-- **По каждой базе** (оклад+РК и северная надбавка) округление выполняется **отдельно**, затем суммы **складываются**.  
-- Ссылка: п. 6 ст. 52 НК РФ.
-
-### 2) 🧮 Разные налоговые базы
-**Для обычных граждан**:
-- Оклад + премии + территориальный коэффициент → **прогрессивная шкала**: `13/15/18/20/22%` (по действующим порогам).
-- **Северная надбавка** → **отдельная база**: `13%` до `5 млн` включительно и `15%` свыше.
-
-**Для льготных категорий (военные, силовые)**:
-- Весь доход (включая надбавки) → **упрощённая шкала**: `13%` до `5 млн`, `15%` свыше, **без разделения баз**.
-- Ссылки: НК РФ и разъяснения ФНС.
-
-**К льготным категориям относятся (неполный список)**:
-- Военнослужащие (включая мобилизованных и контрактников).
-- Сотрудники МВД, Росгвардии, ФСБ, ФСО, ФСИН.
-- Прокуратура, Следственный комитет.
-- Спасатели МЧС и федеральной противопожарной службы.
-- Сотрудники УИС и иные категории, предусмотренные федеральными законами.
-
-### 3) 🌍 Налоговое резидентство
-**Кто считается резидентом?**  
-Физическое лицо, которое находилось в РФ **183+ дней** за последние **12 месяцев**.  
-**Нерезидент** — если дней **меньше 183**.
-
-**Как облагаются нерезиденты?**
-| Тип дохода             | Ставка НДФЛ | Примечание                               |
-|------------------------|-------------|------------------------------------------|
-| Зарплата, оклад        | 30%         | Без прогрессии и без вычетов             |
-
-- Даже военнослужащие и сотрудники силовых ведомств, если они **нерезиденты**, платят по ставке **30%** по зарплате.
-- **Льготы** (шкала 13/15% для льготников) **не применяются** к нерезидентам.  
-- Ссылка: ст. 224 НК РФ.
-
-### 4) 🛂 Северная надбавка
-- Зависит от стажа работы в **климатически тяжёлых** условиях.  
-- **Крайний Север**: +10% через 6 мес., далее +10% каждые 6 мес., до 100%.  
-- **Приравненные местности**: +10% после 1 года, далее +10% каждый год, до 50%.  
-- Ссылки: ст. 317 ТК РФ, отраслевые разъяснения.
-
-### 5) 🌍 Территориальный коэффициент (РК)
-- Устанавливается **с первого дня работы**.  
-- Фиксируется для региона и может отличаться по зонам.  
-- **Не зависит** от стажа.  
-- Ссылки: ст. 315–316 ТК РФ.
-
-### 6) ⚙️ Как работает калькулятор (человеческим языком)
-Калькулятор считает НДФЛ по правилам 2025 года. Ключевая функция — `CalculateMonthlyTax`, она анализирует входные данные и выбирает нужный режим.
-
-**Входные данные:**
-- `IsNotResident` — если `true`, **весь доход** по зарплате облагается **30%**, без прогрессии и вычетов (см. раздел «Налоговое резидентство»).
-- `GrossSalary` — оклад по договору (в копейках).
-- `TerritorialMultiplier` — территориальный коэффициент (%), например `130` = `1.3`.
-- `NorthernCoefficient` — северная надбавка (%).
-- `StartDate` — дата начала действия оклада.
-- `HasTaxPrivilege` — признак льготы (военный, силовой и т.п.).
-
-**Принципы:**
-- Если `HasTaxPrivilege = true` → **весь доход** по шкале **13% до 5 млн** и **15% свыше**, **без разделения на базы**.
-- Если есть только РК → оклад умножается на РК и **вся сумма** идёт по **прогрессии**.
-- Если есть только север → оклад идёт по **прогрессии**, север — по **13/15%** (отдельная база).
-- Если есть и РК, и север → сначала применяется РК к окладу, затем выделяется север; **каждая база** считается по **своей шкале**.
-- **Округление** делается **помесячно** по **дельте**, **по каждой базе**, затем суммы складываются.
-
-**Результат работы** — массив `[]MonthlyTax` (по месяцу):
-- брутто-доход, налог, нетто-доход;
-- ставка, накопленные годовые суммы;
-- при наличии «севера»: разбиение на базу A (оклад+РК) и базу B (север).
-
-> Примечание: калькулятор проектировался как «прогноз до конца года». Если работа началась, например, в июне — расчёт идёт **с июня по декабрь** текущего года.
-
-
----
+- **Оклад** (`gross_salary`) указывается в копейках.  
+- **Коэффициенты** (`territorial_multiplier`, `northern_coefficient`) — в процентах (100–200).
+- **Округление** выполняется каждый месяц: 50 коп — отбрасывается, ≥ 50 коп — округляется вверх (п. 6 ст. 52 НК РФ).  
+- **Период**: расчёт с указанного месяца → до декабря текущего года.  
+- **Льготы** (`has_tax_privilege = true`) — применяется упрощённая шкала (13 % / 15 %).  
+- **Нерезиденты** (`is_not_resident = true`) — единая ставка 30 %.  
 
 ## Быстрый старт
 
-### Зависимости
+### 📦 Зависимости
+- **Go 1.23.10+**
+- **Node.js 20+ и npm 10+**
+- **Buf CLI** *(или protoc ≥ 3.21 + protoc-gen-go + protoc-gen-connect-go)*
+- (Опционально) `grpcurl`, `golangci-lint`, `make`, `docker`, `docker-compose`
+---
 
-- Go **1.23.10+**
-- Генерация Protobuf (любой путь):
-  - **buf** (рекомендуется) *или*
-  - `protoc ≥ 3.21` + `protoc-gen-go` + `protoc-gen-go-grpc`
-- (Опционально) `grpcurl`, `golangci-lint`, `make`
-
-### Установка и генерация
-
+### 🔧 Установка и генерация
 ```bash
-git clone <repo_url>
-cd <repo_dir>
+git clone https://github.com/kiselevos/new_tax
+cd new_tax
 
-go mod download
-make codegen           # buf generate → код в gen/grpc/api
+# Backend
+go mod tidy
+buf generate
+
+# Frontend
+cd web && npm ci
+
+# Если установлен make:
+make setup
+```
+---
+
+### Настройки окружения
+- Создайте файл .env в корне проекта (если отсутствует — применятся значения по умолчанию):
+```bash
+# === Backend ===
+# Порт для ConnectRPC (HTTP + gRPC-Web)
+BACKEND_PORT=8081
+
+# Уровень и формат логов
+LOG_LEVEL=info
+LOG_MODE=json
+
+# === Frontend ===
+# Порт для React dev-сервера
+FRONTEND_PORT=8080
 ```
 
-### Запуск
+## Запуск
+
+### 🐳 Через Docker
 
 ```bash
-export LOG_MODE=json            # или text
-export LOG_LEVEL=info           # debug|info|warn|error
-export PORT=:50051              # можно указать 50051 — приложение добавит ':'
+# собрать и запустить все контейнеры
+docker compose up --build
 
-make run                        # или: go run ./cmd/main.go
+# или через Makefile
+make docker-build
 ```
+### 💻 Без Docker (локально)
+
+```bash
+go run ./cmd/main.go &
+cd web && npm run dev
+
+# или через Makefile
+make run
+```
+> После запуска:
+  Frontend: http://localhost:8080
+  Backend (ConnectRPC): http://localhost:8081
 
 ### Проверка доступности
-
 ```bash
-grpcurl -plaintext localhost:50051 list
-grpcurl -plaintext localhost:50051 describe api.TaxService
-
-# Healthcheck
-grpcurl -plaintext -d '{}' localhost:50051 api.TaxService/Healthz
+curl -X POST http://localhost:8081/tax.TaxService/Healthz \
+  -H "Content-Type: application/json" \
+  -H "Connect-Protocol-Version: 1" \
+  -d '{}'
 ```
 
----
-
-## Примеры вызовов
-
-### Public (усечённый ответ)
-
+### Пример вызова
 ```bash
-grpcurl -plaintext -d '{
-  "gross_salary": 10000000,
-  "territorial_multiplier": 120,
-  "northern_coefficient": 150
-}' localhost:50051 api.TaxService/CalculatePublic
+curl -X POST http://localhost:8081/tax.TaxService/CalculatePrivate \
+  -H "Content-Type: application/json" \
+  -H "Connect-Protocol-Version: 1" \
+  -d '{
+    "gross_salary": 20000000,
+    "territorial_multiplier": 110,
+    "northern_coefficient": 130,
+    "start_date": "2025-06-01T00:00:00Z",
+    "has_tax_privilege": false,
+    "is_not_resident": false
+  }'
 ```
 
-### Private (полный ответ, со `start_date`)
+### gRPC API (из .proto)
+#### Сервис: tax.TaxService
+  - CalculatePublic(CalculatePublicRequest) → CalculatePublicResponse
+  - CalculatePrivate(CalculatePrivateRequest) → CalculatePrivateResponse
+  - Healthz(HealthzRequest) → HealthzResponse
+#### Основные поля:
+  - gross_salary — оклад в копейках
+  - territorial_multiplier, northern_coefficient — 100–200 %
+  - start_date — дата начала периода
+  - has_tax_privilege, is_not_resident — флаги статуса
 
+
+### Проектная структура
 ```bash
-grpcurl -plaintext -d '{
-  "gross_salary": 20000000,
-  "territorial_multiplier": 110,
-  "northern_coefficient": 130,
-  "start_date": "2025-06-01T00:00:00Z",
-  "has_tax_privilege": false,
-  "is_not_resident": false
-}' localhost:50051 api.TaxService/CalculatePrivate
+├── api/              # .proto контракты
+├── cmd/              # точка входа Go-приложения
+├── internal/         # бизнес-логика (calculate, server)
+├── pkg/              # общие пакеты (helpers, logx)
+├── gen/              # сгенерированный код (Connect/gRPC)
+├── web/              # фронтенд (React + Vite)
+├── Dockerfile        # backend dockerfile
+├── docker-compose.yaml
+└── Makefile
 ```
 
----
-
-## gRPC API (из протокола)
-
-**Сервис**: `TaxService`
-
-- `CalculatePublic(CalculatePublicRequest) → CalculatePublicResponse`
-- `CalculatePrivate(CalculatePrivateRequest) → CalculatePrivateResponse`
-- `Healthz(HealthzRequest) → HealthzResponse`
-
-**Ключевые поля запросов**:
-
-- `gross_salary` (uint64, копейки)  
-- `territorial_multiplier` (опц., 100..200)  
-- `northern_coefficient` (опц., 100..200)  
-- `start_date` (опц., только для Private)  
-- `has_tax_privilege`, `is_not_resident` (опц., только для Private)
-
-**Ответы включают**:
-
-- `monthly_details[]` (помесячные метрики)  
-- `annual_{tax,gross,net}_amount` (итоги на последний месяц)  
-- эхо-поля: `gross_salary`, `territorial_multiplier`, `northern_coefficient`
-
----
-
-## Проектная структура
-
-```text
-api/                # *.proto, buf.yaml (если используете buf)
-cmd/                # main.go (запуск сервера)
-gen/grpc/api/       # сгенерированный protobuf + gRPC код
-internal/
-  calculate/        # движок расчёта, адаптеры, валидация, тесты
-  server/           # gRPC сервер, регистрация, интерсепторы, graceful
-pkg/
-  logx/             # обёртка над slog + logger в context
-test/               # интеграционные тесты (опционально)
-Makefile            # сборка, генерация, тесты, линт
-Dockerfile          # образ приложения
-```
-
----
-
-## Тестирование
-
-Все тесты:
-
+### Осеновные команды Make
 ```bash
-make test-all
+make setup          # установка зависимостей (Go + frontend)
+make codegen        # генерация gRPC/Connect-кода
+make run            # запуск backend + frontend локально
+make docker-build   # сборка и запуск контейнеров
+make test-all       # запуск всех тестов
 ```
 
-Точечно:
-
-```bash
-go test ./internal/calculate -race -count=1
-go test ./internal/server -race -count=1
-```
-
-Интеграционный smoke-тест Healthz (сервер на `:0` + RPC):
-
-```bash
-go test -run Test_Server_Healthz ./internal/server
-```
-
----
-
-## Логирование
-
-- `log/slog` через `pkg/logx`:
-  - `logx.New()` — инициализация (формат/уровень по env)
-  - `logx.Into(ctx, l)` / `logx.From(ctx)` — логгер в контексте
-- Интерсепторы:
-  - `UnaryLogger` — метод, request id, peer, код, длительность
-  - `UnaryRecovery` — ловит паники, логирует стек, возвращает `codes.Internal`
-
----
-
-## Makefile (основные цели)
-
-```bash
-make codegen      # генерация gRPC-кода (buf)
-make run          # запуск сервера
-make build        # сборка бинаря bin/tax
-make test-all     # все тесты
-make tidy         # go mod tidy + проверка чистоты
-make lint-all     # go vet + golangci-lint
-make docker-build # docker compose up --build
-make docker-up    # docker compose up -d
-make docker-down  # docker compose down
-```
-
----
-
-## Contributing
-
-Смотри **[CONTRIBUTING.md](./CONTRIBUTING.md)** — пинованные версии инструментов, генерация кода, команды для линтера/тестов и политика по PR.
-
----

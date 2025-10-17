@@ -2,53 +2,41 @@ package main
 
 import (
 	"context"
-	"errors"
+	"log/slog"
+	"net/http"
 	"new_tax/internal/server"
 	"new_tax/pkg/helpers"
-	"new_tax/pkg/logx"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"google.golang.org/grpc"
 )
 
 func main() {
+	logger := slog.Default()
 
-	logger := logx.New()
-	addr := helpers.AddrChecker(os.Getenv("PORT"))
+	srv := server.New(helpers.GetGRPCWebPort(), logger)
 
-	srv, err := server.New(addr, logger)
-	if err != nil {
-		logger.Error("init", "err", err)
-		os.Exit(1)
-	}
-
-	logger.Info("listening", "addr", addr)
-
-	grpcErrCh := make(chan error, 1)
 	go func() {
-		grpcErrCh <- srv.Serve()
+		logger.Info("Grps web server started")
+		if err := srv.Serve(); err != nil && err != http.ErrServerClosed {
+			logger.Error("HTTP server failed", "error", err)
+			os.Exit(1)
+		}
 	}()
 
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
 
-	// Ловим сигналы для gracefull shoutdown
-	select {
-	case sig := <-sigCh:
-		logger.Info("signal received, shutting down", "signal", sig.String())
-	case err := <-grpcErrCh:
-		if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-			logger.Error("gRPC serve failed", "error", err)
-		} else {
-			logger.Info("gRPC server stopped")
-		}
-	}
+	logger.Info("Shutting down server gracefully...")
 
-	// Делаем graceful с таймаутом
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	server.ShutdownGRPCServer(ctx, srv.Grpc)
+
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Error("HTTP server shutdown failed", "error", err)
+	} else {
+		logger.Info("Server stopped gracefully")
+	}
 }

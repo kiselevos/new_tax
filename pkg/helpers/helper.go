@@ -1,11 +1,11 @@
 package helpers
 
-// AddrChecker хэлпер для заполнения адреса
-func AddrChecker(addr string) string {
-	if addr == "" {
-		addr = ":50051"
-	} else if addr[0] != ':' { // если пришло "50051"
-		addr = ":" + addr
+import "os"
+
+// GetGRPCWebPort хэлпер для заполнения адреса по дефолту
+func GetGRPCWebPort() string {
+	if port := os.Getenv("BACKEND_PORT"); port != "" {
+		return ":" + port
 	}
-	return addr
+	return ":8081"
 }

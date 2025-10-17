@@ -1,5 +1,38 @@
 services:
-  tax:
-    build: .
+  backend:
+    container_name: tax-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     ports:
-      - "50051:50051" # gRPC
+      - "${BACKEND_GRPC_WEB_PORT:-8081}:${BACKEND_GRPC_WEB_PORT:-8081}"
+    environment:
+      - PORT=${BACKEND_GRPC_WEB_PORT:-8081}
+    networks:
+      - taxnet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${BACKEND_GRPC_WEB_PORT:-8081}/tax.TaxService/Healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    container_name: tax-frontend
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - backend
+    networks:
+      - taxnet
+
+networks:
+  taxnet:
+    driver: bridge

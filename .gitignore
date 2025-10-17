@@ -1,16 +1,77 @@
-# Go
+# === Go build artifacts ===
 bin/
+build/
 *.exe
-*.test
 *.out
+*.test
+*.log
+*.o
+*.a
+*.so
 
-# Protobuf
-*.pb.go
-*.pb.gw.go
+# === Go module cache ===
+*.modcache
+*.tmp
+*.cache
 
-# IDE
-.idea/
+# === IDE / OS ===
 .vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
 
-# env
-*.env
+# === Env / Config ===
+.env
+.env.*
+!.env.example
+
+# === Coverage / Reports ===
+coverage.out
+*.cov
+*.coverprofile
+*.prof
+*.pprof
+*.svg
+test-results/
+
+# === buf / protobuf ===
+/buf
+/gen
+/api/*.pb.go
+/api/*.pb.gw.go
+/api/*.pb.ts
+/api/*.swagger.json
+
+# === Docker ===
+docker-compose.override.yml
+*.pid
+*.tar
+*.img
+*.bak
+
+# === Web frontend ===
+**/node_modules/
+web/dist/
+web/.vite/
+web/.cache/
+web/.temp/
+web/.eslintcache
+web/.parcel-cache/
+web/.turbo/
+web/*.log
+web/coverage/
+web/src/gen/*
+web/*.tsbuildinfo
+web/tsconfig.tsbuildinfo
+web/yarn.lock
+
+# === Editor artifacts ===
+*.swp
+*.swo
+*.bak
+
+# === CI / Temp ===
+tmp/
+.cache/

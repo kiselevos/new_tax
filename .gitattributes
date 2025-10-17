@@ -1,0 +1,24 @@
+# === Line endings ===
+* text=auto eol=lf
+
+# === GitHub language classification ===
+*.go linguist-language=Go
+*.proto linguist-language=Protocol Buffer
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+*.js linguist-language=JavaScript
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+
+# === Binary files ===
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pb.go binary
+*.pb.ts binary
+*.pb.gw.go binary
+
+# === Ignore docs/tests in export ===
+docs/ export-ignore
+test-results/ export-ignore

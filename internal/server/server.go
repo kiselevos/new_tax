@@ -3,61 +3,70 @@ package server
 import (
 	"context"
 	"log/slog"
-	"net"
-	"new_tax/pkg/logx"
+	"net/http"
 
-	pb "new_tax/gen/grpc/api"
+	taxconnect "new_tax/gen/grpc/api/taxconnect"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
+	"connectrpc.com/grpcreflect"
 )
 
+// Server — структура HTTP сервера
 type Server struct {
-	Grpc *grpc.Server
-	Lis  net.Listener
+	httpServer *http.Server
 }
 
-func New(addr string, logger *slog.Logger) (*Server, error) {
+// New создаёт новый HTTP сервер для ConnectRPC
+func New(addr string, logger *slog.Logger) *Server {
+	mux := http.NewServeMux()
 
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		return nil, err
+	// ✅ Регистрируем сервис Connect
+	service := &taxServiceServer{}
+	path, handler := taxconnect.NewTaxServiceHandler(service)
+	mux.Handle(path, handler)
+
+	// ✅ Включаем рефлексию (для дебага и buf curl)
+	reflector := grpcreflect.NewStaticReflector("tax.TaxService")
+	mux.Handle(grpcreflect.NewHandlerV1(reflector))
+	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+
+	// ✅ Оборачиваем в middleware Connect (CORS и logging можно добавить здесь)
+	handlerWithCORS := withCORS(mux)
+
+	s := &http.Server{
+		Addr:    addr,
+		Handler: handlerWithCORS,
 	}
-
-	s := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			UnaryRecovery(logger),
-			UnaryLogger(logger),
-		),
-	)
-
-	pb.RegisterTaxServiceServer(s, NewGRPCServer())
-	reflection.Register(s)
-
-	return &Server{Grpc: s, Lis: lis}, nil
+	return &Server{httpServer: s}
 }
 
+// Serve запускает сервер
 func (s *Server) Serve() error {
-	return s.Grpc.Serve(s.Lis)
+	slog.Info("🌐 Connect server listening on", "addr", s.httpServer.Addr)
+	return s.httpServer.ListenAndServe()
 }
 
-// ShutdownGRPCServer завершает работу gRPC-сервера с использованием GracefulStop.
-func ShutdownGRPCServer(ctx context.Context, srv *grpc.Server) {
-	log := logx.From(ctx)
-	log.Info("Shutting down gRPC server gracefully...")
+// Shutdown завершает сервер
+func (s *Server) Shutdown(ctx context.Context) error {
+	slog.Info("🧩 Connect server shutting down...")
+	return s.httpServer.Shutdown(ctx)
+}
 
-	done := make(chan struct{})
+// withCORS — разрешает фронтенду обращаться к backend
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Connect-Protocol-Version, Connect-Timeout-Ms")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 
-	go func() {
-		srv.GracefulStop()
-		close(done)
-	}()
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
 
-	select {
-	case <-done:
-		log.Info("gRPC server graceful shutdown complete")
-	case <-ctx.Done():
-		log.Warn("graceful shutdown timed out, forcing stop")
-		srv.Stop()
-	}
+// HttpHandler возвращает http.Handler для тестов
+func (s *Server) HttpHandler() http.Handler {
+	return s.httpServer.Handler
 }
