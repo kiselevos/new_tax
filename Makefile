@@ -27,7 +27,7 @@ tidy:
 .PHONY: build
 build: ## Compile Go binary
 	@echo "Building binary..."
-	@go build -o bin/tax ./cmd
+	@go build -buildvcs=false -o bin/tax ./cmd
 	@echo "✅ Binary built at bin/tax"
 
 .PHONY: vet
