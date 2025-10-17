@@ -12,14 +12,39 @@ jobs:
     container:
       image: ghcr.io/kiselevos/tax-ci:v1.5.0
     steps:
-      - uses: actions/checkout@v4
-      - run: make codegen
-      - run: make ci-backend
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: Generate gRPC code
+        run: make codegen
+
+      - name: Run backend CI checks
+        run: make ci-backend
+
 
   frontend:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kiselevos/tax-ci:v1.5.0
     steps:
-      - uses: actions/checkout@v4
-      - run: make ci-frontend
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('web/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-npm-
+
+      - name: Run frontend CI
+        run: make ci-frontend
