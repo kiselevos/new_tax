@@ -17,8 +17,12 @@ run-back: ## Run application backend
 .PHONY: tidy
 tidy:
 	@go mod tidy
-	@git diff --no-index --exit-code go.mod go.sum >/dev/null 2>&1 || \
-	(echo "::error::go.mod or go.sum is out of sync" && exit 1)
+	@if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
+	  git diff --exit-code go.mod go.sum || \
+	  (echo "::error::go.mod or go.sum is out of sync" && exit 1); \
+	else \
+	  echo "⚠️  Skipping git diff — no .git directory"; \
+	fi
 
 .PHONY: build
 build: ## Compile Go binary
