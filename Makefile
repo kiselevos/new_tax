@@ -51,7 +51,7 @@ check-fmt: ## Check formatting (CI)
 	@gofmt -l . | grep -q . && (echo "❌ Files need formatting (run 'make fmt')"; exit 1) || true
 
 .PHONY: ci-backend
-ci-backend: tidy check-fmt lint-all test-backend build ## Run all backend CI checks
+ci-backend: tidy check-fmt lint-back test-backend build ## Run all backend CI checks
 
 # --- Frontend commands ----
 
