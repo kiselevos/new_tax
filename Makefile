@@ -15,9 +15,10 @@ run-back: ## Run application backend
 	@go run ./cmd/main.go
 
 .PHONY: tidy
-tidy: ## Check go.mod/go.sum
+tidy:
 	@go mod tidy
-	@git diff --exit-code || (echo "::error::go.mod or go.sum is out of sync" && exit 1)
+	@git diff --no-index --exit-code go.mod go.sum >/dev/null 2>&1 || \
+	(echo "::error::go.mod or go.sum is out of sync" && exit 1)
 
 .PHONY: build
 build: ## Compile Go binary
