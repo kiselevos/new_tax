@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"new_tax/internal/server"
+	"new_tax/pkg/helpers"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,10 +15,10 @@ import (
 func main() {
 	logger := slog.Default()
 
-	srv := server.New(":8081", logger)
+	srv := server.New(helpers.GetGRPCWebPort(), logger)
 
 	go func() {
-		logger.Info("Starting server on :8081")
+		logger.Info("Grps web server started")
 		if err := srv.Serve(); err != nil && err != http.ErrServerClosed {
 			logger.Error("HTTP server failed", "error", err)
 			os.Exit(1)
