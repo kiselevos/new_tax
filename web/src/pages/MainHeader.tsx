@@ -1,11 +1,6 @@
 import { safeConvertToNumber } from "../utils";
+import type { MainHeaderProps } from "./types/tax.types";
 import "./MainHeader.css";
-
-interface MainHeaderProps {
-  result: any;
-  formData: any;
-  currentYear: number;
-}
 
 export default function MainHeader({ result, formData, currentYear }: MainHeaderProps) {
   return (
@@ -36,7 +31,7 @@ export default function MainHeader({ result, formData, currentYear }: MainHeader
         </div>
         <div className="field-right">
           <span className="field-value field-value-bold">
-            {safeConvertToNumber(result.grossSalary ?? result.gross_salary).toLocaleString(
+            {safeConvertToNumber(result.grossSalary ?? result.grossSalary).toLocaleString(
               "ru-RU",
               { minimumFractionDigits: 2 }
             )}{" "}

@@ -1,29 +1,6 @@
 import { safeConvertToNumber, safeGetDate } from "../utils";
+import type { MonthlyAccordionProps } from "./types/tax.types";
 import "./MonthlyAccordion.css";
-
-interface MonthlyPrivateTax {
-  month?: { seconds: bigint } | string;
-  monthlyGrossIncome?: bigint | string;
-  monthlyNetIncome?: bigint | string;
-  annualGrossIncome?: bigint | string;
-  annualNetIncome?: bigint | string;
-  taxRate?: bigint | string;
-  monthlyTaxAmount?: bigint | string;
-  annualTaxAmount?: bigint | string;
-  monthlyNorthGrossIncome?: bigint | string;
-  monthlyBaseGrossIncome?: bigint | string;
-  monthlyNorthTaxAmount?: bigint | string;
-  monthlyBaseTaxAmount?: bigint | string;
-  annualNorthGrossIncome?: bigint | string;
-  annualBaseGrossIncome?: bigint | string;
-  annualNorthTaxAmount?: bigint | string;
-  annualBaseTaxAmount?: bigint | string;
-}
-
-interface MonthlyAccordionProps {
-  monthlyDetails: MonthlyPrivateTax[];
-  result: any;
-}
 
 export default function MonthlyAccordion({ monthlyDetails }: MonthlyAccordionProps) {
   if (!monthlyDetails || monthlyDetails.length === 0) {

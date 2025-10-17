@@ -1,27 +1,16 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import MainHeader from "./MainHeader";
+import type { LocationState, ResultData } from "./types/tax.types";
 import MonthlyAccordion from "./MonthlyAccordion";
 import "../App.css";
-
-interface ResultsFormState {
-  grossSalary: string;
-  territorialMultiplier: string;
-  northernCoefficient: string;
-  startDate: string;
-  hasTaxPrivilege: boolean;
-  isNotResident: boolean;
-}
-
-interface LocationState {
-  result: any;
-  formData: ResultsFormState;
-}
 
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  let { result, formData } = (location.state as LocationState) || {};
+  const state = location.state as LocationState | undefined;
+  let result = state?.result;
+  const formData = state?.formData;
 
   console.group("DEBUG: Results.tsx data inspection");
   console.log("Raw location.state:", location.state);
@@ -29,7 +18,7 @@ export default function Results() {
   console.log("Result object:", result);
   if (result) {
     console.log("Result keys:", Object.keys(result));
-    console.log("monthlyDetails:", (result as any).monthlyDetails);
+    console.log("monthlyDetails:", result.monthlyDetails);
   }
   console.log("Form data:", formData);
   console.groupEnd();
@@ -39,14 +28,14 @@ export default function Results() {
   // Если result пришёл как строка — пробуем распарсить
   if (typeof result === "string") {
     try {
-      result = JSON.parse(result);
+      result = JSON.parse(result) as ResultData;
     } catch (e) {
       console.error("Ошибка парсинга result:", e);
     }
   }
 
   // Если данных нет
-  if (!result) {
+  if (!result || !formData) {
     return (
       <div className="container">
         <h2>Данные не найдены</h2>
@@ -58,8 +47,7 @@ export default function Results() {
     );
   }
 
-  // Получаем массив деталей
-  const monthlyDetails = (result as any).monthlyDetails || [];
+  const monthlyDetails = result.monthlyDetails || [];
 
   const handleNewCalculation = () => navigate("/");
 
