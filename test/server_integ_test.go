@@ -17,8 +17,8 @@ import (
 
 func Test_Server_Healthz(t *testing.T) {
 	logger := logx.New()
-	srv := server.New(":0", logger)             // твой ConnectRPC сервер
-	ts := httptest.NewServer(srv.HttpHandler()) // создаём тестовый HTTP сервер
+	srv := server.New(":0", logger)
+	ts := httptest.NewServer(srv.HttpHandler())
 	defer ts.Close()
 
 	// Connect client
