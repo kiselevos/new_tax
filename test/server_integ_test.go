@@ -21,12 +21,7 @@ func Test_Server_Healthz(t *testing.T) {
 	ts := httptest.NewServer(srv.HttpHandler())
 	defer ts.Close()
 
-	// Connect client
-	client := taxconnect.NewTaxServiceClient(
-		http.DefaultClient,
-		ts.URL,
-		connect.WithGRPC(),
-	)
+	client := taxconnect.NewTaxServiceClient(http.DefaultClient, ts.URL)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
