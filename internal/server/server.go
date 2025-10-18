@@ -29,12 +29,12 @@ func New(addr string, logger *slog.Logger) *Server {
 	mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
-	// ✅ Оборачиваем в middleware Connect (CORS и logging можно добавить здесь)
 	handlerWithCORS := withCORS(mux)
+	handlerWithLogging := WithLogging(logger, handlerWithCORS)
 
 	s := &http.Server{
 		Addr:    addr,
-		Handler: handlerWithCORS,
+		Handler: handlerWithLogging,
 	}
 	return &Server{httpServer: s}
 }

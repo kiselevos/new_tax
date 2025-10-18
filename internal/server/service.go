@@ -27,7 +27,7 @@ func (s *taxServiceServer) Healthz(
 	ctx context.Context,
 	req *connect.Request[pb.HealthzRequest],
 ) (*connect.Response[pb.HealthzResponse], error) {
-	logx.From(ctx).Info("healthz ok")
+	logx.From(ctx).Debug("Health check passed")
 	return connect.NewResponse(&pb.HealthzResponse{Status: "ok"}), nil
 }
 
@@ -38,18 +38,19 @@ func (s *taxServiceServer) CalculatePrivate(
 ) (*connect.Response[pb.CalculatePrivateResponse], error) {
 
 	log := logx.From(ctx)
-	log.Info("📨 CalculatePrivate called", "req", req)
-
 	input := calculate.FromPrivateRequest(req.Msg)
+	log.Debug("Starting private tax calculation", "gross_salary", input.GrossSalary)
 
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		log.Info("invalid arguments", "err", err)
+		log.Warn("Validation failed", "err", err)
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
-		return nil, connect.NewError(connect.CodeInternal, errors.New("no months calculated"))
+		err := errors.New("no months calculated")
+		log.Error("Calculation failed", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	resp := &pb.CalculatePrivateResponse{
@@ -62,6 +63,11 @@ func (s *taxServiceServer) CalculatePrivate(
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
 
+	log.Info("Private tax calculated",
+		"annual_tax", resp.AnnualTaxAmount,
+		"months", len(months),
+	)
+
 	return connect.NewResponse(resp), nil
 }
 
@@ -72,18 +78,19 @@ func (s *taxServiceServer) CalculatePublic(
 ) (*connect.Response[pb.CalculatePublicResponse], error) {
 
 	log := logx.From(ctx)
-	log.Info("📨 CalculatePublic called", "req", req)
-
 	input := calculate.FromPublicRequest(req.Msg)
+	log.Debug("Starting public tax calculation", "gross_salary", input.GrossSalary)
 
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		log.Info("invalid arguments", "err", err)
+		log.Warn("Validation failed", "err", err)
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
-		return nil, connect.NewError(connect.CodeInternal, errors.New("no months calculated"))
+		err := errors.New("no months calculated")
+		log.Error("Calculation failed", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
 	resp := &pb.CalculatePublicResponse{
@@ -95,6 +102,11 @@ func (s *taxServiceServer) CalculatePublic(
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
+
+	log.Info("Public tax calculated",
+		"annual_tax", resp.AnnualTaxAmount,
+		"months", len(months),
+	)
 
 	return connect.NewResponse(resp), nil
 }

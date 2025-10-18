@@ -62,7 +62,6 @@ export interface MainHeaderProps {
   currentYear: number;
 }
 
-
 export interface MonthlyAccordionProps {
   monthlyDetails: MonthlyPrivateTax[];
   result: ResultData;

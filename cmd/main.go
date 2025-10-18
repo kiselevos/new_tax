@@ -18,7 +18,11 @@ func main() {
 	srv := server.New(helpers.GetGRPCWebPort(), logger)
 
 	go func() {
-		logger.Info("Grps web server started")
+		logger.Info("Server starting",
+			"addr", helpers.GetGRPCWebPort(),
+			"log_level", os.Getenv("LOG_LEVEL"),
+			"mode", os.Getenv("LOG_MODE"),
+		)
 		if err := srv.Serve(); err != nil && err != http.ErrServerClosed {
 			logger.Error("HTTP server failed", "error", err)
 			os.Exit(1)
