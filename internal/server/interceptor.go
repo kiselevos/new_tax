@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"new_tax/pkg/logx"
+	"runtime/debug"
 	"time"
 
 	"google.golang.org/grpc"
@@ -43,10 +44,19 @@ func UnaryLogger(base *slog.Logger) grpc.UnaryServerInterceptor {
 		dur := time.Since(start)
 
 		st := status.Convert(err)
-		logger.Info("grpc",
-			"code", st.Code().String(),
+
+		code := st.Code().String()
+		fields := []any{
+			"code", code,
 			"duration_ms", dur.Milliseconds(),
-		)
+		}
+
+		if err != nil {
+			logger.Error("grpc", append(fields, "error", st.Message())...)
+		} else {
+			logger.Info("grpc", fields...)
+		}
+
 		return resp, err
 	}
 }
@@ -55,7 +65,11 @@ func UnaryRecovery(base *slog.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		defer func() {
 			if r := recover(); r != nil {
-				logx.From(ctx).Error("panic recovered", "method", info.FullMethod, "recover", r)
+				logx.From(ctx).Error("panic recovered",
+					"method", info.FullMethod,
+					"recover", r,
+					"stack", string(debug.Stack()),
+				)
 			}
 		}()
 		return handler(ctx, req)
