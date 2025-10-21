@@ -1,14 +1,60 @@
+# Version variables
+BUF_VERSION := 1.38.0
+PROTOC_GO_VERSION := v1.34.2
+PROTOC_CONNECT_GO_VERSION := v1.16.0
+PROTOC_ES_VERSION := 1.10.1
+PROTOC_CONNECT_ES_VERSION := 1.7.0
+PROTOBUF_JS_VERSION := 1.10.1
+CONNECT_VERSION := 1.7.0
+CONNECT_WEB_VERSION := 1.7.0
+
 default: help
 #.PHONY: help
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-	
+
+
+.PHONY: setup
+setup: setup-buf setup-go-tools setup-node-deps ## Install all development tools locally
+	@echo "🎉 All tools installed! Run 'make codegen' to generate code."
+
+.PHONY: setup-buf
+setup-buf: ## Install Buf locally
+	@echo "📦 Installing Buf v$(BUF_VERSION)..."
+	@cd web && npm install --save-dev @bufbuild/buf@$(BUF_VERSION)
+	@echo "✅ Buf installed"
+
+.PHONY: setup-go-tools
+setup-go-tools: ## Install Go tools locally
+	@echo "🔧 Installing Go plugins..."
+	@go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GO_VERSION)
+	@go install connectrpc.com/connect/cmd/protoc-gen-connect-go@$(PROTOC_CONNECT_GO_VERSION)
+	@echo "✅ Go plugins installed"
+
+.PHONY: setup-node-deps
+setup-node-deps: ## Install Node.js dependencies
+	@echo "📦 Installing Node.js dependencies..."
+	@cd web && npm install
+	@echo "✅ Node.js dependencies installed"
+
+
 # --- Backend commands ---
 .PHONY: codegen
-codegen: ## Generate gRPC code via Buf
-	@echo "Generating gRPC code using Buf"
-	@buf generate
-	@echo "✅ gRPC code generated in gen/grpc/api"
+codegen: codegen-backend codegen-frontend ## Generate all GPRC code
+
+.PHONY: codegen-backend
+codegen-backend: ## Generate only backend Go code
+	@echo "🔨 Generating backend Go code..."
+	@mkdir -p gen/grpc/api
+	@buf generate --template buf.gen.backend.local.yaml ./api
+	@echo "✅ Backend code generated in gen/grpc/api"
+
+.PHONY: codegen-frontend
+codegen-frontend: ## Generate only frontend TypeScript code
+	@echo "🔨 Generating frontend TypeScript code..."
+	@mkdir -p web/src/gen/api
+	@cd web && npx buf generate --template buf.gen.frontend.local.yaml ./api
+	@echo "✅ Frontend code generated in web/src/gen/api"
 
 .PHONY: run-back
 run-back: ## Run application backend
@@ -108,14 +154,6 @@ run:
 	@echo "🚀 Starting backend and frontend..."
 	@go run ./cmd/main.go & \
 	cd web && npm run dev
-
-.PHONY: setup
-setup: ## Install all dependencies (Go + Frontend)
-	@echo "Setting up full environment..."
-	@make tidy
-	@make codegen
-	@make frontend-install
-	@echo "✅ Environment ready!"
 
 .PHONY: lint-all
 lint-all: ## Run all linters

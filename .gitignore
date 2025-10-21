@@ -53,6 +53,7 @@ docker-compose.override.yml
 
 # === Web frontend ===
 **/node_modules/
+web/gen
 web/dist/
 web/.vite/
 web/.cache/
