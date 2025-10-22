@@ -2,9 +2,10 @@ package server
 
 import (
 	"context"
-	pb "new_tax/gen/grpc/api"
-	"new_tax/internal/calculate"
-	"new_tax/pkg/logx"
+
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/internal/calculate"
+	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

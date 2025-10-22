@@ -3,7 +3,7 @@ package calculate
 import (
 	"time"
 
-	pb "new_tax/gen/grpc/api"
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 )
 
 // CalculateInput содержит входные данные для расчёта налога.

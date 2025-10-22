@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"errors"
-	"new_tax/internal/server"
-	"new_tax/pkg/helpers"
-	"new_tax/pkg/logx"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/kiselevos/new_tax/internal/server"
+	"github.com/kiselevos/new_tax/pkg/helpers"
+	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc"
 )

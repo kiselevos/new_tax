@@ -5,8 +5,9 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"log/slog"
-	"new_tax/pkg/logx"
 	"time"
+
+	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

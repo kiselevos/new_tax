@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	pb "new_tax/gen/grpc/api"
-	"new_tax/internal/server"
-	"new_tax/pkg/logx"
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/internal/server"
+	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
