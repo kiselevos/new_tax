@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package tax;
+
+option go_package = "new_tax/gen/grpc;grpc";
+
+import "google/protobuf/timestamp.proto";
+
+// Запрос от гостя
+message CalculatePublicRequest {
+  uint64 gross_salary = 1; // Оклад указанный в договоре
+  optional uint64 territorial_multiplier = 2; // Территориальный коэффициент
+  optional uint64 northern_coefficient = 3; // Северная надбавка
+}
+
+// Запрос зарегистрированного
+message CalculatePrivateRequest {
+  uint64 gross_salary = 1; // Оклад указанный в договоре
+  optional uint64 territorial_multiplier = 2; // Территориальный коэффициент
+  optional uint64 northern_coefficient = 3; // Северная надбавка
+  optional google.protobuf.Timestamp start_date = 4; // Дата начала расчета
+  optional bool has_tax_privilege = 5; // Льготы для силовых структур
+  optional bool is_not_resident = 6; // Статус налогового нерезидента
+}
+
+// Ответ для авторизованных пользователей (подробный)
+message CalculatePrivateResponse {
+  repeated MonthlyPrivateTax monthly_details = 1; // Помесячная детализация
+
+  uint64 annual_tax_amount = 2; // Уплаченный налог с начала выбранного периода 
+  uint64 annual_gross_income = 3; // Гросс доход с начала указанного периода 
+  uint64 annual_net_income = 4; // Чистый доход с начала указанного периода 
+
+  uint64 gross_salary = 5; // Указаный оклад в запросе
+  optional uint64 territorial_multiplier = 6; // Указаный в запросе территориальный коэффициент
+  optional uint64 northern_coefficient = 7; // Указанная в запросе северная надбавка
+}
+
+// Ответ для гостей (усечённый)
+message CalculatePublicResponse {
+  repeated MonthlyPublicTax monthly_details = 1; // Помесячная детализация
+
+  uint64 annual_tax_amount = 2; // Уплаченный налог с начала выбранного периода 
+  uint64 annual_gross_income = 3; // Гросс доход с начала указанного периода 
+  uint64 annual_net_income = 4; // Чистый доход с начала указанного периода 
+
+  uint64 gross_salary = 5; // Указаный оклад в запросе
+  optional uint64 territorial_multiplier = 6; // Указаный в запросе территориальный коэффициент
+  optional uint64 northern_coefficient = 7; // Указанная в запросе северная надбавка
+}
+
+// Полный расчёт на месяц для авторизованного пользователя
+message MonthlyPrivateTax {
+  google.protobuf.Timestamp month = 1; // Месяц
+  uint64 monthly_gross_income = 2; // Гросс доход за месяц
+  uint64 monthly_net_income = 3; // Чистый доход за месяц
+  uint64 annual_gross_income = 4; // Гросс доход с начала указанного периода
+  uint64 annual_net_income = 5; // Чистый доход за год с начала указанного периода
+  uint64 tax_rate = 6; // Процент налога на данный момент
+  uint64 monthly_tax_amount = 7; // Уплаченный налог в этом месяце
+  uint64 annual_tax_amount = 8; // Уплаченный налог с начала года
+
+  uint64 monthly_north_gross_income = 9; // Гросс доход северной надбавки
+  uint64 monthly_base_gross_income = 10; // Гросс доход оклад + территориальный коэффициент
+
+  uint64 monthly_north_tax_amount = 11; // Месячный налог с северной надбавки
+  uint64 monthly_base_tax_amount = 12; // Месячный налог с оклада + территориального коэффициента
+
+  uint64 annual_north_gross_income = 13; // Доход с начала года северной надбавки
+  uint64 annual_base_gross_income = 14; // Доход с начала года оклад + территориальный коэффициент
+
+  uint64 annual_north_tax_amount = 15; // Налог с начала года с северной надбавки
+  uint64 annual_base_tax_amount = 16; // Налог с начала года с оклада + территориального коэффициента
+}
+
+// Упрощённый расчёт на месяц для гостей
+message MonthlyPublicTax {
+  google.protobuf.Timestamp month = 1; // Месяц
+  uint64 monthly_gross_income = 2; // Гросс доход за месяц
+  uint64 monthly_net_income = 3; // Чистый доход за месяц
+  uint64 monthly_tax_amount = 4; // Уплаченный налог в этом месяце
+  uint64 annual_gross_income = 5; // Гросс доход с начала указанного периода
+  uint64 annual_net_income = 6; // Чистый доход за год с начала указанного периода
+  uint64 annual_tax_amount = 7; // Уплаченный налог с начала года
+}
+
+message HealthzRequest {}
+
+message HealthzResponse {
+  string status = 1;
+}
+
+// gRPC сервис с двумя методами
+service TaxService {
+  rpc CalculatePrivate (CalculatePrivateRequest) returns (CalculatePrivateResponse);
+  rpc CalculatePublic  (CalculatePublicRequest) returns (CalculatePublicResponse);
+  rpc Healthz (HealthzRequest) returns (HealthzResponse);
+}
