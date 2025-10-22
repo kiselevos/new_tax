@@ -4,9 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"net"
-	"new_tax/pkg/logx"
 
-	pb "new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/pkg/logx"
+
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
