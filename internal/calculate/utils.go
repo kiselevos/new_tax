@@ -16,7 +16,7 @@ func ValidateCalculateInput(input CalculateInput) error {
 	}
 
 	if !validateCoefficient(input.TerritorialMultiplier) {
-		return fmt.Errorf("territorial_multiplier must be between 100 and 200 with step 10")
+		return fmt.Errorf("territorial_multiplier must be between 100 and 200 with step 5")
 	}
 
 	if !validateCoefficient(input.NorthernCoefficient) {
@@ -28,7 +28,7 @@ func ValidateCalculateInput(input CalculateInput) error {
 
 // validateCoefficient проверяет, что коэффициент от 100 до 200 с шагом 10.
 func validateCoefficient(coeff uint64) bool {
-	return coeff >= 100 && coeff <= 200 && (coeff-100)%10 == 0
+	return coeff >= 100 && coeff <= 200 && (coeff-100)%5 == 0
 }
 
 // GetStartMonth возвращает номер месяца из переданной даты.
