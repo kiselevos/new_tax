@@ -18,7 +18,7 @@ import (
 func main() {
 
 	logger := logx.New()
-	addr := helpers.AddrChecker(os.Getenv("PORT"))
+	addr := helpers.AddrChecker(os.Getenv("BACKEND_PORT"))
 
 	srv, err := server.New(addr, logger)
 	if err != nil {
