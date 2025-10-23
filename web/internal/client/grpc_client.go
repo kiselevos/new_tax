@@ -9,7 +9,6 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-
 func NewTaxClient() (pb.TaxServiceClient, *grpc.ClientConn, error) {
 	addr := os.Getenv("BACKEND_ADDR")
 	if addr == "" {
