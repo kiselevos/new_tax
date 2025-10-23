@@ -7,6 +7,3 @@ bin/
 # IDE
 .idea/
 .vscode/
-
-# env
-*.env
