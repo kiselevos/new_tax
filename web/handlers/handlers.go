@@ -64,8 +64,9 @@ func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 
 // Calculate — обработка формы и запрос к gRPC-бэкенду.
 func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "failed to parse form", http.StatusBadRequest)
+	req, err := ParseFormToRequest(r)
+	if err != nil {
+		http.Error(w, "invalid input", http.StatusBadRequest)
 		return
 	}
 
@@ -76,23 +77,17 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	req := &pb.CalculatePrivateRequest{
-		GrossSalary: parseUint(r.FormValue("grossSalary")),
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	log.Println("➡️ Отправка запроса на backend...")
+	log.Println("→ sending request to backend")
 
 	res, err := clientGRPC.CalculatePrivate(ctx, req)
 	if err != nil {
-		log.Printf("❌ Ошибка backend: %v", err)
+		log.Printf("backend error: %v", err)
 		http.Error(w, "backend error", http.StatusInternalServerError)
 		return
 	}
-
-	log.Printf("✔ Ответ получен: %+v", res)
 
 	data := struct {
 		AnnualTaxAmount   uint64
@@ -112,10 +107,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		MonthlyDetails:    res.MonthlyDetails,
 	}
 
-	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {
-		log.Printf("❌ Ошибка рендеринга result: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	s.Tmpl.ExecuteTemplate(w, "result", data)
 }
 
 // HowItWorks — страница с объяснением логики расчёта.
