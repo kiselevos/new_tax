@@ -3,6 +3,7 @@ module github.com/kiselevos/new_tax
 go 1.23.10
 
 require (
+	connectrpc.com/connect v1.16.0
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/stretchr/testify v1.11.1
 	google.golang.org/grpc v1.67.1
