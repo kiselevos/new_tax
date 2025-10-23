@@ -26,7 +26,7 @@ func ValidateCalculateInput(input CalculateInput) error {
 	return nil
 }
 
-// validateCoefficient проверяет, что коэффициент от 100 до 200 с шагом 10.
+// validateCoefficient проверяет, что коэффициент от 100 до 200 с шагом 5.
 func validateCoefficient(coeff uint64) bool {
 	return coeff >= 100 && coeff <= 200 && (coeff-100)%5 == 0
 }
