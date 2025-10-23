@@ -1,0 +1,209 @@
+/* static/style.css */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    color: #2c3e50;
+    font-size: 2.5rem;
+    font-weight: 300;
+}
+
+main {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.field-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.field-left {
+    flex: 1;
+    min-width: 200px;
+}
+
+.field-right {
+    flex: 1;
+    min-width: 250px;
+}
+
+.field-left label {
+    font-weight: 500;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.under-title {
+    font-size: 0.875rem;
+    color: #666;
+    text-decoration: none;
+}
+
+.under-title:hover {
+    color: #3498db;
+}
+
+/* Стили для полей ввода */
+input[type="text"], select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Специальные стили для поля оклада */
+.salary-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.salary-field input {
+    padding-right: 2.5rem;
+}
+
+.ruble {
+    position: absolute;
+    right: 0.75rem;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Стили для даты */
+.date-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.date-field span {
+    color: #666;
+    font-weight: 500;
+}
+
+/* Стили для чекбоксов */
+.checkbox-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checkbox-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.checkbox-inline input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+/* Кнопка */
+button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 1rem;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+/* Блок с примечанием */
+.calculator-note {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+    margin-top: 2rem;
+}
+
+.calculator-note p {
+    margin-bottom: 0.5rem;
+    color: #666;
+}
+
+.calculator-link {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.calculator-link:hover {
+    text-decoration: underline;
+}
+
+/* Футер */
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .field-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .field-left, .field-right {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    body {
+        padding: 10px;
+    }
+    
+    main {
+        padding: 1rem;
+    }
+}

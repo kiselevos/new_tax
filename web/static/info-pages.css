@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Info Pages Styles — общие стили для страниц справочной информации
+   Используется в шаблонах how_it_works.tmpl, regional_info.tmpl, special_tax_modes.tmpl
+   ========================================================================== */
+
+.info-page {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, sans-serif;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Заголовки */
+.info-page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  color: #222;
+}
+
+.info-page-subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  text-align: center;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Карточки */
+.info-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.info-card-title {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.info-card-text {
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+/* Списки */
+.info-bullet-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.info-link-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.info-link {
+  display: flex;
+  align-items: center;
+  color: #007bff;
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.info-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+/* Источники */
+.info-source {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Примеры */
+.info-example {
+  background: #f8f9fa;
+  border: 1px dashed #cdd0d5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+/* Примечание */
+.info-note {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  color: #856404;
+}
+
+/* Кнопки */
+.info-button-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.info-button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.info-button:hover {
+  background: #0056b3;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .info-page {
+    margin: 1rem auto;
+    padding: 0 0.75rem;
+  }
+
+  .info-page-title {
+    font-size: 1.75rem;
+  }
+
+  .info-page-subtitle {
+    font-size: 1rem;
+  }
+
+  .info-card {
+    padding: 1.25rem;
+  }
+
+  .info-card-title {
+    font-size: 1.25rem;
+  }
+}

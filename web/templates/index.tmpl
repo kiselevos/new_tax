@@ -1,0 +1,111 @@
+{{define "index"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Расчёт НДФЛ</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>Tax Calculator</h1>
+  </header>
+
+  <main>
+    <form action="/calculate" method="post" class="form">
+      <!-- оклад -->
+      <div class="field-row">
+        <div class="field-left">
+          <label for="grossSalary" title="Укажите ваш оклад, указанный в трудовом договоре. Это сумма до вычета налогов и без надбавок.">
+            Оклад:
+          </label>
+        </div>
+        <div class="field-right salary-field">
+          <input type="text" id="grossSalary" name="grossSalary" inputmode="decimal" required placeholder="Введите сумму">
+          <span class="ruble">₽</span>
+        </div>
+      </div>
+
+      <!-- территориальный коэффициент -->
+      <div class="field-row">
+        <div class="field-left">
+          <label for="territorialMultiplier" title="Устанавливается в зависимости от региона, где вы работаете. Подробнее →">
+            Территориальный коэффициент:
+          </label>
+          <a href="/regional-info" class="field-link under-title">Подробнее →</a>
+        </div>
+        <div class="field-right">
+          <select id="territorialMultiplier" name="territorialMultiplier" class="field-select">
+            <option value=""> --без коэффициента-- </option>
+            {{range $i := seq 1.10 2.00 0.05}}
+            <option value="{{printf "%.2f" $i}}">{{printf "%.2f" $i}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <!-- северная надбавка -->
+      <div class="field-row">
+        <div class="field-left">
+          <label for="northernCoefficient" title="Северная надбавка зависит от региона и стажа работы. Подробнее →">
+            Северная надбавка:
+          </label>
+          <a href="/regional-info" class="field-link under-title">Подробнее →</a>
+        </div>
+        <div class="field-right">
+          <select id="northernCoefficient" name="northernCoefficient" class="field-select">
+            <option value=""> --без надбавки-- </option>
+            {{range $i := until 10}}
+            <option value="{{mul (add $i 1) 10}}">{{mul (add $i 1) 10}}%</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
+
+      <!-- дата начала расчёта -->
+      <div class="field-row">
+        <div class="field-left">
+          <label title="На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.">Дата начала расчёта:</label>
+        </div>
+        <div class="field-right date-field">
+          <span>01</span>
+          <select name="startDate">
+            {{range .Months}}
+            <option value="{{.Value}}" {{if eq .Value "01"}}selected{{end}}>{{.Label}}</option>
+            {{end}}
+          </select>
+          <span>{{.CurrentYear}}</span>
+        </div>
+      </div>
+
+      <!-- чекбоксы -->
+      <div class="field-row">
+        <div class="field-left">
+          <label title="Укажите льготы или ограничения, если они есть. Они повлияют на итоговый расчёт. Подробнее →">Параметры:</label>
+          <a href="/special-tax-modes" class="field-link under-title">Подробнее →</a>
+        </div>
+        <div class="field-right checkbox-column">
+          <label class="checkbox-inline">
+            <input type="checkbox" name="hasTaxPrivilege"> <span>Льготы для силовых структур</span>
+          </label>
+          <label class="checkbox-inline">
+            <input type="checkbox" name="isNotResident"> <span>Налоговый нерезидент</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit">Рассчитать</button>
+
+      <div class="calculator-note">
+        <p>🔍 Все расчёты выполняются по открытым формулам и не сохраняются на сервере. Это инструмент для справочных целей, чтобы вы могли оценить свой доход «на руки».</p>
+        <a href="/how-it-works" class="calculator-link">подробнее о работе калькулятора →</a>
+      </div>
+    </form>
+  </main>
+
+  <footer>
+    <small>© {{.CurrentYear}} TaxCalc</small>
+  </footer>
+</body>
+</html>
+{{end}}
