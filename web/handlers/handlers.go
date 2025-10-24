@@ -17,12 +17,6 @@ type Server struct {
 	Tmpl *template.Template
 }
 
-// Month — структура для списка месяцев в форме.
-type Month struct {
-	Value string
-	Label string
-}
-
 // loggingMiddleware — базовое логирование всех запросов.
 func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -42,23 +36,12 @@ func (s *Server) Routes() {
 	http.HandleFunc("/special-tax-modes", loggingMiddleware(s.SpecialTaxModes))
 }
 
-// Index — стартовая страница с формой расчёта.
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{
-		"CurrentYear": time.Now().Year(),
-		"Months": []Month{
-			{Value: "01", Label: "Январь"}, {Value: "02", Label: "Февраль"},
-			{Value: "03", Label: "Март"}, {Value: "04", Label: "Апрель"},
-			{Value: "05", Label: "Май"}, {Value: "06", Label: "Июнь"},
-			{Value: "07", Label: "Июль"}, {Value: "08", Label: "Август"},
-			{Value: "09", Label: "Сентябрь"}, {Value: "10", Label: "Октябрь"},
-			{Value: "11", Label: "Ноябрь"}, {Value: "12", Label: "Декабрь"},
-		},
-	}
-
+	data := PrepareIndexData()
 	if err := s.Tmpl.ExecuteTemplate(w, "index", data); err != nil {
 		log.Printf("❌ Ошибка рендеринга index: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 

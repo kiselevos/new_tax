@@ -26,41 +26,41 @@
         </div>
       </div>
 
-      <!-- территориальный коэффициент -->
-      <div class="field-row">
-        <div class="field-left">
-          <label for="territorialMultiplier" title="Устанавливается в зависимости от региона, где вы работаете. Подробнее →">
-            Территориальный коэффициент:
-          </label>
-          <a href="/regional-info" class="field-link under-title">Подробнее →</a>
-        </div>
-        <div class="field-right">
-          <select id="territorialMultiplier" name="territorialMultiplier" class="field-select">
-            <option value=""> --без коэффициента-- </option>
-            {{range $i := seq 1.10 2.00 0.05}}
-            <option value="{{printf "%.2f" $i}}">{{printf "%.2f" $i}}</option>
-            {{end}}
-          </select>
-        </div>
-      </div>
+<!-- территориальный коэффициент -->
+<div class="field-row">
+  <div class="field-left">
+    <label for="territorialMultiplier" title="Устанавливается в зависимости от региона, где вы работаете. Подробнее →">
+      Территориальный коэффициент:
+    </label>
+    <a href="/regional-info" class="field-link under-title">Подробнее →</a>
+  </div>
+  <div class="field-right">
+    <select id="territorialMultiplier" name="territorialMultiplier" class="field-select">
+      <option value="100" selected> -- без коэффициента -- </option>
+      {{range .Territorial}}
+        <option value="{{.Value}}">{{.Label}}</option>
+      {{end}}
+    </select>
+  </div>
+</div>
 
-      <!-- северная надбавка -->
-      <div class="field-row">
-        <div class="field-left">
-          <label for="northernCoefficient" title="Северная надбавка зависит от региона и стажа работы. Подробнее →">
-            Северная надбавка:
-          </label>
-          <a href="/regional-info" class="field-link under-title">Подробнее →</a>
-        </div>
-        <div class="field-right">
-          <select id="northernCoefficient" name="northernCoefficient" class="field-select">
-            <option value=""> --без надбавки-- </option>
-            {{range $i := until 10}}
-            <option value="{{mul (add $i 1) 10}}">{{mul (add $i 1) 10}}%</option>
-            {{end}}
-          </select>
-        </div>
-      </div>
+<!-- северная надбавка -->
+<div class="field-row">
+  <div class="field-left">
+    <label for="northernCoefficient" title="Северная надбавка зависит от региона и стажа работы. Подробнее →">
+      Северная надбавка:
+    </label>
+    <a href="/regional-info" class="field-link under-title">Подробнее →</a>
+  </div>
+  <div class="field-right">
+    <select id="northernCoefficient" name="northernCoefficient" class="field-select">
+      <option value="100" selected> -- без надбавки -- </option>
+      {{range .Northern}}
+        <option value="{{.Value}}">{{.Label}}</option>
+      {{end}}
+    </select>
+  </div>
+</div>
 
       <!-- дата начала расчёта -->
       <div class="field-row">
