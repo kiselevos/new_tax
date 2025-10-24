@@ -4,12 +4,18 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/handlers"
 )
 
 func main() {
+
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatalf("Не найден или не читается web/.env: %v", err)
+	}
 
 	tmpls, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {
@@ -22,6 +28,5 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	log.Println("🌐 Web server running on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(os.Getenv("WEB_PORT"), nil))
 }
