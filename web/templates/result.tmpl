@@ -60,22 +60,22 @@
 <div class="summary-grid">
     <div class="summary-card">
         <div>Оклад</div>
-        <div class="summary-value">{{.GrossSalary}} ₽</div>
+        <div class="summary-value">{{fmtMoney .GrossSalary}}</div>
         <small>в месяц</small>
     </div>
     <div class="summary-card">
         <div>Годовой доход</div>
-        <div class="summary-value">{{.AnnualGrossIncome}} ₽</div>
+        <div class="summary-value">{{fmtMoney .AnnualGrossIncome}}</div>
         <small>за период</small>
     </div>
     <div class="summary-card">
         <div>Налог НДФЛ</div>
-        <div class="summary-value">{{.AnnualTaxAmount}} ₽</div>
+        <div class="summary-value">{{fmtMoney .AnnualTaxAmount}}</div>
         <small>всего уплачено</small>
     </div>
     <div class="summary-card">
         <div>Чистый доход</div>
-        <div class="summary-value">{{.AnnualNetIncome}} ₽</div>
+        <div class="summary-value">{{fmtMoney .AnnualNetIncome}}</div>
         <small>«на руки»</small>
     </div>
 </div>
@@ -88,16 +88,16 @@
     <div class="accordion-item {{if eq $i 0}}active{{end}}">
         <div class="accordion-header">
             <span><strong>{{$m.Month.AsTime.Format "January 2006"}}</strong></span>
-            <span>{{$m.MonthlyNetIncome}} ₽</span>
+            <span>{{$m.MonthlyNetIncome}}</span>
         </div>
         <div class="accordion-content">
             <div class="monthly-grid">
-                <div><strong>Доход:</strong><br>{{$m.MonthlyGrossIncome}} ₽</div>
-                <div><strong>Налог:</strong><br>{{$m.MonthlyTaxAmount}} ₽</div>
+                <div><strong>Доход:</strong><br>{{fmtMoney $m.MonthlyGrossIncome}}</div>
+                <div><strong>Налог:</strong><br>{{fmtMoney $m.MonthlyTaxAmount}}</div>
                 <div><strong>Ставка:</strong><br>{{$m.TaxRate}}%</div>
-                <div><strong>Чистый доход:</strong><br>{{$m.MonthlyNetIncome}} ₽</div>
-                <div><strong>Накопленный доход:</strong><br>{{$m.AnnualGrossIncome}} ₽</div>
-                <div><strong>Накопленный налог:</strong><br>{{$m.AnnualTaxAmount}} ₽</div>
+                <div><strong>Чистый доход:</strong><br>{{fmtMoney $m.MonthlyNetIncome}}</div>
+                <div><strong>Накопленный доход:</strong><br>{{fmtMoney $m.AnnualGrossIncome}}</div>
+                <div><strong>Накопленный налог:</strong><br>{{fmtMoney $m.AnnualTaxAmount}}</div>
             </div>
         </div>
     </div>

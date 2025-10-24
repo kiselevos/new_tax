@@ -1,34 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/kiselevos/new_tax/web/handlers"
 )
 
+func formatMoney(amount uint64) string {
+	rubles := float64(amount) / 100
+	s := fmt.Sprintf("%.2f", rubles)
+
+	parts := strings.Split(s, ".")
+	intPart := parts[0]
+	fracPart := parts[1]
+
+	// добавляем пробелы каждые 3 цифры
+	for i := len(intPart) - 3; i > 0; i -= 3 {
+		intPart = intPart[:i] + " " + intPart[i:] // тонкий пробел (U+202F)
+	}
+
+	return intPart + "," + fracPart + " ₽"
+}
+
 func main() {
 	funcs := template.FuncMap{
 
-		"seq": func(start, end, step float64) []float64 {
-			var result []float64
-			for v := start; v <= end+0.001; v += step {
-				result = append(result, v)
-			}
-			return result
-		},
-
-		"until": func(n int) []int {
-			arr := make([]int, n)
-			for i := range arr {
-				arr[i] = i
-			}
-			return arr
-		},
-
-		"add": func(a, b int) int { return a + b },
-		"mul": func(a, b int) int { return a * b },
+		"fmtMoney": formatMoney,
 	}
 
 	tmpls, err := template.New("").Funcs(funcs).ParseGlob("templates/*.tmpl")

@@ -3,8 +3,10 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
@@ -72,7 +74,13 @@ func PrepareIndexData() IndexData {
 func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	r.ParseForm()
 
-	grossSalary := parseUint(r.FormValue("grossSalary"))
+	rawSalary := strings.ReplaceAll(r.FormValue("grossSalary"), ",", ".") // заменяем запятую на точку
+	salaryFloat, err := strconv.ParseFloat(rawSalary, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid gross salary format")
+	}
+
+	grossSalary := uint64(math.Round(salaryFloat * 100))
 	monthStr := r.FormValue("startDate")
 	territorialStr := r.FormValue("territorialMultiplier")
 	northernStr := r.FormValue("northernCoefficient")
