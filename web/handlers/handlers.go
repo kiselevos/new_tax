@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
@@ -47,14 +48,41 @@ func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 
 // Calculate — обработка формы и запрос к gRPC-бэкенду.
 func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	log.Printf("🛠️  %s %s", r.Method, r.URL.Path)
+
+	log.Printf("📨 Headers: %v", r.Header)
+	log.Printf("📨 Method: %s", r.Method)
+	log.Printf("📨 Content-Type: %s", r.Header.Get("Content-Type"))
+
+	// Проверяем Content-Type
+	contentType := r.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "application/x-www-form-urlencoded") &&
+		!strings.Contains(contentType, "multipart/form-data") {
+		log.Printf("❌ Unexpected Content-Type: %s", contentType)
+	}
+
+	// ПАРСИМ ФОРМУ ПЕРВЫМ ДЕЛОМ
+	if err := r.ParseForm(); err != nil {
+		log.Printf("❌ ParseForm error: %v", err)
+		http.Error(w, "invalid form data", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("📥 Received form: %+v", r.Form)
+	log.Printf("📥 Received PostForm: %+v", r.PostForm)
+
+	// Теперь передаем распарсенную форму
 	req, err := ParseFormToRequest(r)
 	if err != nil {
-		http.Error(w, "invalid input", http.StatusBadRequest)
+		log.Printf("❌ Error parsing request: %v", err)
+		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	clientGRPC, conn, err := client.NewTaxClient()
 	if err != nil {
+		log.Printf("❌ Can't connect to gRPC backend: %v", err)
 		http.Error(w, "can't connect to backend", http.StatusInternalServerError)
 		return
 	}
@@ -67,7 +95,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 
 	res, err := clientGRPC.CalculatePrivate(ctx, req)
 	if err != nil {
-		log.Printf("backend error: %v", err)
+		log.Printf("❌ Backend error: %v", err)
 		http.Error(w, "backend error", http.StatusInternalServerError)
 		return
 	}
@@ -90,7 +118,13 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		MonthlyDetails:    res.MonthlyDetails,
 	}
 
-	s.Tmpl.ExecuteTemplate(w, "result", data)
+	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {
+		log.Printf("❌ Template error: %v", err)
+		http.Error(w, "template error", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("✅ Завершено за %v", time.Since(start))
 }
 
 // HowItWorks — страница с объяснением логики расчёта.

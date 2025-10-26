@@ -6,10 +6,11 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
     color: #333;
-    background-color: #f5f5f5;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
     padding: 20px;
 }
 
@@ -19,18 +20,20 @@ header {
 }
 
 header h1 {
-    color: #2c3e50;
+    color: white;
     font-size: 2.5rem;
     font-weight: 300;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 main {
-    max-width: 600px;
+    max-width: 800px; /* Увеличили ширину формы */
     margin: 0 auto;
     background: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    backdrop-filter: blur(10px);
 }
 
 .form {
@@ -42,32 +45,121 @@ main {
 .field-row {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid #eee;
+    gap: 2rem; /* Увеличили расстояние между колонками */
+    padding: 1.25rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.field-row:hover {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin: 0 -1rem;
 }
 
 .field-left {
     flex: 1;
-    min-width: 200px;
+    min-width: 280px; /* Увеличили минимальную ширину */
 }
 
 .field-right {
     flex: 1;
-    min-width: 250px;
+    min-width: 320px; /* Увеличили минимальную ширину */
 }
 
-.field-left label {
-    font-weight: 500;
+/* Новые стили для заголовков с подсказками */
+.field-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.field-header label {
+    font-weight: 600;
     color: #2c3e50;
-    display: block;
-    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Стили для подсказок слева от заголовка */
+.field-tooltip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+}
+
+.tooltip-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #3498db;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.tooltip-icon:hover {
+    background: #2980b9;
+    transform: scale(1.1);
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 300px;
+    background: #2c3e50;
+    color: white;
+    text-align: left;
+    border-radius: 8px;
+    padding: 12px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 10px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    font-weight: normal;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    pointer-events: none;
+}
+
+/* Стрелка тултипа */
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 15px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #2c3e50 transparent transparent transparent;
+}
+
+/* Показываем тултип при ховере на иконку ИЛИ на сам тултип */
+.field-tooltip:hover .tooltip-text,
+.tooltip-text:hover {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .under-title {
     font-size: 0.875rem;
     color: #666;
     text-decoration: none;
+    transition: color 0.2s ease;
+    display: block;
+    margin-top: 4px;
 }
 
 .under-title:hover {
@@ -77,16 +169,19 @@ main {
 /* Стили для полей ввода */
 input[type="text"], select {
     width: 100%;
-    padding: 0.75rem;
-    border: 2px solid #ddd;
-    border-radius: 4px;
+    padding: 0.875rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
     font-size: 1rem;
-    transition: border-color 0.3s;
+    transition: all 0.3s ease;
+    background: #fafbfc;
 }
 
 input[type="text"]:focus, select:focus {
     outline: none;
     border-color: #3498db;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 /* Специальные стили для поля оклада */
@@ -102,16 +197,17 @@ input[type="text"]:focus, select:focus {
 
 .ruble {
     position: absolute;
-    right: 0.75rem;
+    right: 0.875rem;
     color: #666;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1rem;
 }
 
 /* Стили для даты */
 .date-field {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
 }
 
 .date-field span {
@@ -119,79 +215,206 @@ input[type="text"]:focus, select:focus {
     font-weight: 500;
 }
 
+.date-field select {
+    min-width: 140px;
+}
+
 /* Стили для чекбоксов */
 .checkbox-column {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
 }
 
 .checkbox-inline {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.checkbox-inline:hover {
+    background: #f8f9fa;
 }
 
 .checkbox-inline input[type="checkbox"] {
     width: auto;
     margin: 0;
+    transform: scale(1.2);
+    accent-color: #3498db;
+}
+
+.checkbox-inline span {
+    font-weight: 500;
 }
 
 /* Кнопка */
 button {
-    background: #3498db;
+    background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
     border: none;
-    padding: 1rem 2rem;
+    padding: 1.125rem 2.5rem;
     font-size: 1.1rem;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
     margin-top: 1rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    width: 100%;
+    max-width: 300px;
+    align-self: center;
 }
 
 button:hover {
-    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
+button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 /* Блок с примечанием */
 .calculator-note {
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: 4px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 1.5rem;
+    border-radius: 12px;
     border-left: 4px solid #3498db;
     margin-top: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .calculator-note p {
-    margin-bottom: 0.5rem;
-    color: #666;
+    margin-bottom: 0.75rem;
+    color: #555;
+    line-height: 1.5;
 }
 
 .calculator-link {
     color: #3498db;
     text-decoration: none;
     font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
 .calculator-link:hover {
     text-decoration: underline;
+    color: #2980b9;
 }
 
 /* Футер */
 footer {
     text-align: center;
     margin-top: 2rem;
-    color: #666;
+    color: rgba(255,255,255,0.8);
     font-size: 0.875rem;
+}
+
+/* Стили для сообщений полей */
+.field-message {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.field-message.error {
+    color: #d32f2f;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    font-weight: 500;
+}
+
+.field-message.warning {
+    color: #f57c00;
+    background: #fff3e0;
+    border: 1px solid #ffe0b2;
+    font-weight: 500;
+}
+
+.field-message::before {
+    font-size: 16px;
+}
+
+.field-message.error::before {
+    content: "⚠️";
+}
+
+.field-message.warning::before {
+    content: "💡";
+}
+
+/* Анимация для сообщений */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.field-error {
+    border: 2px solid #d32f2f !important;
+    background: #fff5f5 !important;
+    animation: shake 0.3s ease;
+}
+
+.field-warning {
+    border: 2px solid #f57c00 !important;
+    background: #fffaf2 !important;
+}
+
+/* Placeholder стили */
+input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+/* Стили для селектов */
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 16px;
+    cursor: pointer;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.field-message.error, 
+.field-message.warning {
+    animation: fadeIn 0.3s ease;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
     .field-row {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 1rem;
     }
     
     .field-left, .field-right {
@@ -200,10 +423,32 @@ footer {
     }
     
     body {
-        padding: 10px;
+        padding: 15px;
     }
     
     main {
-        padding: 1rem;
+        padding: 1.5rem;
+        max-width: 100%;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .field-row:hover {
+        margin: 0;
+    }
+    
+    .tooltip-text {
+        width: 250px;
+        left: -50px;
+    }
+    
+    .tooltip-text::after {
+        left: 70px;
+    }
+    
+    .field-header {
+        flex-wrap: wrap;
     }
 }

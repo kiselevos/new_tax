@@ -5,7 +5,17 @@
   <meta charset="UTF-8">
   <title>Расчёт НДФЛ</title>
   <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/script.js" defer></script>
 </head>
+
+<script>
+window.APP_CONFIG = {
+    minSalary: {{.MinSalary}},
+    livingWage: {{.LivingWage}}
+};
+</script>
+<script src="/static/script.js" defer></script>
+
 <body>
   <header>
     <h1>Tax Calculator</h1>
@@ -16,9 +26,13 @@
       <!-- оклад -->
       <div class="field-row">
         <div class="field-left">
-          <label for="grossSalary" title="Укажите ваш оклад, указанный в трудовом договоре. Это сумма до вычета налогов и без надбавок.">
-            Оклад:
-          </label>
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">Укажите ваш оклад, указанный в трудовом договоре. Это сумма до вычета налогов и без надбавок.</div>
+            </div>
+            <label for="grossSalary">Оклад:</label>
+          </div>
         </div>
         <div class="field-right salary-field">
           <input type="text" id="grossSalary" name="grossSalary" inputmode="decimal" required placeholder="Введите сумму">
@@ -26,46 +40,60 @@
         </div>
       </div>
 
-<!-- территориальный коэффициент -->
-<div class="field-row">
-  <div class="field-left">
-    <label for="territorialMultiplier" title="Устанавливается в зависимости от региона, где вы работаете. Подробнее →">
-      Территориальный коэффициент:
-    </label>
-    <a href="/regional-info" class="field-link under-title">Подробнее →</a>
-  </div>
-  <div class="field-right">
-    <select id="territorialMultiplier" name="territorialMultiplier" class="field-select">
-      <option value="100" selected> -- без коэффициента -- </option>
-      {{range .Territorial}}
-        <option value="{{.Value}}">{{.Label}}</option>
-      {{end}}
-    </select>
-  </div>
-</div>
+      <!-- территориальный коэффициент -->
+      <div class="field-row">
+        <div class="field-left">
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">Устанавливается в зависимости от региона, где вы работаете. Например, для районов Крайнего Севера применяются повышающие коэффициенты.</div>
+            </div>
+            <label for="territorialMultiplier">Территориальный коэффициент:</label>
+          </div>
+          <a href="/regional-info" class="under-title">Подробнее →</a>
+        </div>
+        <div class="field-right">
+          <select id="territorialMultiplier" name="territorialMultiplier" class="field-select">
+            <option value="100" selected> -- без коэффициента -- </option>
+            {{range .Territorial}}
+              <option value="{{.Value}}">{{.Label}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
 
-<!-- северная надбавка -->
-<div class="field-row">
-  <div class="field-left">
-    <label for="northernCoefficient" title="Северная надбавка зависит от региона и стажа работы. Подробнее →">
-      Северная надбавка:
-    </label>
-    <a href="/regional-info" class="field-link under-title">Подробнее →</a>
-  </div>
-  <div class="field-right">
-    <select id="northernCoefficient" name="northernCoefficient" class="field-select">
-      <option value="100" selected> -- без надбавки -- </option>
-      {{range .Northern}}
-        <option value="{{.Value}}">{{.Label}}</option>
-      {{end}}
-    </select>
-  </div>
-</div>
+      <!-- северная надбавка -->
+      <div class="field-row">
+        <div class="field-left">
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">Северная надбавка зависит от региона и стажа работы. Начисляется постепенно с увеличением процента за каждый год работы.</div>
+            </div>
+            <label for="northernCoefficient">Северная надбавка:</label>
+          </div>
+          <a href="/regional-info" class="under-title">Подробнее →</a>
+        </div>
+        <div class="field-right">
+          <select id="northernCoefficient" name="northernCoefficient" class="field-select">
+            <option value="100" selected> -- без надбавки -- </option>
+            {{range .Northern}}
+              <option value="{{.Value}}">{{.Label}}</option>
+            {{end}}
+          </select>
+        </div>
+      </div>
 
       <!-- дата начала расчёта -->
       <div class="field-row">
         <div class="field-left">
-          <label title="На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.">Дата начала расчёта:</label>
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.</div>
+            </div>
+            <label>Дата начала расчёта:</label>
+          </div>
         </div>
         <div class="field-right date-field">
           <span>01</span>
@@ -81,8 +109,14 @@
       <!-- чекбоксы -->
       <div class="field-row">
         <div class="field-left">
-          <label title="Укажите льготы или ограничения, если они есть. Они повлияют на итоговый расчёт. Подробнее →">Параметры:</label>
-          <a href="/special-tax-modes" class="field-link under-title">Подробнее →</a>
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">Укажите льготы или ограничения, если они есть. Они повлияют на итоговый расчёт налогов.</div>
+            </div>
+            <label>Параметры:</label>
+          </div>
+          <a href="/special-tax-modes" class="under-title">Подробнее →</a>
         </div>
         <div class="field-right checkbox-column">
           <label class="checkbox-inline">
