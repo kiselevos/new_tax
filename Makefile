@@ -115,3 +115,12 @@ docker-down: ## Stop and remove docker containers
 .PHONY: local-CI
 local-CI: ## Run GitHub Actions locally via act
 	@act -P ubuntu-latest=catthehacker/ubuntu:act-22.04
+
+
+# ============================================================
+# 🔬 Work with frontend
+# ============================================================
+.PHONY: run-all
+run-all: ## Run application
+	@go run ./cmd/main.go & \
+	cd web && go run ./cmd/web.go 
