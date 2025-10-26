@@ -28,5 +28,7 @@ func main() {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
+	log.Printf("✅ WEB_PORT=%s | BACKEND_ADDR=%s", os.Getenv("WEB_PORT"), os.Getenv("BACKEND_ADDR"))
+
 	log.Fatal(http.ListenAndServe(os.Getenv("WEB_PORT"), nil))
 }

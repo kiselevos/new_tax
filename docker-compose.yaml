@@ -11,9 +11,11 @@ services:
 
   web:
     build:
-      context: . 
+      context: .
       dockerfile: ./web/Dockerfile
     container_name: tax-web
+    env_file:
+      - .env
     ports:
       - "${WEB_PORT:-8080}:8080"
     environment:

@@ -12,12 +12,9 @@ import (
 func NewTaxClient() (pb.TaxServiceClient, *grpc.ClientConn, error) {
 	addr := os.Getenv("BACKEND_ADDR")
 	if addr == "" {
-		if os.Getenv("IN_DOCKER") != "" {
-			addr = "backend:50051"
-		} else {
-			addr = "localhost:50051"
-		}
+		addr = "localhost:50051"
 	}
+
 	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
