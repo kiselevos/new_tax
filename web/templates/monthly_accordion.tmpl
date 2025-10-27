@@ -1,23 +1,132 @@
 {{define "monthly_accordion"}}
 <div class="accordion">
-    <h2>Помесячная детализация</h2>
-    {{range $i, $m := .MonthlyDetails}}
-    <div class="accordion-item {{if eq $i 0}}active{{end}}">
-        <div class="accordion-header">
-            <span><strong>{{russianMonth $m.Month}}</strong></span>
-            <span>{{fmtMoney $m.MonthlyNetIncome}}</span>
-        </div>
-        <div class="accordion-content">
-            <div class="monthly-grid">
-                <div><strong>Доход:</strong><br>{{fmtMoney $m.MonthlyGrossIncome}}</div>
-                <div><strong>Налог:</strong><br>{{fmtMoney $m.MonthlyTaxAmount}}</div>
-                <div><strong>Ставка:</strong><br>{{$m.TaxRate}}%</div>
-                <div><strong>Чистый доход:</strong><br>{{fmtMoney $m.MonthlyNetIncome}}</div>
-                <div><strong>Накопленный доход:</strong><br>{{fmtMoney $m.AnnualGrossIncome}}</div>
-                <div><strong>Накопленный налог:</strong><br>{{fmtMoney $m.AnnualTaxAmount}}</div>
-            </div>
-        </div>
+  <h2>Помесячная детализация</h2>
+  {{range $i, $m := .MonthlyDetails}}
+  <div class="accordion-item {{if eq $i 0}}active{{end}}">
+    <div class="accordion-header">
+      <div class="month-title">
+        <strong>{{russianMonth $m.Month}}</strong>
+      </div>
+      <div class="month-rate">
+        Ставка НДФЛ: <span class="tax-rate-value">{{$m.TaxRate}}%</span>
+      </div>
     </div>
-    {{end}}
+
+    <div class="accordion-content">
+      <!-- 💰 Расчёт за текущий месяц -->
+      <div class="calc-card">
+        <h3>📊 За текущий месяц</h3>
+        <div class="calc-summary">
+          {{if ne $m.MonthlyNorthGrossIncome 0}}
+          <!-- Детализация с северной надбавкой -->
+          <div class="breakdown-section">
+            <div class="breakdown-header">Детализация дохода:</div>
+            <div class="calc-row small breakdown">
+              <span class="label">Оклад</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.MonthlyBaseGrossIncome}}</span>
+            </div>
+            <div class="calc-row small breakdown">
+              <span class="label">Северная надбавка ({{$.NorthernCoeff | minus100}}%)</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.MonthlyNorthGrossIncome}}</span>
+            </div>
+          </div>
+          {{end}}
+
+          <div class="calc-row total">
+            <span class="label">Доход до налога</span>
+            <span class="dots"></span>
+            <span class="value">{{fmtMoney $m.MonthlyGrossIncome}}</span>
+          </div>
+
+          {{if ne $m.MonthlyNorthGrossIncome 0}}
+          <!-- Детализация налога с надбавкой -->
+          <div class="breakdown-section">
+            <div class="breakdown-header">Детализация налога:</div>
+            <div class="calc-row small breakdown minus">
+              <span class="label">НДФЛ с оклада</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.MonthlyBaseTaxAmount}}</span>
+            </div>
+            <div class="calc-row small breakdown minus">
+              <span class="label">НДФЛ с надбавки</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.MonthlyNorthTaxAmount}}</span>
+            </div>
+          </div>
+          {{end}}
+
+          <div class="calc-row minus">
+            <span class="label">НДФЛ удержано</span>
+            <span class="dots"></span>
+            <span class="value">{{fmtMoney $m.MonthlyTaxAmount}}</span>
+          </div>
+
+          <div class="calc-row result">
+            <span class="label">На руки</span>
+            <span class="dots"></span>
+            <span class="value">{{fmtMoney $m.MonthlyNetIncome}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 📈 Накопленно -->
+      <div class="calc-card muted">
+        <h3>📈 С начала периода</h3>
+        <div class="calc-summary">
+          {{if ne $m.AnnualNorthGrossIncome 0}}
+          <!-- Детализация накопленного с северной надбавкой -->
+          <div class="breakdown-section">
+            <div class="calc-row small breakdown">
+              <span class="label">Оклад накопленно</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.AnnualBaseGrossIncome}}</span>
+            </div>
+            <div class="calc-row small breakdown">
+              <span class="label">Надбавка накопленно</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.AnnualNorthGrossIncome}}</span>
+            </div>
+          </div>
+          {{end}}
+
+          <div class="calc-row">
+            <span class="label">Доход всего</span>
+            <span class="dots"></span>
+            <span class="value">{{fmtMoney $m.AnnualGrossIncome}}</span>
+          </div>
+
+          {{if ne $m.AnnualNorthGrossIncome 0}}
+          <!-- Детализация накопленного налога с надбавкой -->
+          <div class="breakdown-section">
+            <div class="calc-row small breakdown minus">
+              <span class="label">НДФЛ с оклада</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.AnnualBaseTaxAmount}}</span>
+            </div>
+            <div class="calc-row small breakdown minus">
+              <span class="label">НДФЛ с надбавки</span>
+              <span class="dots"></span>
+              <span class="value">{{fmtMoney $m.AnnualNorthTaxAmount}}</span>
+            </div>
+          </div>
+          {{end}}
+
+          <div class="calc-row minus">
+            <span class="label">НДФЛ всего</span>
+            <span class="dots"></span>
+            <span class="value">{{fmtMoney $m.AnnualTaxAmount}}</span>
+          </div>
+          <div class="calc-row result">
+            <span class="label">На руки накопленно</span>
+            <span class="dots"></span>
+            <span class="value">{{fmtMoney $m.AnnualNetIncome}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
 </div>
 {{end}}

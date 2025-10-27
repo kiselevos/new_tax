@@ -1,0 +1,101 @@
+.accordion {
+  margin-top: 1rem;
+}
+
+.accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  background: #f8f9fb;
+  padding: 1rem 1.25rem;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid #e8edf2;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.tax-rate-value {
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+.accordion-item {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.accordion-content {
+  background: #fff;
+  padding: 1.25rem;
+  border: 1px solid #e8edf2;
+  border-top: none;
+}
+
+.calc-card {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #eef2f7;
+}
+
+.calc-card.muted {
+  background: #f6f8fa;
+}
+
+.calc-card h3 {
+  font-size: 0.95rem;
+  color: #34495e;
+  margin-bottom: 0.75rem;
+}
+
+.calc-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.calc-row.small {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.calc-row.total {
+  font-weight: 600;
+  border-top: 1px solid #e5e9f0;
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.calc-row.minus {
+  color: #d9534f;
+}
+
+.calc-row.result {
+  font-weight: 700;
+  color: #1a9e4f;
+  font-size: 1.05rem;
+  margin-top: 0.6rem;
+  background: #f6fff8;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #d8f2dc;
+}
+
+@media (max-width: 768px) {
+  .accordion-header {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .calc-card { padding: 0.8rem; }
+}
