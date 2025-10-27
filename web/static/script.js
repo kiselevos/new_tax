@@ -1,44 +1,43 @@
-// static/script.js
 document.addEventListener("DOMContentLoaded", function() {
-    const MIN_SALARY = window.APP_CONFIG?.minSalary;
-    const LIVING_WAGE = window.APP_CONFIG?.livingWage;
-
     const form = document.querySelector("form");
     const salaryInput = document.getElementById("grossSalary");
     
     if (!form || !salaryInput) return;
 
-    const salaryField = salaryInput.closest(".field-row");
-
+    const MIN_SALARY = window.APP_CONFIG.minSalary;
+    const salaryContainer = salaryInput.closest(".salary-field-container");
+    
     // Создаем элемент для сообщений
-    const messageEl = document.createElement("div");
-    messageEl.classList.add("field-message");
-    salaryField.appendChild(messageEl);
+    let messageEl = salaryContainer.querySelector('.field-message');
+    if (!messageEl) {
+        messageEl = document.createElement("div");
+        messageEl.classList.add("field-message");
+        salaryContainer.appendChild(messageEl);
+    }
 
-    // Функции для показа сообщений
     function showError(msg) {
         messageEl.textContent = msg;
         messageEl.className = "field-message error";
         salaryInput.classList.add("field-error");
         salaryInput.focus();
-    }
-
-    function showWarning(msg) {
-        messageEl.textContent = msg;
-        messageEl.className = "field-message warning";
-        salaryInput.classList.add("field-warning");
+        
+        // Анимация для привлечения внимания
+        salaryInput.style.animation = 'shake 0.3s ease';
+        setTimeout(() => {
+            salaryInput.style.animation = '';
+        }, 300);
     }
 
     function clearMessages() {
         messageEl.textContent = "";
         messageEl.className = "field-message";
-        salaryInput.classList.remove("field-error", "field-warning");
+        salaryInput.classList.remove("field-error");
     }
 
     // Валидация при вводе
     salaryInput.addEventListener('input', function() {
         const value = this.value.trim().replace(/\s/g, '').replace(',', '.');
-        if (value && !isNaN(parseFloat(value))) {
+        if (value && !isNaN(parseFloat(value)) && parseFloat(value) >= MIN_SALARY) {
             clearMessages();
         }
     });
@@ -53,11 +52,10 @@ document.addEventListener("DOMContentLoaded", function() {
         clearMessages();
 
         let isValid = true;
-        let warningMessage = "";
 
         // Проверка на пустое или некорректное значение
         if (!value || isNaN(salary) || salary <= 0) {
-            showError("Введите корректный оклад (например, 20000.00)");
+            showError("Введите корректный оклад (например, 10000.00)");
             isValid = false;
         }
         // Проверка минимального оклада
@@ -65,20 +63,9 @@ document.addEventListener("DOMContentLoaded", function() {
             showError(`Минимальный оклад — ${MIN_SALARY.toLocaleString('ru-RU')} ₽`);
             isValid = false;
         }
-        // Проверка на прожиточный минимум (предупреждение)
-        else if (salary < LIVING_WAGE) {
-            warningMessage = `Сумма меньше прожиточного минимума (${LIVING_WAGE.toLocaleString('ru-RU')} ₽). Проверьте данные.`;
-        }
 
-        // Если есть предупреждение, показываем его но все равно отправляем
-        if (warningMessage && isValid) {
-            showWarning(warningMessage);
-            setTimeout(() => {
-                form.submit();
-            }, 1000);
-        } 
         // Если валидация прошла успешно, отправляем форму
-        else if (isValid) {
+        if (isValid) {
             form.submit();
         }
     });
@@ -102,6 +89,5 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Обработка тултипов
     initTooltips();
 });

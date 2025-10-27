@@ -27,7 +27,7 @@ header h1 {
 }
 
 main {
-    max-width: 800px; /* Увеличили ширину формы */
+    max-width: 800px;
     margin: 0 auto;
     background: white;
     padding: 2.5rem;
@@ -45,10 +45,11 @@ main {
 .field-row {
     display: flex;
     align-items: flex-start;
-    gap: 2rem; /* Увеличили расстояние между колонками */
+    gap: 2rem;
     padding: 1.25rem 0;
     border-bottom: 1px solid #f0f0f0;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .field-row:hover {
@@ -60,12 +61,18 @@ main {
 
 .field-left {
     flex: 1;
-    min-width: 280px; /* Увеличили минимальную ширину */
+    min-width: 280px;
 }
 
 .field-right {
     flex: 1;
-    min-width: 320px; /* Увеличили минимальную ширину */
+    min-width: 320px;
+}
+
+/* Контейнер для поля с ошибкой */
+.salary-field-container {
+    position: relative;
+    width: 100%;
 }
 
 /* Новые стили для заголовков с подсказками */
@@ -189,6 +196,7 @@ input[type="text"]:focus, select:focus {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .salary-field input {
@@ -327,45 +335,59 @@ footer {
     font-size: 0.875rem;
 }
 
-/* Стили для сообщений полей */
+/* Стили для сообщений об ошибках */
+/* Стили для сообщений об ошибках */
 .field-message {
-    margin-top: 8px;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    padding: 8px 12px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.field-message.error {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
     color: #d32f2f;
     background: #ffebee;
     border: 1px solid #ffcdd2;
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 8px;
+    font-size: 0.9rem;
     font-weight: 500;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.4;
+    visibility: hidden; /* Скрываем по умолчанию */
+    opacity: 0; /* Прозрачный по умолчанию */
+    transform: translateY(-10px); /* Сдвигаем вверх */
+    transition: all 0.3s ease; /* Плавные переходы */
+}
+
+/* Когда есть сообщение - показываем */
+.field-message.error,
+.field-message.warning {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.field-message::before {
+    content: "⚠️";
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
 }
 
 .field-message.warning {
     color: #f57c00;
     background: #fff3e0;
     border: 1px solid #ffe0b2;
-    font-weight: 500;
-}
-
-.field-message::before {
-    font-size: 16px;
-}
-
-.field-message.error::before {
-    content: "⚠️";
 }
 
 .field-message.warning::before {
     content: "💡";
 }
 
-/* Анимация для сообщений */
+/* Убираем отдельную анимацию slideDown, используем transition */
 @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -373,7 +395,7 @@ footer {
 }
 
 .field-error {
-    border: 2px solid #d32f2f !important;
+    border: 2px solid #e74c3c !important;
     background: #fff5f5 !important;
     animation: shake 0.3s ease;
 }
@@ -381,6 +403,19 @@ footer {
 .field-warning {
     border: 2px solid #f57c00 !important;
     background: #fffaf2 !important;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .field-message {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+    
+    /* Убираем лишний отступ на мобильных */
+    .salary-field-container {
+        margin-bottom: 0;
+    }
 }
 
 /* Placeholder стили */
@@ -397,17 +432,6 @@ select {
     background-position: right 0.875rem center;
     background-size: 16px;
     cursor: pointer;
-}
-
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.field-message.error, 
-.field-message.warning {
-    animation: fadeIn 0.3s ease;
 }
 
 /* Адаптивность */
@@ -450,5 +474,14 @@ select {
     
     .field-header {
         flex-wrap: wrap;
+    }
+    
+    .field-message {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+    
+    .salary-field-container {
+        margin-bottom: 50px; /* Добавляем место для сообщения об ошибке */
     }
 }

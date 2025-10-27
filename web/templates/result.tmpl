@@ -5,31 +5,27 @@
     <meta charset="UTF-8">
     <title>Результаты расчёта</title>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .back-button { background: #6c757d; color: white; padding: 10px 20px; border-radius: 4px; border: none; cursor: pointer; }
-        .primary-button { background: #007bff; color: white; padding: 12px 24px; border-radius: 4px; border: none; cursor: pointer; font-size: 16px; }
-        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0; }
-        .summary-card { background: #f8f9fa; padding: 1.5rem; border-radius: 8px; text-align: center; }
-        .summary-value { font-size: 1.5rem; font-weight: bold; color: #007bff; margin: 0.5rem 0; }
-        .accordion { margin: 2rem 0; }
-        .accordion-item { border: 1px solid #dee2e6; border-radius: 4px; margin-bottom: 0.5rem; }
-        .accordion-header { background: #f8f9fa; padding: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .accordion-content { padding: 1rem; background: white; display: none; }
-        .accordion-item.active .accordion-content { display: block; }
-        .monthly-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; }
-        .actions { text-align: center; margin-top: 2rem; }
-    </style>
+    <link rel="stylesheet" href="/static/result.css">
 </head>
 <body>
     <div class="container">
-        <!-- Заголовок -->
+        <!-- Предупреждение -->
+        {{if .ShowWarning}}
+        <div class="info-banner">
+            <div class="info-icon">💡</div>
+            <div class="info-content">
+                <h3>Обратите внимание</h3>
+                <p>Указанная сумма оклада меньше установленного прожиточного минимума.</p>
+                <p>При полной занятости такая сумма может не соответствовать требованиям трудового законодательства.</p>
+            </div>
+        </div>
+        {{end}}
+
         <div class="results-header">
             <h1>Результаты расчёта</h1>
-            <button onclick="window.location.href='/'" class="back-button">
+            <a href="/" class="back-button">
                 Новый расчёт
-            </button>
+            </a>
         </div>
 
         <!-- Основная сводка -->
@@ -40,9 +36,9 @@
 
         <!-- Кнопка -->
         <div class="actions">
-            <button onclick="window.location.href='/'" class="primary-button">
+            <a href="/" class="primary-button">
                 Сделать новый расчёт
-            </button>
+            </a>
         </div>
     </div>
 
@@ -88,7 +84,7 @@
     <div class="accordion-item {{if eq $i 0}}active{{end}}">
         <div class="accordion-header">
             <span><strong>{{$m.Month.AsTime.Format "January 2006"}}</strong></span>
-            <span>{{$m.MonthlyNetIncome}}</span>
+            <span>{{fmtMoney $m.MonthlyNetIncome}}</span>
         </div>
         <div class="accordion-content">
             <div class="monthly-grid">

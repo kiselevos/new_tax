@@ -118,15 +118,6 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	grossSalary := uint64(math.Round(salaryFloat * 100))
 	log.Printf("✅ Parsed salary: %.2f -> %d", salaryFloat, grossSalary)
 
-	// Валидация зарплаты
-	check := ValidateSalary(grossSalary)
-	if !check.Valid {
-		return nil, fmt.Errorf(check.Message)
-	}
-	if check.ShowWarning {
-		log.Println(check.Message)
-	}
-
 	// Получаем остальные значения с значениями по умолчанию
 	monthStr := r.FormValue("startDate")
 	territorialStr := r.FormValue("territorialMultiplier")
@@ -178,50 +169,6 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		HasTaxPrivilege:       boolPtr(hasTaxPrivilege),
 		IsNotResident:         boolPtr(isNotResident),
 	}, nil
-}
-
-// SalaryValidationResult — структура результата проверки
-type SalaryValidationResult struct {
-	Valid       bool
-	ShowWarning bool
-	Message     string
-}
-
-// ValidateSalary — проверяет оклад по бизнес-правилам
-func ValidateSalary(grossSalary uint64) SalaryValidationResult {
-	minWageStr := os.Getenv("MIN_LIVING_WAGE")
-	minAllowedSalary := os.Getenv("MIN_ALLOWED_SALARY")
-	minWage, err := strconv.ParseUint(minWageStr, 10, 64)
-	if err != nil || minWage == 0 {
-		minWage = 2244000
-	}
-	minSalary, err := strconv.ParseUint(minAllowedSalary, 10, 64)
-	if err != nil || minSalary == 0 {
-		minSalary = 500000
-	}
-
-	log.Println("FFFFFF")
-
-	// 1. Ошибка, если меньше 5000 ₽
-	if grossSalary < minSalary {
-		return SalaryValidationResult{
-			Valid:       false,
-			ShowWarning: false,
-			Message:     fmt.Sprintf("❌ Минимальная сумма оклада — %d ₽", minSalary/100),
-		}
-	}
-
-	// 2. Предупреждение, если меньше прожиточного минимума
-	if grossSalary < minWage {
-		log.Printf("⚠️  Предупреждение: сумма %d меньше прожиточного минимума (%d)", grossSalary/100, minWage)
-		return SalaryValidationResult{
-			Valid:       true,
-			ShowWarning: true,
-			Message:     "⚠️ Сумма меньше прожиточного минимума, что неприемлемо при полной занятости.",
-		}
-	}
-
-	return SalaryValidationResult{Valid: true}
 }
 
 // Вспомогательные функции:

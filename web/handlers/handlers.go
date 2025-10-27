@@ -10,6 +10,7 @@ import (
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/internal/client"
 )
 
@@ -100,6 +101,9 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	minWage := web.GetMinLivingWage()
+	flag := req.GrossSalary < minWage
+
 	data := struct {
 		AnnualTaxAmount   uint64
 		AnnualGrossIncome uint64
@@ -108,6 +112,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		TerritorialMult   uint64
 		NorthernCoeff     uint64
 		MonthlyDetails    []*pb.MonthlyPrivateTax
+		ShowWarning       bool
 	}{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
 		AnnualGrossIncome: res.AnnualGrossIncome,
@@ -116,6 +121,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		TerritorialMult:   deref(res.TerritorialMultiplier),
 		NorthernCoeff:     deref(res.NorthernCoefficient),
 		MonthlyDetails:    res.MonthlyDetails,
+		ShowWarning:       flag,
 	}
 
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {

@@ -10,8 +10,7 @@
 
 <script>
 window.APP_CONFIG = {
-    minSalary: {{.MinSalary}},
-    livingWage: {{.LivingWage}}
+    minSalary: {{getMinSalary}},
 };
 </script>
 <script src="/static/script.js" defer></script>
@@ -22,23 +21,29 @@ window.APP_CONFIG = {
   </header>
 
   <main>
-    <form action="/calculate" method="post" class="form">
+    <form action="/calculate" method="post" class="form" 
+      data-min-salary="{{getMinSalary}}">
       <!-- оклад -->
-      <div class="field-row">
-        <div class="field-left">
-          <div class="field-header">
+<div class="field-row">
+    <div class="field-left">
+        <div class="field-header">
             <div class="field-tooltip">
-              <span class="tooltip-icon">?</span>
-              <div class="tooltip-text">Укажите ваш оклад, указанный в трудовом договоре. Это сумма до вычета налогов и без надбавок.</div>
+                <span class="tooltip-icon">?</span>
+                <div class="tooltip-text">Укажите ваш оклад, указанный в трудовом договоре. Это сумма до вычета налогов и без надбавок.</div>
             </div>
             <label for="grossSalary">Оклад:</label>
-          </div>
         </div>
-        <div class="field-right salary-field">
-          <input type="text" id="grossSalary" name="grossSalary" inputmode="decimal" required placeholder="Введите сумму">
-          <span class="ruble">₽</span>
+    </div>
+    <div class="field-right">
+        <div class="salary-field-container">
+            <div class="salary-field">
+                <input type="text" id="grossSalary" name="grossSalary" inputmode="decimal" required placeholder="Введите сумму">
+                <span class="ruble">₽</span>
+            </div>
+            <!-- Сообщение об ошибке будет добавляться сюда -->
         </div>
-      </div>
+    </div>
+</div>
 
       <!-- территориальный коэффициент -->
       <div class="field-row">
