@@ -2,8 +2,10 @@
 <!-- Блок с параметрами расчета -->
 <div class="parameters-card">
     <div class="parameters-header">
+        <div class="parameters-icon">ℹ️</div>
         <h2>Ваши параметры</h2>
     </div>
+
     <div class="parameters-grid">
         <div class="parameter-item">
             <span class="parameter-label">Период:</span>
@@ -17,39 +19,74 @@
                 {{end}}
             </span>
         </div>
-        
+
         <div class="parameter-item">
             <span class="parameter-label">Оклад:</span>
             <span class="parameter-value">{{.GrossSalary | fmtMoney}}</span>
         </div>
-        
+
         {{if ne .TerritorialMult 100}}
         <div class="parameter-item">
             <span class="parameter-label">Территориальный коэффициент:</span>
             <span class="parameter-value">×{{printf "%.2f" (divf .TerritorialMult 100.0)}}</span>
         </div>
         {{end}}
-        
+
         {{if ne .NorthernCoeff 100}}
         <div class="parameter-item">
             <span class="parameter-label">Северная надбавка:</span>
             <span class="parameter-value">{{.NorthernCoeff | minus100}}%</span>
         </div>
         {{end}}
-        
+
         {{if .HasTaxPrivilege}}
         <div class="parameter-item">
             <span class="parameter-label">Льготы:</span>
             <span class="parameter-value">для силовых структур</span>
         </div>
         {{end}}
-        
+
         {{if .IsNotResident}}
         <div class="parameter-item">
             <span class="parameter-label">Статус:</span>
             <span class="parameter-value">Налоговый нерезидент</span>
         </div>
         {{end}}
+
+        {{/* ===== Изменения ставки НДФЛ (в одном блоке) ===== */}}
+{{ $prev := 0 }}
+{{ $hasChange := false }}
+
+{{/* Сначала проверим, есть ли изменения */}}
+{{ range $i, $m := .MonthlyDetails }}
+  {{ if eq $i 0 }}
+    {{ $prev = $m.TaxRate }}
+  {{ else if ne $prev $m.TaxRate }}
+    {{ $hasChange = true }}
+  {{ end }}
+  {{ $prev = $m.TaxRate }}
+{{ end }}
+
+{{ if $hasChange }}
+<div class="parameter-item parameter-item--alert">
+  <span class="parameter-label">Ставка НДФЛ (изменения):</span>
+  <div class="parameter-value">
+    {{ $prev := 0 }}
+    {{ range $i, $m := .MonthlyDetails }}
+      {{ if eq $i 0 }}
+        {{ $prev = $m.TaxRate }}
+      {{ else if ne $prev $m.TaxRate }}
+        <div class="rate-change-line">
+          • {{russianMonth $m.Month}}: {{$prev}}% → {{$m.TaxRate}}%
+        </div>
+      {{ end }}
+      {{ $prev = $m.TaxRate }}
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+{{/* ===== /конец блока изменений ===== */}}
+
     </div>
 </div>
 {{end}}
