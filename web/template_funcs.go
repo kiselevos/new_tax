@@ -6,12 +6,20 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var Funcs = template.FuncMap{
 	"fmtMoney":         formatMoney,
 	"getMinSalary":     GetMinSalary,
 	"getMinLivingWage": GetMinLivingWage,
+	"russianMonth":     formatRussianMonth,
+	"sub": func(a, b int) int {
+		return a - b
+	},
+	"minus100": func(a uint64) uint64 { return a - 100 },
+	"divf":     func(a uint64, b float64) float64 { return float64(a) / b },
 }
 
 func formatMoney(amount uint64) string {
@@ -45,4 +53,37 @@ func GetMinLivingWage() uint64 {
 		minWage = 1
 	}
 	return uint64(minWage)
+}
+
+// Функция для форматирования месяца на русском из timestamp
+func formatRussianMonth(ts *timestamppb.Timestamp) string {
+	if ts == nil {
+		return "Неизвестный месяц"
+	}
+
+	t := ts.AsTime()
+	return getRussianMonthName(int(t.Month())) + " " + fmt.Sprintf("%d", t.Year())
+}
+
+// Функция для получения русского названия месяца по номеру
+func getRussianMonthName(monthNumber int) string {
+	months := map[int]string{
+		1:  "Январь",
+		2:  "Февраль",
+		3:  "Март",
+		4:  "Апрель",
+		5:  "Май",
+		6:  "Июнь",
+		7:  "Июль",
+		8:  "Август",
+		9:  "Сентябрь",
+		10: "Октябрь",
+		11: "Ноябрь",
+		12: "Декабрь",
+	}
+
+	if name, exists := months[monthNumber]; exists {
+		return name
+	}
+	return "Неизвестный месяц"
 }

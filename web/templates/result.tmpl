@@ -6,30 +6,21 @@
     <title>Результаты расчёта</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/result.css">
+    <link rel="stylesheet" href="/static/monthly_accordion.css">
+    <link rel="stylesheet" href="/static/parameters_section.css">
+    <link rel="stylesheet" href="/static/summary_section.css">
 </head>
 <body>
     <div class="container">
         <!-- Предупреждение -->
         {{if .ShowWarning}}
-        <div class="info-banner">
-            <div class="info-icon">💡</div>
-            <div class="info-content">
-                <h3>Обратите внимание</h3>
-<p>
-  Указанный размер оклада ниже установленного 
-  <a href="https://www.consultant.ru/document/cons_doc_LAW_34683/2b1d170ec71fc4248eb54dfc0c53522dcbb3776c/" target="_blank" rel="noopener noreferrer">
-    минимального размера оплаты труда (МРОТ)
-  </a>.
-</p>
-<p>
-  При полной занятости такая сумма может не соответствовать требованиям трудового законодательства Российской Федерации.
-  Если вы работаете неполный рабочий день или по совместительству, это ограничение может не применяться.
-</p>
-
-            </div>
-        </div>
+            {{template "warning" .}}
         {{end}}
 
+        <!-- Блок с параметрами расчета --->
+        {{template "parameters_section" .}}
+
+        <!-- Блок с результатами расчета --->
         <div class="results-header">
             <h1>Результаты расчёта</h1>
             <a href="/" class="back-button">
@@ -59,53 +50,4 @@
     </script>
 </body>
 </html>
-{{end}}
-
-{{define "summary_section"}}
-<div class="summary-grid">
-    <div class="summary-card">
-        <div>Оклад</div>
-        <div class="summary-value">{{fmtMoney .GrossSalary}}</div>
-        <small>в месяц</small>
-    </div>
-    <div class="summary-card">
-        <div>Годовой доход</div>
-        <div class="summary-value">{{fmtMoney .AnnualGrossIncome}}</div>
-        <small>за период</small>
-    </div>
-    <div class="summary-card">
-        <div>Налог НДФЛ</div>
-        <div class="summary-value">{{fmtMoney .AnnualTaxAmount}}</div>
-        <small>всего уплачено</small>
-    </div>
-    <div class="summary-card">
-        <div>Чистый доход</div>
-        <div class="summary-value">{{fmtMoney .AnnualNetIncome}}</div>
-        <small>«на руки»</small>
-    </div>
-</div>
-{{end}}
-
-{{define "monthly_accordion"}}
-<div class="accordion">
-    <h2>Помесячная детализация</h2>
-    {{range $i, $m := .MonthlyDetails}}
-    <div class="accordion-item {{if eq $i 0}}active{{end}}">
-        <div class="accordion-header">
-            <span><strong>{{$m.Month.AsTime.Format "January 2006"}}</strong></span>
-            <span>{{fmtMoney $m.MonthlyNetIncome}}</span>
-        </div>
-        <div class="accordion-content">
-            <div class="monthly-grid">
-                <div><strong>Доход:</strong><br>{{fmtMoney $m.MonthlyGrossIncome}}</div>
-                <div><strong>Налог:</strong><br>{{fmtMoney $m.MonthlyTaxAmount}}</div>
-                <div><strong>Ставка:</strong><br>{{$m.TaxRate}}%</div>
-                <div><strong>Чистый доход:</strong><br>{{fmtMoney $m.MonthlyNetIncome}}</div>
-                <div><strong>Накопленный доход:</strong><br>{{fmtMoney $m.AnnualGrossIncome}}</div>
-                <div><strong>Накопленный налог:</strong><br>{{fmtMoney $m.AnnualTaxAmount}}</div>
-            </div>
-        </div>
-    </div>
-    {{end}}
-</div>
 {{end}}

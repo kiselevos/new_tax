@@ -1,0 +1,23 @@
+{{define "monthly_accordion"}}
+<div class="accordion">
+    <h2>Помесячная детализация</h2>
+    {{range $i, $m := .MonthlyDetails}}
+    <div class="accordion-item {{if eq $i 0}}active{{end}}">
+        <div class="accordion-header">
+            <span><strong>{{russianMonth $m.Month}}</strong></span>
+            <span>{{fmtMoney $m.MonthlyNetIncome}}</span>
+        </div>
+        <div class="accordion-content">
+            <div class="monthly-grid">
+                <div><strong>Доход:</strong><br>{{fmtMoney $m.MonthlyGrossIncome}}</div>
+                <div><strong>Налог:</strong><br>{{fmtMoney $m.MonthlyTaxAmount}}</div>
+                <div><strong>Ставка:</strong><br>{{$m.TaxRate}}%</div>
+                <div><strong>Чистый доход:</strong><br>{{fmtMoney $m.MonthlyNetIncome}}</div>
+                <div><strong>Накопленный доход:</strong><br>{{fmtMoney $m.AnnualGrossIncome}}</div>
+                <div><strong>Накопленный налог:</strong><br>{{fmtMoney $m.AnnualTaxAmount}}</div>
+            </div>
+        </div>
+    </div>
+    {{end}}
+</div>
+{{end}}

@@ -113,6 +113,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		NorthernCoeff     uint64
 		MonthlyDetails    []*pb.MonthlyPrivateTax
 		ShowWarning       bool
+		HasTaxPrivilege   bool
+		IsNotResident     bool
 	}{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
 		AnnualGrossIncome: res.AnnualGrossIncome,
@@ -122,6 +124,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		NorthernCoeff:     deref(res.NorthernCoefficient),
 		MonthlyDetails:    res.MonthlyDetails,
 		ShowWarning:       flag,
+		HasTaxPrivilege:   *req.HasTaxPrivilege,
+		IsNotResident:     *req.IsNotResident,
 	}
 
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {

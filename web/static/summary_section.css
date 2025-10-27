@@ -1,0 +1,79 @@
+/* Цветовое кодирование для summary карточек */
+.summary-card:nth-child(1) .summary-value { /* Общий доход */
+    color: #3498db; /* Синий - нейтральный, основной доход */
+}
+
+.summary-card:nth-child(2) .summary-value { /* Уплаченный налог */
+    color: #e74c3c; /* Красный - уход денег, внимание */
+}
+
+.summary-card:nth-child(3) .summary-value { /* Чистый доход */
+    color: #27ae60; /* Зеленый - положительный, "на руки" */
+}
+
+/* Дополнительные стили для визуального акцента */
+.summary-card {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.summary-card:nth-child(1) { /* Общий доход - легкий синий акцент */
+    background: linear-gradient(135deg, #f8fbfe, #ffffff);
+    border-left: 4px solid #3498db;
+}
+
+.summary-card:nth-child(2) { /* Налог - легкий красный акцент */
+    background: linear-gradient(135deg, #fef6f5, #ffffff);
+    border-left: 4px solid #e74c3c;
+}
+
+.summary-card:nth-child(3) { /* Чистый доход - легкий зеленый акцент */
+    background: linear-gradient(135deg, #f6fef8, #ffffff);
+    border-left: 4px solid #27ae60;
+}
+
+/* Иконки для визуального подкрепления */
+.summary-card:nth-child(1)::before {
+    content: "💰";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    opacity: 0.1;
+}
+
+.summary-card:nth-child(2)::before {
+    content: "💸";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    opacity: 0.1;
+}
+
+.summary-card:nth-child(3)::before {
+    content: "💚";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    opacity: 0.1;
+}
+
+/* Ховер-эффекты */
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card:nth-child(1):hover {
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+.summary-card:nth-child(2):hover {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
+}
+
+.summary-card:nth-child(3):hover {
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.15);
+}

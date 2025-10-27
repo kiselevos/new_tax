@@ -1,0 +1,16 @@
+{{define "summary_section"}}
+<div class="summary-grid">
+    <div class="summary-card">
+        <div>Общий доход</div>
+        <div class="summary-value">{{fmtMoney .AnnualGrossIncome}}</div>
+    </div>
+    <div class="summary-card">
+        <div>Уплаченный налог НДФЛ</div>
+        <div class="summary-value">{{fmtMoney .AnnualTaxAmount}}</div>
+    </div>
+    <div class="summary-card">
+        <div>Чистый доход</div>
+        <div class="summary-value">{{fmtMoney .AnnualNetIncome}}</div>
+    </div>
+</div>
+{{end}}
