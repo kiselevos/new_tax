@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -34,8 +33,6 @@ type IndexData struct {
 	Months      []Month
 	Territorial []CoefficientOption
 	Northern    []BonusOption
-	MinSalary   int
-	LivingWage  int
 }
 
 func PrepareMonths() []Month {
@@ -66,26 +63,11 @@ func PrepareIndexData() IndexData {
 		northern = append(northern, BonusOption{100 + i, fmt.Sprintf("%d%%", i)})
 	}
 
-	minSalaryStr := os.Getenv("MIN_ALLOWED_SALARY")
-	livingWageStr := os.Getenv("MIN_LIVING_WAGE")
-
-	minSalary, err := strconv.Atoi(minSalaryStr)
-	if err != nil || minSalary == 0 {
-		minSalary = 4000
-	}
-
-	livingWage, err := strconv.Atoi(livingWageStr)
-	if err != nil || livingWage == 0 {
-		livingWage = 265000
-	}
-
 	return IndexData{
 		CurrentYear: time.Now().Year(),
 		Months:      PrepareMonths(),
 		Territorial: territorial,
 		Northern:    northern,
-		MinSalary:   minSalary,
-		LivingWage:  livingWage,
 	}
 }
 
