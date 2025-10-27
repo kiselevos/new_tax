@@ -123,15 +123,17 @@ window.APP_CONFIG = {
           </div>
           <a href="/special-tax-modes" class="under-title">Подробнее →</a>
         </div>
-        <div class="field-right checkbox-column">
-          <label class="checkbox-inline">
-            <input type="checkbox" name="hasTaxPrivilege"> <span>Льготы для силовых структур</span>
-          </label>
-          <label class="checkbox-inline">
-            <input type="checkbox" name="isNotResident"> <span>Налоговый нерезидент</span>
-          </label>
-        </div>
+        <div class="field-right checkbox-column exclusive-checkboxes">
+    <label class="checkbox-inline exclusive-option">
+        <input type="checkbox" name="hasTaxPrivilege"> 
+        <span>Льготы для силовых структур</span>
+      </label>
+      <label class="checkbox-inline exclusive-option">
+        <input type="checkbox" name="isNotResident"> 
+        <span>Налоговый нерезидент</span>
+      </label>
       </div>
+</div>
 
       <button type="submit">Рассчитать</button>
 

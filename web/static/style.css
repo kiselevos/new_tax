@@ -485,3 +485,32 @@ select {
         margin-bottom: 50px; /* Добавляем место для сообщения об ошибке */
     }
 }
+
+/* Стили для взаимоисключающих чекбоксов */
+.exclusive-checkboxes {
+    position: relative;
+}
+
+.exclusive-option {
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.exclusive-option.selected {
+    background: #e3f2fd;
+    border: 2px solid #3498db;
+}
+
+.exclusive-option input[type="checkbox"]:checked + span {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.checkbox-hint {
+    color: #3498db;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+}

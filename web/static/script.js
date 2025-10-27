@@ -89,5 +89,62 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    function initExclusiveCheckboxes() {
+        const options = document.querySelectorAll('.exclusive-option');
+        console.log('🔍 Found exclusive options:', options.length); // Отладочный вывод
+        
+        options.forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            console.log('🔍 Checkbox:', checkbox); // Отладочный вывод
+            
+            checkbox.addEventListener('change', function() {
+                console.log('🔍 Checkbox changed:', this.name, this.checked); // Отладочный вывод
+                
+                if (this.checked) {
+                    // Добавляем класс selected
+                    option.classList.add('selected');
+                    
+                    // Снимаем выбор с других
+                    options.forEach(otherOption => {
+                        if (otherOption !== option) {
+                            const otherCheckbox = otherOption.querySelector('input[type="checkbox"]');
+                            otherCheckbox.checked = false;
+                            otherOption.classList.remove('selected');
+                        }
+                    });
+                    
+                    showCheckboxHint(this);
+                } else {
+                    option.classList.remove('selected');
+                    removeCheckboxHint();
+                }
+            });
+        });
+    }
+
+    function showCheckboxHint(checkedCheckbox) {
+        removeCheckboxHint();
+        
+        const hint = document.createElement('div');
+        hint.className = 'checkbox-hint';
+        
+        if (checkedCheckbox.name === 'hasTaxPrivilege') {
+            hint.textContent = '✓ Выбраны льготы для силовых структур';
+        } else if (checkedCheckbox.name === 'isNotResident') {
+            hint.textContent = '✓ Выбран статус налогового нерезидента';
+        }
+        
+        const container = checkedCheckbox.closest('.exclusive-checkboxes');
+        if (container) {
+            container.appendChild(hint);
+        }
+    }
+
+    function removeCheckboxHint() {
+        const hints = document.querySelectorAll('.checkbox-hint');
+        hints.forEach(hint => hint.remove());
+    }
+
+    initExclusiveCheckboxes();
     initTooltips();
 });
