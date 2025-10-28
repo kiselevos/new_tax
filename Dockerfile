@@ -6,7 +6,8 @@ WORKDIR /app
 # Копируем зависимости
 COPY go.mod go.sum ./
 
-# 💡 Добавляем protobuf-модуль
+# Добавляем protobuf-модуль
+COPY pkg/logx/ ./pkg/logx/
 COPY gen/ ./gen/
 
 RUN go mod download

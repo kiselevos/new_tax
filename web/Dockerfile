@@ -3,11 +3,9 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app/web
 
-# Показываем, что Docker реально видит контекст
-RUN ls -la /app
-
 # Копируем исходники веба и API
 COPY web/ . 
+COPY pkg/logx/ ../pkg/logx/
 COPY gen/ ../gen/
 RUN go mod tidy
 RUN go build -o web ./cmd/web.go
