@@ -45,7 +45,7 @@ func TestValidateCalculateInput_Errors(t *testing.T) {
 		},
 		{
 			name: "territorial wrong step",
-			in:   CalculateInput{GrossSalary: 100, TerritorialMultiplier: 115, NorthernCoefficient: 100},
+			in:   CalculateInput{GrossSalary: 100, TerritorialMultiplier: 117, NorthernCoefficient: 100},
 			want: "territorial_multiplier must be between 100 and 200",
 		},
 		{
@@ -79,10 +79,10 @@ func TestValidateCoefficient(t *testing.T) {
 		want bool
 	}
 	ok := []T{
-		{100, true}, {110, true}, {120, true}, {200, true},
+		{100, true}, {110, true}, {115, true}, {120, true}, {200, true},
 	}
 	bad := []T{
-		{99, false}, {201, false}, {115, false}, {0, false},
+		{99, false}, {201, false}, {116, false}, {0, false},
 	}
 	for _, tc := range ok {
 		assert.Truef(t, validateCoefficient(tc.in), "should accept %d", tc.in)
