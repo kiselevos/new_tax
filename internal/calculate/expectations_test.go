@@ -2,7 +2,6 @@ package calculate
 
 import "time"
 
-// Сравниваем только то, что действительно хотим зафиксировать.
 type MonthlyTaxLite struct {
 	Month            time.Time // 1-е число месяца (UTC)
 	MonthlyTaxAmount uint64
@@ -141,7 +140,7 @@ var Results = []ResultTest{
 		Monthly: repeatMonthly(2025, time.June, 7, func(i int) MonthlyTaxLite {
 			return MonthlyTaxLite{
 				MonthlyTaxAmount: 36_000_00,
-				MonthlyBaseTax:   36_000_00, // вся база — одна (у NR нет разбиения A/B в твоей функции)
+				MonthlyBaseTax:   36_000_00,
 				MonthlyNorthTax:  0,
 				TaxRate:          30,
 			}
