@@ -3,15 +3,16 @@ package handlers
 import (
 	"context"
 	"html/template"
-	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/internal/client"
+	"github.com/kiselevos/new_tax/web/internal/middleware"
+	"google.golang.org/grpc/metadata"
 )
 
 // Server — основной HTTP-сервер, хранящий шаблоны.
@@ -19,90 +20,78 @@ type Server struct {
 	Tmpl *template.Template
 }
 
-// loggingMiddleware — базовое логирование всех запросов.
-func loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		log.Printf("🛠️  %s %s", r.Method, r.URL.Path)
-		next(w, r)
-		log.Printf("✅ Завершено за %v\n", time.Since(start))
-	}
-}
-
 // Routes — регистрация всех маршрутов приложения.
-func (s *Server) Routes() {
-	http.HandleFunc("/", loggingMiddleware(s.Index))
-	http.HandleFunc("/calculate", loggingMiddleware(s.Calculate))
-	http.HandleFunc("/how-it-works", loggingMiddleware(s.HowItWorks))
-	http.HandleFunc("/regional-info", loggingMiddleware(s.RegionalInfo))
-	http.HandleFunc("/special-tax-modes", loggingMiddleware(s.SpecialTaxModes))
+func (s *Server) Routes(mux *http.ServeMux) {
+	mux.HandleFunc("/", s.Index)
+	mux.HandleFunc("/calculate", s.Calculate)
+	mux.HandleFunc("/how-it-works", s.HowItWorks)
+	mux.HandleFunc("/regional-info", s.RegionalInfo)
+	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
 }
 
+// Index — главная страница
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
-	data := PrepareIndexData()
-	if err := s.Tmpl.ExecuteTemplate(w, "index", data); err != nil {
-		log.Printf("❌ Ошибка рендеринга index: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	ctx := r.Context()
+	log := logx.From(ctx).With("page", "index")
+
+	if err := s.Tmpl.ExecuteTemplate(w, "index", PrepareIndexData()); err != nil {
+		log.Error("template_render_failed", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	log.Info("page_rendered")
 }
 
-// Calculate — обработка формы и запрос к gRPC-бэкенду.
+// Calculate — обработка формы и запрос к gRPC-бэкенду
 func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-	log.Printf("🛠️  %s %s", r.Method, r.URL.Path)
+	ctx := r.Context()
+	log := logx.From(ctx).With("path", r.URL.Path, "method", r.Method)
 
-	log.Printf("📨 Headers: %v", r.Header)
-	log.Printf("📨 Method: %s", r.Method)
-	log.Printf("📨 Content-Type: %s", r.Header.Get("Content-Type"))
-
-	// Проверяем Content-Type
-	contentType := r.Header.Get("Content-Type")
-	if !strings.Contains(contentType, "application/x-www-form-urlencoded") &&
-		!strings.Contains(contentType, "multipart/form-data") {
-		log.Printf("❌ Unexpected Content-Type: %s", contentType)
+	ct := r.Header.Get("Content-Type")
+	if !strings.Contains(ct, "application/x-www-form-urlencoded") &&
+		!strings.Contains(ct, "multipart/form-data") {
+		log.Warn("unsupported_content_type", "content_type", ct)
+		http.Error(w, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
+		return
 	}
 
-	// ПАРСИМ ФОРМУ ПЕРВЫМ ДЕЛОМ
 	if err := r.ParseForm(); err != nil {
-		log.Printf("❌ ParseForm error: %v", err)
+		log.Warn("form_parse_failed", "err", err)
 		http.Error(w, "invalid form data", http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("📥 Received form: %+v", r.Form)
-	log.Printf("📥 Received PostForm: %+v", r.PostForm)
-
-	// Теперь передаем распарсенную форму
 	req, err := ParseFormToRequest(r)
 	if err != nil {
-		log.Printf("❌ Error parsing request: %v", err)
+		log.Warn("form_validation_failed", "err", err)
 		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	clientGRPC, conn, err := client.NewTaxClient()
 	if err != nil {
-		log.Printf("❌ Can't connect to gRPC backend: %v", err)
-		http.Error(w, "can't connect to backend", http.StatusInternalServerError)
+		log.Error("grpc_dial_failed", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	rid := middleware.GetRID(ctx)
+
+	md := metadata.New(map[string]string{"x-request-id": rid})
+	rpcCtx, cancel := context.WithTimeout(metadata.NewOutgoingContext(ctx, md), 3*time.Second)
+
 	defer cancel()
 
-	log.Println("→ sending request to backend")
-
-	res, err := clientGRPC.CalculatePrivate(ctx, req)
+	res, err := clientGRPC.CalculatePrivate(rpcCtx, req)
 	if err != nil {
-		log.Printf("❌ Backend error: %v", err)
-		http.Error(w, "backend error", http.StatusInternalServerError)
+		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	minWage := web.GetMinLivingWage()
-	flag := req.GrossSalary < minWage
+	showWarning := req.GrossSalary < minWage
 
 	data := struct {
 		AnnualTaxAmount   uint64
@@ -123,58 +112,75 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		TerritorialMult:   deref(res.TerritorialMultiplier),
 		NorthernCoeff:     deref(res.NorthernCoefficient),
 		MonthlyDetails:    res.MonthlyDetails,
-		ShowWarning:       flag,
-		HasTaxPrivilege:   *req.HasTaxPrivilege,
-		IsNotResident:     *req.IsNotResident,
+		ShowWarning:       showWarning,
+		HasTaxPrivilege:   getBool(req.HasTaxPrivilege),
+		IsNotResident:     getBool(req.IsNotResident),
 	}
 
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {
-		log.Printf("❌ Template error: %v", err)
-		http.Error(w, "template error", http.StatusInternalServerError)
+		log.Error("template_render_failed", "page", "result", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("✅ Завершено за %v", time.Since(start))
+	log.Info("calculation_completed",
+		"gross_salary", req.GrossSalary,
+		"annual_tax", res.AnnualTaxAmount,
+		"warning", showWarning,
+	)
 }
 
-// HowItWorks — страница с объяснением логики расчёта.
+// HowItWorks — страница с описанием расчёта
 func (s *Server) HowItWorks(w http.ResponseWriter, r *http.Request) {
-	log.Println("📄 Рендеринг страницы: how_it_works")
+	ctx := r.Context()
+	log := logx.From(ctx).With("page", "how_it_works")
+
 	if err := s.Tmpl.ExecuteTemplate(w, "how_it_works", nil); err != nil {
-		log.Printf("❌ Ошибка рендеринга how_it_works: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error("template_render_failed", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
+	log.Info("page_rendered")
 }
 
-// RegionalInfo — страница с информацией о коэффициентах и надбавках.
+// RegionalInfo — страница с региональными коэффициентами
 func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
-	log.Println("📄 Рендеринг страницы: regional_info")
+	ctx := r.Context()
+	log := logx.From(ctx).With("page", "regional_info")
+
 	if err := s.Tmpl.ExecuteTemplate(w, "regional_info", nil); err != nil {
-		log.Printf("❌ Ошибка рендеринга regional_info: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error("template_render_failed", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
+	log.Info("page_rendered")
 }
 
-// SpecialTaxModes — страница об особых налоговых режимах.
+// SpecialTaxModes — страница о льготах и нерезидентстве
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
-	log.Println("📄 Рендеринг страницы: special_tax_modes")
+	ctx := r.Context()
+	log := logx.From(ctx).With("page", "special_tax_modes")
+
 	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", nil); err != nil {
-		log.Printf("❌ Ошибка рендеринга special_tax_modes: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Error("template_render_failed", "err", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
+	log.Info("page_rendered")
 }
 
-// Вспомогательные функции
-// ------------------------------------------------------------
-
-func parseUint(s string) uint64 {
-	val, _ := strconv.ParseUint(s, 10, 64)
-	return val
-}
+// ----- helpers -----
 
 func deref(p *uint64) uint64 {
 	if p == nil {
 		return 0
+	}
+	return *p
+}
+
+func getBool(p *bool) bool {
+	if p == nil {
+		return false
 	}
 	return *p
 }

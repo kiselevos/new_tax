@@ -4,6 +4,7 @@ go 1.23.10
 
 require (
 	github.com/kiselevos/new_tax/gen v0.0.0-00010101000000-000000000000
+	github.com/kiselevos/new_tax/pkg/logx v0.0.0
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/stretchr/testify v1.11.1
 	google.golang.org/grpc v1.68.0
@@ -22,3 +23,5 @@ require (
 )
 
 replace github.com/kiselevos/new_tax/gen => ./gen
+
+replace github.com/kiselevos/new_tax/pkg/logx => ./pkg/logx

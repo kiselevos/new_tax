@@ -1,8 +1,8 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/pkg/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -69,64 +70,54 @@ func PrepareIndexData() IndexData {
 		Territorial: territorial,
 		Northern:    northern,
 	}
+
 }
 
+// ParseFormToRequest — парсит данные из формы в gRPC-запрос.
 func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
-	// Логируем все полученные значения формы для отладки
-	log.Printf("🔍 All form values: %+v", r.Form)
+	log := logx.From(r.Context()).With("component", "form_parser")
 
-	// Получаем значение зарплаты
 	rawSalary := r.FormValue("grossSalary")
-	log.Printf("💰 Raw salary value: '%s'", rawSalary)
-
 	if rawSalary == "" {
+		log.Warn("form_missing_field", "field", "grossSalary")
 		return nil, fmt.Errorf("gross salary is required")
 	}
 
-	// Убираем ВСЕ пробелы (включая неразрывные) и заменяем запятые на точки
-	rawSalary = strings.ReplaceAll(rawSalary, "\u00A0", "") // неразрывный пробел
-	rawSalary = strings.ReplaceAll(rawSalary, " ", "")      // обычный пробел
-	rawSalary = strings.ReplaceAll(rawSalary, ",", ".")     // запятая на точку
+	// Очистка от пробелов и замена запятых на точки
+	rawSalary = strings.ReplaceAll(rawSalary, "\u00A0", "")
+	rawSalary = strings.ReplaceAll(rawSalary, " ", "")
+	rawSalary = strings.ReplaceAll(rawSalary, ",", ".")
 
-	log.Printf("💰 Cleaned salary value: '%s'", rawSalary)
-
-	// Парсим зарплату
 	salaryFloat, err := strconv.ParseFloat(rawSalary, 64)
 	if err != nil {
-		log.Printf("❌ Salary parsing error: %v, raw value: '%s'", err, rawSalary)
-		return nil, fmt.Errorf("invalid gross salary format: '%s'. Use numbers only (e.g., 50000 or 50000.50)", rawSalary)
+		log.Warn("form_invalid_salary", "raw", rawSalary, "err", err)
+		return nil, fmt.Errorf("invalid gross salary format: '%s'. Use only numbers (e.g., 50000 or 50000.50)", rawSalary)
 	}
-
 	grossSalary := uint64(math.Round(salaryFloat * 100))
-	log.Printf("✅ Parsed salary: %.2f -> %d", salaryFloat, grossSalary)
 
-	// Получаем остальные значения с значениями по умолчанию
+	// Извлекаем остальные поля
 	monthStr := r.FormValue("startDate")
 	territorialStr := r.FormValue("territorialMultiplier")
 	northernStr := r.FormValue("northernCoefficient")
 	hasTaxPrivilege := r.FormValue("hasTaxPrivilege") != ""
 	isNotResident := r.FormValue("isNotResident") != ""
 
-	log.Printf("📋 Other form values: startDate=%s, territorial=%s, northern=%s, hasTaxPrivilege=%t, isNotResident=%t",
-		monthStr, territorialStr, northernStr, hasTaxPrivilege, isNotResident)
-
-	// Обработка месяца
+	// Месяц
 	monthNum, err := strconv.Atoi(monthStr)
 	if err != nil || monthNum < 1 || monthNum > 12 {
-		monthNum = 1 // значение по умолчанию
-		log.Printf("⚠️  Invalid month, using default: 1")
+		log.Warn("form_invalid_month", "input", monthStr)
+		monthNum = 1
 	}
-
 	startDate := time.Date(time.Now().Year(), time.Month(monthNum), 1, 0, 0, 0, 0, time.UTC)
 	startTS := timestamppb.New(startDate)
 
-	// Обработка коэффициентов с валидацией
+	// Коэффициенты
 	territorial := 100
 	if territorialStr != "" {
 		if v, err := strconv.Atoi(territorialStr); err == nil && v >= 100 && v <= 200 {
 			territorial = v
 		} else {
-			log.Printf("⚠️  Invalid territorial multiplier: %s, using default: 100", territorialStr)
+			log.Warn("form_invalid_territorial", "input", territorialStr)
 		}
 	}
 
@@ -135,13 +126,22 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		if v, err := strconv.Atoi(northernStr); err == nil && v >= 100 && v <= 200 {
 			northern = v
 		} else {
-			log.Printf("⚠️  Invalid northern coefficient: %s, using default: 100", northernStr)
+			log.Warn("form_invalid_northern", "input", northernStr)
 		}
 	}
 
-	log.Printf("📄 Form parsed successfully: GrossSalary=%d, Territorial=%d, Northern=%d, HasTaxPrivilege=%t, IsNotResident=%t, StartDate=%s",
-		grossSalary, territorial, northern, hasTaxPrivilege, isNotResident,
-		startDate.Format("2006-01-02"))
+	// Финальный лог в том же стиле, что и на бэкенде
+	log.Info("http_request_parsed",
+		"rid", getRIDFromCtx(r.Context()),
+		"method", r.Method,
+		"path", r.URL.Path,
+		"gross_salary", grossSalary,
+		"territorial", territorial,
+		"northern", northern,
+		"has_tax_privilege", hasTaxPrivilege,
+		"is_not_resident", isNotResident,
+		"start_date", startDate.Format("2006-01-02"),
+	)
 
 	return &pb.CalculatePrivateRequest{
 		GrossSalary:           grossSalary,
@@ -156,3 +156,12 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 // Вспомогательные функции:
 func uint64Ptr(v uint64) *uint64 { return &v }
 func boolPtr(v bool) *bool       { return &v }
+
+func getRIDFromCtx(ctx context.Context) string {
+	if v := ctx.Value("rid"); v != nil {
+		if s, ok := v.(string); ok {
+			return s
+		}
+	}
+	return ""
+}

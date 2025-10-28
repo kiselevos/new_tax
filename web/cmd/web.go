@@ -1,34 +1,70 @@
 package main
 
 import (
+	"context"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/handlers"
+	"github.com/kiselevos/new_tax/web/internal/middleware"
+	"github.com/kiselevos/new_tax/web/internal/server"
 )
 
 func main() {
 
+	logger := logx.New()
+
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatalf("Не найден или не читается web/.env: %v", err)
+		logger.Error("file .env not read", "err", err)
+		os.Exit(1)
 	}
+
+	addr := os.Getenv("WEB_PORT")
 
 	tmpls, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {
-		log.Fatalf("ошибка загрузки шаблонов: %v", err)
+		logger.Error("templates_parse_failed", "err", err)
+		os.Exit(1)
 	}
 
+	mux := http.NewServeMux()
+
 	s := &handlers.Server{Tmpl: tmpls}
-	s.Routes()
+	s.Routes(mux)
 
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	log.Printf("✅ WEB_PORT=%s | BACKEND_ADDR=%s", os.Getenv("WEB_PORT"), os.Getenv("BACKEND_ADDR"))
+	httpSrv := server.New(addr, middleware.Logger(mux))
 
-	log.Fatal(http.ListenAndServe(os.Getenv("WEB_PORT"), nil))
+	go func() {
+		logger.Info("listening", "addr", addr)
+		if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("http_serve_failed", "err", err)
+			os.Exit(1)
+		}
+	}()
+
+	// 7) graceful shutdown
+	ctx, stop := signal.NotifyContext(context.Background(),
+		os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	<-ctx.Done()
+
+	logger.Info("shutdown_request")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		logger.Warn("http_shutdown_timeout", "err", err)
+		_ = httpSrv.Close()
+	}
+	logger.Info("shutdown_complete")
 }
