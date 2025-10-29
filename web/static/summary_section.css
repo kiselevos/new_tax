@@ -77,3 +77,7 @@
 .summary-card:nth-child(3):hover {
     box-shadow: 0 4px 12px rgba(39, 174, 96, 0.15);
 }
+
+.back-button {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}

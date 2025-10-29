@@ -1,11 +1,17 @@
 {{define "summary_section"}}
+<div class="results-header">
+            <h2>Результаты расчёта</h2>
+            <a href="/" class="back-button">
+                Новый расчёт
+            </a>
+</div>
 <div class="summary-grid">
     <div class="summary-card">
         <div>Общий доход</div>
         <div class="summary-value">{{fmtMoney .AnnualGrossIncome}}</div>
     </div>
     <div class="summary-card">
-        <div>Уплаченный налог НДФЛ</div>
+        <div>Уплачено НДФЛ</div>
         <div class="summary-value">{{fmtMoney .AnnualTaxAmount}}</div>
     </div>
     <div class="summary-card">

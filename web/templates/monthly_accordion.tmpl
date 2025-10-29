@@ -58,13 +58,13 @@
           {{end}}
 
           <div class="calc-row minus">
-            <span class="label">НДФЛ удержано</span>
+            <span class="label">Уплачено НДФЛ</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.MonthlyTaxAmount}}</span>
           </div>
 
           <div class="calc-row result">
-            <span class="label">На руки</span>
+            <span class="label">Чистый доход</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.MonthlyNetIncome}}</span>
           </div>
@@ -79,12 +79,12 @@
           <!-- Детализация накопленного с северной надбавкой -->
           <div class="breakdown-section">
             <div class="calc-row small breakdown">
-              <span class="label">Оклад накопленно</span>
+              <span class="label">Оклад</span>
               <span class="dots"></span>
               <span class="value">{{fmtMoney $m.AnnualBaseGrossIncome}}</span>
             </div>
             <div class="calc-row small breakdown">
-              <span class="label">Надбавка накопленно</span>
+              <span class="label">Надбавка</span>
               <span class="dots"></span>
               <span class="value">{{fmtMoney $m.AnnualNorthGrossIncome}}</span>
             </div>
@@ -92,7 +92,7 @@
           {{end}}
 
           <div class="calc-row">
-            <span class="label">Доход всего</span>
+            <span class="label">Доход до налога</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.AnnualGrossIncome}}</span>
           </div>
@@ -114,12 +114,12 @@
           {{end}}
 
           <div class="calc-row minus">
-            <span class="label">НДФЛ всего</span>
+            <span class="label">Уплачено НДФЛ</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.AnnualTaxAmount}}</span>
           </div>
           <div class="calc-row result">
-            <span class="label">На руки накопленно</span>
+            <span class="label">Чистый доход</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.AnnualNetIncome}}</span>
           </div>

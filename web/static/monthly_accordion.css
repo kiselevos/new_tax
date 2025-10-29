@@ -2,6 +2,14 @@
   margin-top: 1rem;
 }
 
+.accordion h2 {
+    margin-bottom: 0.5rem;
+}
+
+.accordion-item:first-child {
+    margin-top: 0; 
+}
+
 .accordion-header {
   display: flex;
   justify-content: space-between;

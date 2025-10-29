@@ -9,9 +9,13 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
     color: #333;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #764ba2;
     min-height: 100vh;
     padding: 20px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: white;
 }
 
 header {
@@ -20,14 +24,13 @@ header {
 }
 
 header h1 {
-    color: white;
     font-size: 2.5rem;
     font-weight: 300;
     text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 main {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
     background: white;
     padding: 2.5rem;
@@ -259,44 +262,106 @@ input[type="text"]:focus, select:focus {
     font-weight: 500;
 }
 
-/* Кнопка */
-button {
+
+/* Базовый стиль для всех кнопок и кнопкоподобных ссылок */
+button, 
+a.button,
+a.back-button,
+a.primary-button {
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: white;
     border: none;
-    padding: 1.125rem 2.5rem;
-    font-size: 1.1rem;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
     box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-    width: 100%;
-    max-width: 300px;
-    align-self: center;
 }
 
-button:hover {
+/* Ховер-эффект для всех кнопок */
+button:hover, 
+a.button:hover,
+a.back-button:hover,
+a.primary-button:hover {
+    background: linear-gradient(135deg, #2980b9, #2471a3);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+    text-decoration: none;
+    color: white;
 }
 
-button:active {
+/* Активное состояние */
+button:active, 
+a.button:active,
+a.back-button:active,
+a.primary-button:active {
     transform: translateY(0);
 }
 
-button:focus {
+/* Фокус состояние */
+button:focus, 
+a.button:focus,
+a.back-button:focus,
+a.primary-button:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
 }
 
+/* Отключенное состояние */
 button:disabled {
     background: #bdc3c7;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
+
+/* Разные размеры кнопок */
+
+/* Маленькие кнопки (Назад) */
+a.back-button,
+button.small {
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+/* Средние кнопки (Основные действия) */
+button,
+a.primary-button,
+a.button {
+    padding: 12px 24px;
+    font-size: 16px;
+}
+
+/* Большие кнопки (Главные призывы к действию) */
+button.large,
+a.button.large {
+    padding: 1.125rem 2.5rem;
+    font-size: 1.1rem;
+    width: 100%;
+    max-width: 300px;
+    align-self: center;
+}
+
+/* Адаптивность для кнопок */
+@media (max-width: 768px) {
+    button, 
+    a.button,
+    a.back-button,
+    a.primary-button {
+        width: 100%;
+        text-align: center;
+    }
+    
+    button.large,
+    a.button.large {
+        max-width: 100%;
+    }
+}
+
 
 /* Блок с примечанием */
 .calculator-note {
