@@ -1,122 +1,123 @@
-# Contributing to Tax Calculator
+# 🤝 Руководство по контрибьюции
 
-Спасибо, что решили внести вклад в проект **Tax Calculator** — gRPC-сервис на Go для расчёта прогрессивного подоходного налога в России начиная с 2025 года. Этот документ описывает, как локально поднять окружение, запустить тесты и внести изменения безопасно для продакшена.
-
----
-
-## Требования
-
-- Go 1.23.10.
-- gRPC runtime:
-    * google.golang.org/grpc v1.67.1
-    * google.golang.org/protobuf v1.34.2
-- (Для генерации кода) protoc или buf + плагины:
-    * protoc ≥ 3.21 или buf (CLI).
-    * protoc-gen-go (генератор protobuf-типов).
-    * protoc-gen-go-grpc (генератор gRPC-стабов).
-- (Опционально) инструменты разработчика:
-    * grpcurl — ручная проверка RPC.
-    * golangci-lint — линтер.
-    * make — Makefile.
+Спасибо за интерес к проекту **Tax Calculator** — сервису для расчёта подоходного налога (НДФЛ) в России по правилам 2025 года.  
+Проект основан на **Go + ConnectRPC** и состоит из двух независимых приложений — backend и frontend.
 
 ---
 
-## Клонирование и базовая настройка
+## 🧩 Архитектура проекта
 
-```bash
-git clone <repo_url>
-cd <repo_dir>
-go mod download
-```
----
+- **Backend** — сервис расчёта налога, реализованный на Go + ConnectRPC.  
+  Отвечает за бизнес-логику, расчёты, валидацию и API.  
+  Основные модули: `cmd/`, `internal/`, `pkg/`, `gen/`.
 
-## Установка зависимостей
-
-```bash
-make tidy
-```
-> Выполняет go mod tidy и проверяет, что go.mod и go.sum не содержат непроиндексированных изменений.
-
-## Генерация gRPC-кода
-
-```bash
-make codegen
-```
->Сгенерирует код из `api/tax.proto` в `gen/grpc/api`.
-
-Требуемые инструменты:
-
-```bash
-# buf (CLI)
-go install github.com/bufbuild/buf/cmd/buf@v1.45.0
-
-# генераторы (совместимы с protobuf v1.34.2 и grpc v1.67.1)
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
-
-# полезные утилиты (опционально)
-go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.8.9
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
-```
+- **Frontend** — веб-интерфейс на Go templates, отдельное приложение с собственным `go.mod`.  
+  Работает как клиент ConnectRPC, отображает результаты расчёта в браузере.  
+  Основные модули: `web/cmd/`, `web/handlers/`, `web/templates/`.
 
 ---
 
-## Сборка и запуск сервера
+## ⚙️ Требования к окружению
 
-- Переменные окружения (.env)
-    * LOG_MODE — json (по умолчанию) или text
-    * LOG_LEVEL — debug|info|warn|error (по умолчанию info)
-    * PORT — адрес прослушивания, например :50051
+| Компонент | Версия |
+|------------|---------|
+| Go | **1.23.10** |
+| protoc | **3.21.12** |
+| protoc-gen-go | **v1.34.2** |
+| protoc-gen-connect-go | **v1.16.0** |
+| make | **4.4.1** |
+| docker | **27.1.2** |
+| docker-compose | **2.29.2** |
 
-### Локально через Go
+_Опционально:_  
+`grpcurl 1.9.1`, `golangci-lint 1.60.3` — для тестирования и линтинга.
+
+---
+
+## 🚀 Быстрый старт
+
+1. **Клонируйте репозиторий:**
+   ```bash
+   git clone https://github.com/kiselevos/new_tax
+   cd new_tax
+   ```
+
+2. **Установите зависимости:**
+   ```bash
+   make setup
+   ```
+
+3. **Сгенерируйте код (если нужно):**
+   ```bash
+   make codegen
+   ```
+
+4. **Запустите проект:**
+   ```bash
+   make run-all
+   ```
+   или через Docker:
+   ```bash
+   make docker-build
+   ```
+
+---
+
+## 🧰 Основные команды Make
+
+| Команда | Назначение |
+|----------|-------------|
+| `make setup` | Установка зависимостей backend и frontend |
+| `make codegen` | Генерация gRPC / ConnectRPC кода из `.proto` |
+| `make run` | Запуск backend локально |
+| `make run-all` | Запуск backend и frontend одновременно |
+| `make test-all` | Запуск тестов |
+| `make lint-all` | Проверка линтером |
+| `make docker-build` | Сборка и запуск контейнеров |
+| `make docker-down` | Остановка контейнеров |
+
+---
+
+## 🧪 Тестирование и проверка
+
+- **Линтинг:**
+  ```bash
+  make lint-all
+  ```
+- **Юнит- и интеграционные тесты:**
+  ```bash
+  make test-all
+  ```
+- **Проверка форматирования:**
+  ```bash
+  make check-fmt
+  ```
+- **Проверка генерации кода:**
+  ```bash
+  make check-generated
+  ```
+
+---
+
+## 🧱 Структура проекта
 
 ```bash
-make run
-```
-> Запускает `cmd/main.go` с gRPC-сервером.
-
-### Через Docker Compose
-
-```bash
-make docker-build     # собрать и запустить
-make docker-up        # только запустить
-make docker-down      # остановить
-```
-
-### gRPC-сервер доступен по адресу:
-```
-localhost:50051
-```
-Можно проверить с помощью `grpcurl` или теста:
-
-```bash
-grpcurl -plaintext localhost:50051 list
-go test -run Test_Server_Healthz ./test
-```
-
-
-## Локальный запуск CI
-Если установлен [`act`](https://github.com/nektos/act):
-
-```bash
-make local-CI
+├── cmd/                   # Точка входа backend
+├── internal/              # Внутренняя бизнес-логика и сервер
+├── pkg/                   # Утилиты и логгер
+├── gen/                   # Сгенерированный gRPC/Connect-код
+├── web/                   # Отдельное фронтенд-приложение
+├── test/                  # Интеграционные тесты
+├── tools.go               # CLI-инструменты (protoc, lint и т.д.)
+├── Makefile, Dockerfile   # Сборка и автоматизация
+└── docs/grpc/             # Протоколы и описание API
 ```
 
 ---
 
-## 📁 Структура проекта
+## 🧑‍💻 Контрибьюторы
 
-```
-.ci                — Dockerfile (образ для ci)
-.github/           — конфигурация CI (ci.yaml)
-cmd/               — точка входа (main.go)
-internal/          — server, calculator
-api/               — (tax.proto, buf.yaml)
-gen/               — сгенерированный gRPC-код
-test/              — интеграционные тесты
-pkg/               — логирование и утилиты
-Dockerfile         — Dockerfile
-Makefile           — сборка, тесты, генерация
-```
+Если вы хотите помочь с проектом — добавляйте улучшения, правки, тесты и документацию.  
+Любые конструктивные PR приветствуются 🙌
 
 ---
