@@ -19,35 +19,35 @@ help: ## Display this help screen
 # ============================================================
 # ⚙️ Setup Commands
 # ============================================================
+## Установка зависимостей для Backend
+.PHONY: setup-backend
+setup-backend: ## Устанавливает зависимости для backend (CLI-инструменты фиксируются через tools.go)
+	@echo "⚙️ Installing Backend..."
+	@go mod tidy
+	@go mod download	
+	@echo "✅ Backend install"
+
+## Установка зависимостей для всего проекта
 .PHONY: setup
-setup: ## Install all development tools locally
-	@echo "📦 Installing development dependencies..."
-	@echo "➡️  Installing Go protoc plugins..."
-	@go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GO_VERSION)
-	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@$(PROTOC_GO_GRPC_VERSION)
-	@echo "➡️  Installing linters..."
-	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
-	@echo "✅ All tools installed successfully!"
-
-
+setup: setup-backend
+	@cd web && make setup-frontend
+	@echo "✅ Backend & Frontend were installed successfully"
 # ============================================================
 # 🧬 Code Generation
 # ============================================================
 .PHONY: codegen
 codegen: ## Generate backend Go gRPC code via protoc
-	@echo "🧬 Generating Go gRPC code using protoc..."
+	@echo "🧬 Generating Go gRPC code..."
 	@mkdir -p gen/grpc/api
 	@protoc \
 	  --proto_path=./docs/grpc \
-	  --go_out=gen/grpc \
-	  --go_opt=paths=source_relative \
-	  --go-grpc_out=gen/grpc \
-	  --go-grpc_opt=paths=source_relative \
-	  $$(find ./docs/grpc -name "*.proto")
-	@mv gen/grpc/tax.pb.go gen/grpc/api/ 2>/dev/null || true
-	@mv gen/grpc/tax_grpc.pb.go gen/grpc/api/ 2>/dev/null || true
-	@echo "✅ Go gRPC code generated in gen/grpc/api"
-
+	  --plugin=protoc-gen-go=$(shell which protoc-gen-go) \
+	  --plugin=protoc-gen-go-grpc=$(shell which protoc-gen-go-grpc) \
+	  --go_out=gen/grpc --go_opt=paths=source_relative \
+	  --go-grpc_out=gen/grpc --go-grpc_opt=paths=source_relative \
+	  $(shell find ./docs/grpc -name "*.proto" -type f)
+	@mv gen/grpc/tax*.pb.go gen/grpc/api/ 2>/dev/null || true
+	@echo "✅ gRPC code generated → gen/grpc/api"
 
 # ============================================================
 # 🧱 Build & Run
@@ -122,5 +122,7 @@ local-CI: ## Run GitHub Actions locally via act
 # ============================================================
 .PHONY: run-all
 run-all: ## Run application
-	@go run ./cmd/main.go & \
-	cd web && go run ./cmd/web.go 
+	@echo "🚀 Starting backend and frontend..."
+	@trap 'kill 0' EXIT; \
+	go run ./cmd/main.go & \
+	cd web && go run ./cmd/web.go
