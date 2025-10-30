@@ -47,7 +47,7 @@ func UnaryLogger(base *slog.Logger) grpc.UnaryServerInterceptor {
 		resp, err := handler(ctx, req)
 
 		code := status.Code(err)
-		level := slog.LevelInfo
+		var level slog.Level
 		switch code {
 		case codes.OK, codes.Canceled, codes.InvalidArgument, codes.NotFound,
 			codes.AlreadyExists, codes.PermissionDenied, codes.Unauthenticated,

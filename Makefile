@@ -18,18 +18,27 @@ help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-
 # ============================================================
 # ⚙️ Setup Tools
 # ============================================================
 .PHONY: setup-tools
-setup-tools: ## Install dev tools locally into .tools/bin (cached)
-	@echo "🛠  Setting up local dev tools..."
+setup-tools: setup-lint-tools setup-proto-tools ## Install all dev tools (linters + proto)
+	@echo "✅ All tools installed in $(TOOLS_DIR)"
+
+.PHONY: setup-lint-tools
+setup-lint-tools: ## Install only linting tools
+	@echo "🔍 Installing lint tools..."
+	@mkdir -p $(TOOLS_DIR)
+	@GOBIN=$(TOOLS_DIR) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	@echo "✅ Lint tools installed in $(TOOLS_DIR)"
+
+.PHONY: setup-proto-tools
+setup-proto-tools: ## Install proto/gRPC tools for code generation
+	@echo "🧬 Installing proto tools..."
 	@mkdir -p $(TOOLS_DIR)
 	@GOBIN=$(TOOLS_DIR) go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GO_VERSION)
 	@GOBIN=$(TOOLS_DIR) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@$(PROTOC_GO_GRPC_VERSION)
-	@GOBIN=$(TOOLS_DIR) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
-	@echo "✅ Tools installed in $(TOOLS_DIR)"
+	@echo "✅ Proto tools installed in $(TOOLS_DIR)"
 
 # ============================================================
 # ⚙️ Setup Commands
@@ -70,12 +79,12 @@ codegen: ## Generate backend Go gRPC code via protoc
 # ============================================================
 .PHONY: run
 run: ## Run backend application
-	@go run -tags=tools ./cmd/main.go
+	@go run ./cmd/main.go
 
 .PHONY: build
 build: ## Compile Go binary
 	@echo "🏗️  Building binary..."
-	@go build -tags=tools -o bin/tax ./cmd
+	@go build -o bin/tax ./cmd
 	@echo "✅ Binary built at bin/tax"
 
 
@@ -84,16 +93,17 @@ build: ## Compile Go binary
 # ============================================================
 .PHONY: test-all
 test-all: ## Run all tests
-	@go test -tags=tools -v ./...
+	@go test -v ./...
 
 .PHONY: tidy
 tidy: ## Check go.mod/go.sum
 	@go mod tidy
 	@git diff --exit-code || (echo "::error::go.mod or go.sum is out of sync" && exit 1)
+	@go mod download
 
 .PHONY: lint-all
 lint-all: ## Run all linters
-	@go vet -tags=tools ./...
+	@go vet ./...
 	@golangci-lint run ./...
 
 .PHONY: gofmt
@@ -123,7 +133,6 @@ docker-build: ## Build and start docker containers
 .PHONY: docker-down
 docker-down: ## Stop and remove docker containers
 	@docker compose down
-
 
 # ============================================================
 # 🔬 CI & Local Utilities

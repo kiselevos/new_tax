@@ -64,10 +64,16 @@ build: ## Build binary
 # ============================================================
 # 🧪 Tests & Checks
 # ============================================================
+.PHONY: tidy
+tidy: ## Check go.mod/go.sum
+	@go mod tidy
+	@git diff --exit-code || (echo "::error::go.mod or go.sum is out of sync" && exit 1)
+	
+
 .PHONY: lint
 lint: ## Run linter
-	@echo "🔍 Running linters..."
 	@golangci-lint run ./...
+	@echo "✅ Linters check"
 
 .PHONY: test
 test: ## Run tests
