@@ -134,6 +134,10 @@ docker-build: ## Build and start docker containers
 docker-down: ## Stop and remove docker containers
 	@docker compose down
 
+.PHONY: docker-prune
+docker-prune: ## Cleane docker cash
+	@docker builder prune -f
+
 # ============================================================
 # 🔬 CI & Local Utilities
 # ============================================================

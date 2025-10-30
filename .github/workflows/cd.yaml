@@ -49,7 +49,7 @@ jobs:
           docker build -t ghcr.io/${{ github.repository_owner }}/tax-web:latest \
                        -t ghcr.io/${{ github.repository_owner }}/tax-web:${{ env.SHA_TAG }} \
                        -t ghcr.io/${{ github.repository_owner }}/tax-web:${{ env.DATE_TAG }} \
-                       -f web/Dockerfile ./web
+                       -f web/Dockerfile .
 
       - name: Push both images
         run: |
