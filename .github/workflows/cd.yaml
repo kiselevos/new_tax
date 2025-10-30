@@ -1,0 +1,62 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-build:
+    name: Build backend & web Docker images
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up image tags
+        id: vars
+        run: |
+          echo "SHA_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "DATE_TAG=$(date +'%Y%m%d')" >> $GITHUB_ENV
+          echo "Generated tags: $SHA_TAG, $DATE_TAG"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Backend
+      - name: Build backend image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/tax-backend:latest \
+                       -t ghcr.io/${{ github.repository_owner }}/tax-backend:${{ env.SHA_TAG }} \
+                       -t ghcr.io/${{ github.repository_owner }}/tax-backend:${{ env.DATE_TAG }} \
+                       -f Dockerfile .
+
+      # Web
+      - name: Build web image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/tax-web:latest \
+                       -t ghcr.io/${{ github.repository_owner }}/tax-web:${{ env.SHA_TAG }} \
+                       -t ghcr.io/${{ github.repository_owner }}/tax-web:${{ env.DATE_TAG }} \
+                       -f web/Dockerfile ./web
+
+      - name: Push both images
+        run: |
+          docker push ghcr.io/${{ github.repository_owner }}/tax-backend:latest
+          docker push ghcr.io/${{ github.repository_owner }}/tax-backend:${{ env.SHA_TAG }}
+          docker push ghcr.io/${{ github.repository_owner }}/tax-backend:${{ env.DATE_TAG }}
+
+          docker push ghcr.io/${{ github.repository_owner }}/tax-web:latest
+          docker push ghcr.io/${{ github.repository_owner }}/tax-web:${{ env.SHA_TAG }}
+          docker push ghcr.io/${{ github.repository_owner }}/tax-web:${{ env.DATE_TAG }}
