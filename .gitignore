@@ -7,3 +7,6 @@ bin/
 # IDE
 .idea/
 .vscode/
+
+# tools
+.tools/

@@ -72,11 +72,20 @@
 - **docker-compose 2.29.2**  
 - *(опционально)* `grpcurl 1.9.1`, `golangci-lint 1.60.3` — для отладки и линтинга  ---
 
+
 ### 🔧 Установка и генерация
 ```bash
 git clone https://github.com/kiselevos/new_tax
 cd new_tax
-
+```
+#### (Опционально) Установить инструменты разработчика
+Если вы хотите запускать линтеры, тесты или генерировать gRPC-код:
+```bash
+make setup-tools
+# Инструменты будут установлены в .tools/bin.
+```
+#### Подтянуть зависимости
+```bash
 # Backend
 go mod tidy
 go mod download

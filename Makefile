@@ -5,6 +5,9 @@ PROTOC_GO_VERSION := v1.34.2
 PROTOC_GO_GRPC_VERSION := v1.4.0
 GOLANGCI_LINT_VERSION := v1.60.3
 
+TOOLS_DIR := $(CURDIR)/.tools/bin
+export PATH := $(TOOLS_DIR):$(PATH)
+
 # ============================================================
 # 🧠 Default & Help
 # ============================================================
@@ -17,9 +20,20 @@ help: ## Display this help screen
 
 
 # ============================================================
+# ⚙️ Setup Tools
+# ============================================================
+.PHONY: setup-tools
+setup-tools: ## Install dev tools locally into .tools/bin (cached)
+	@echo "🛠  Setting up local dev tools..."
+	@mkdir -p $(TOOLS_DIR)
+	@GOBIN=$(TOOLS_DIR) go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GO_VERSION)
+	@GOBIN=$(TOOLS_DIR) go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@$(PROTOC_GO_GRPC_VERSION)
+	@GOBIN=$(TOOLS_DIR) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	@echo "✅ Tools installed in $(TOOLS_DIR)"
+
+# ============================================================
 # ⚙️ Setup Commands
 # ============================================================
-## Установка зависимостей для Backend
 .PHONY: setup-backend
 setup-backend: ## Устанавливает зависимости для backend (CLI-инструменты фиксируются через tools.go)
 	@echo "⚙️ Installing Backend..."
@@ -27,11 +41,12 @@ setup-backend: ## Устанавливает зависимости для backe
 	@go mod download	
 	@echo "✅ Backend install"
 
-## Установка зависимостей для всего проекта
 .PHONY: setup
 setup: setup-backend
 	@cd web && make setup-frontend
 	@echo "✅ Backend & Frontend were installed successfully"
+
+
 # ============================================================
 # 🧬 Code Generation
 # ============================================================
@@ -49,17 +64,18 @@ codegen: ## Generate backend Go gRPC code via protoc
 	@mv gen/grpc/tax*.pb.go gen/grpc/api/ 2>/dev/null || true
 	@echo "✅ gRPC code generated → gen/grpc/api"
 
+
 # ============================================================
 # 🧱 Build & Run
 # ============================================================
 .PHONY: run
-run: ## Run application
-	@go run ./cmd/main.go
+run: ## Run backend application
+	@go run -tags=tools ./cmd/main.go
 
 .PHONY: build
 build: ## Compile Go binary
 	@echo "🏗️  Building binary..."
-	@go build -o bin/tax ./cmd
+	@go build -tags=tools -o bin/tax ./cmd
 	@echo "✅ Binary built at bin/tax"
 
 
@@ -67,8 +83,8 @@ build: ## Compile Go binary
 # 🧪 Tests & Checks
 # ============================================================
 .PHONY: test-all
-test-all: ## Run tests
-	@go test -v ./...
+test-all: ## Run all tests
+	@go test -tags=tools -v ./...
 
 .PHONY: tidy
 tidy: ## Check go.mod/go.sum
@@ -77,7 +93,7 @@ tidy: ## Check go.mod/go.sum
 
 .PHONY: lint-all
 lint-all: ## Run all linters
-	@go vet ./...
+	@go vet -tags=tools ./...
 	@golangci-lint run ./...
 
 .PHONY: gofmt
@@ -121,8 +137,8 @@ local-CI: ## Run GitHub Actions locally via act
 # 🔬 Work with frontend
 # ============================================================
 .PHONY: run-all
-run-all: ## Run application
+run-all: ## Run backend and frontend together
 	@echo "🚀 Starting backend and frontend..."
 	@trap 'kill 0' EXIT; \
-	go run ./cmd/main.go & \
+	go run -tags=tools ./cmd/main.go & \
 	cd web && go run ./cmd/web.go
