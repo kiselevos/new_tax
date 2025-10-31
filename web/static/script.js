@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!form || !salaryInput) return;
 
     const MIN_SALARY = window.APP_CONFIG.minSalary;
-    const MAX_SALARY = 100000000; // 💰 Максимальный оклад — 100 млн
+    const MAX_SALARY = 100000000; 
     const salaryContainer = salaryInput.closest(".salary-field-container");
     
     // Создаем элемент для сообщений
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Проверка на пустое или некорректное значение
         if (!rawValue || isNaN(salary)) {
-            showError("Введите корректный оклад (например, 10000.00)");
+            showError("Введите корректный оклад (например, 50000)");
             isValid = false;
         }
         // Проверка минимального оклада
