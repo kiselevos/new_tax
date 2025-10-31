@@ -7,7 +7,7 @@ import (
 
 func TestNewServer_DoesNotPanic(t *testing.T) {
 	mux := http.NewServeMux()
-	srv := New(":0", mux)
+	srv := New("0", mux)
 
 	if srv == nil {
 		t.Fatal("expected non-nil *http.Server")

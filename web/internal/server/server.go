@@ -7,7 +7,7 @@ import (
 
 func New(addr string, handler http.Handler) *http.Server {
 	return &http.Server{
-		Addr:              addr,
+		Addr:              ":" + addr,
 		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
