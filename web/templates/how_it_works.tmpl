@@ -5,36 +5,24 @@
   <meta charset="UTF-8">
   <title>Как работает калькулятор</title>
   <link rel="stylesheet" href="/static/info-pages.css">
-  <style>
-    .info-page { max-width: 900px; margin: 0 auto; padding: 2rem; line-height: 1.6; }
-    .info-page-title { font-size: 2rem; margin-bottom: 1rem; }
-    .info-page-subtitle { color: #444; margin-bottom: 2rem; }
-    .info-card { background: #f8f9fa; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .info-card-title { margin-bottom: 1rem; }
-    .info-bullet-list { margin-left: 1.5rem; }
-    .info-source { font-size: 0.9rem; color: #666; margin-top: 1rem; }
-    .info-source-link { color: #007bff; text-decoration: none; }
-    .info-source-link:hover { text-decoration: underline; }
-    .info-button-container { text-align: center; margin-top: 2rem; }
-    .info-button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-  </style>
 </head>
 <body>
   <div class="info-page">
     <h1 class="info-page-title">Как работает этот калькулятор</h1>
+
     <p class="info-page-subtitle">
-      Этот калькулятор помогает рассчитать подоходный налог (НДФЛ) в России с учётом
-      вашего оклада, региональных коэффициентов и северных надбавок.
-      Всё просто и прозрачно — вы можете увидеть, как меняется доход по месяцам
-      и сколько налога удерживается.
+      Этот калькулятор помогает рассчитать <strong>подоходный налог (НДФЛ)</strong> в России с учётом 
+      вашего <strong>оклада</strong>, <strong>региональных коэффициентов</strong> и <strong>северных надбавок</strong>.
+      Он показывает, как меняется ваш доход по месяцам и какой налог удерживается из каждой выплаты.
     </p>
 
     <!-- Основная идея -->
     <div class="info-card">
       <h2 class="info-card-title">🔹 Основная идея</h2>
-      <p>Калькулятор рассчитывает ваш доход и налог помесячно, с начала выбранного периода согласно законодательству РФ. 
-      Все расчёты ведутся по календарному году — с января по декабрь.</p>
-      <p>С 1 января 2025 года в России действует <strong>пятиступенчатая прогрессивная шкала НДФЛ</strong>:</p>
+      <p>
+        Калькулятор моделирует начисление дохода и налога помесячно — с начала указанного периода до конца календарного года.
+        Расчёт выполняется по <strong>новой пятиступенчатой прогрессивной шкале</strong> НДФЛ, действующей с 1 января 2025 года:
+      </p>
       <ul class="info-bullet-list">
         <li>до 2,4 млн ₽ — 13%</li>
         <li>от 2,4 до 5 млн ₽ — 15%</li>
@@ -42,48 +30,63 @@
         <li>от 20 до 50 млн ₽ — 20%</li>
         <li>свыше 50 млн ₽ — 22%</li>
       </ul>
-      <p>Налог рассчитывается постепенно: к каждому диапазону применяется своя ставка.</p>
-      <p class="info-source">
-        Источник: 
-        <a href="https://www.consultant.ru/document/cons_doc_LAW_480709/" target="_blank" rel="noopener" class="info-source-link">
-          Федеральный закон № 389-ФЗ от 25.07.2024 г.
-        </a>; 
-        <a href="https://www.consultant.ru/document/cons_doc_LAW_28165/" target="_blank" rel="noopener" class="info-source-link">
-          статья 224 Налогового кодекса РФ
-        </a>.
-      </p>
+      <div class="info-example">
+        ℹ️ Пример: если ваш доход за год составит 3 млн ₽, первые 2,4 млн будут обложены по ставке 13%, а оставшиеся 600 тыс — по 15%.
+      </div>
+
+      <p class="info-source">📚 Источники:</p>
+      <ul class="info-source-list">
+        <li><a href="https://www.consultant.ru/document/cons_doc_LAW_480709/" target="_blank" class="info-source-link">Федеральный закон № 389-ФЗ от 25.07.2024</a></li>
+        <li><a href="https://www.consultant.ru/document/cons_doc_LAW_28165/" target="_blank" class="info-source-link">Налоговый кодекс РФ — статья 224 (налоговые ставки)</a></li>
+      </ul>
     </div>
 
     <!-- Коэффициенты -->
     <div class="info-card">
       <h2 class="info-card-title">📍 Районный коэффициент и северная надбавка</h2>
-      <p>В некоторых регионах России оклады повышаются с помощью 
-      <strong>районных коэффициентов</strong> и <strong>северных надбавок</strong>. Эти надбавки компенсируют
-      сложные климатические условия и высокие расходы на жизнь.</p>
-      <p>Калькулятор сначала увеличивает оклад на районный коэффициент,
-      а затем рассчитывает северную надбавку (с фиксированной ставкой 13%).</p>
-      <p>Подробнее о региональных коэффициентах можно узнать 
-        <a href="/regional-info" class="info-source-link">здесь</a>.
+      <p>
+        В некоторых регионах России оклады повышаются за счёт <strong>районных коэффициентов</strong> и 
+        <strong>северных надбавок</strong>, которые компенсируют климатические условия и повышенные расходы на жизнь.
       </p>
+      <p>
+        Калькулятор сначала применяет районный коэффициент, затем рассчитывает северную надбавку (фиксированная ставка 13%) и только потом определяет итоговый НДФЛ.
+      </p>
+      <div class="info-example">
+        ℹ️ Пример: оклад 100 000 ₽ при районном коэффициенте 1.2 и северной надбавке в 30% → итоговый доход 156 000 ₽ (100 000 × 1.2 × 1.3).
+      </div>
+      <p class="info-source">📚 Источники:</p>
+      <ul class="info-source-list">
+        <li><a href="https://www.consultant.ru/document/cons_doc_LAW_28165/ed7f95b14e4d8f9a0c99df5dd911f292482e62cb/" target="_blank" class="info-source-link">Налоговый кодекс РФ — статья 224</a></li>
+        <li><a href="https://www.consultant.ru/document/cons_doc_LAW_37593/" target="_blank" class="info-source-link">Постановление Совмина СССР № 1029 от 26.09.1967 г. (о северных надбавках)</a></li>
+      </ul>
     </div>
 
     <!-- Как считается налог -->
     <div class="info-card">
       <h2 class="info-card-title">💰 Как считается налог</h2>
-      <p>Каждый месяц к сумме вашего дохода добавляется налог, рассчитанный по накопительной
-      системе. Ставка может меняться в течение года, если доход переходит в другой диапазон.</p>
-      <p>Налог округляется до целого рубля по правилам Налогового кодекса.</p>
+      <p>
+        Каждый месяц к сумме вашего дохода добавляется налог, рассчитанный по накопительной системе. 
+        Ставка может меняться в течение года, если доход переходит в другой диапазон.
+      </p>
+      <p>
+        Налог округляется до целого рубля по правилам 
+        <a href="https://www.consultant.ru/document/cons_doc_LAW_28165/52a0a86e7cc7c03b30e429eaed5ab44c1b80d8a6/" 
+           target="_blank" class="info-source-link">п. 6 ст. 52 Налогового кодекса РФ</a>.
+      </p>
+      <div class="info-example">
+        ℹ️ Пример: если сумма налога составляет 12 345,50 ₽, удерживается 12 346 ₽; если 12 345,49 ₽ — удерживается 12 345 ₽.
+      </div>
     </div>
 
-    <!-- Особые случаи -->
+    <!-- Особые режимы -->
     <div class="info-card">
-      <h2 class="info-card-title">⚙️ Особые случаи</h2>
-      <p>В калькуляторе предусмотрены отдельные режимы для:</p>
+      <h2 class="info-card-title">⚙️ Особые режимы</h2>
+      <p>Калькулятор также учитывает специальные случаи налогообложения:</p>
       <ul class="info-bullet-list">
-        <li>💼 сотрудников силовых структур — с льготной шкалой 13–15%;</li>
-        <li>🌍 налоговых нерезидентов — ставка 30% на все доходы.</li>
+        <li>💼 <a href="/special-tax-modes" class="info-source-link">сотрудники силовых структур</a> — упрощённая шкала 13–15%;</li>
+        <li>🌍 <a href="/special-tax-modes" class="info-source-link">нерезиденты РФ</a> — единая ставка 30%.</li>
       </ul>
-      <p>Эти режимы можно выбрать вручную при расчёте.</p>
+      <p>Вы можете выбрать соответствующий режим вручную перед расчётом.</p>
     </div>
 
     <div class="info-button-container">
