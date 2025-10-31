@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!form || !salaryInput) return;
 
     const MIN_SALARY = window.APP_CONFIG.minSalary;
+    const MAX_SALARY = 100000000; // 💰 Максимальный оклад — 100 млн
     const salaryContainer = salaryInput.closest(".salary-field-container");
     
     // Создаем элемент для сообщений
@@ -34,27 +35,44 @@ document.addEventListener("DOMContentLoaded", function() {
         salaryInput.classList.remove("field-error");
     }
 
-    // Валидация при вводе
-    salaryInput.addEventListener('input', function() {
-        const value = this.value.trim().replace(/\s/g, '').replace(',', '.');
-        if (value && !isNaN(parseFloat(value)) && parseFloat(value) >= MIN_SALARY) {
-            clearMessages();
-        }
-    });
+    // 💡 Фильтрация: разрешаем цифры, запятую и точку
+    salaryInput.addEventListener('input', function () {
+  let value = this.value;
+
+  // Убираем всё кроме цифр, точки и запятой
+  value = value.replace(/[^0-9.,]/g, '');
+
+  // Если несколько точек/запятых — оставляем только первую
+  const firstSeparator = value.match(/[.,]/);
+  if (firstSeparator) {
+    const sep = firstSeparator[0];
+    const pos = firstSeparator.index;
+    // удаляем все остальные разделители
+    value = value.replace(/[.,]/g, '');
+    // вставляем только первую найденную
+    value = value.slice(0, pos) + sep + value.slice(pos);
+  }
+
+  // Ограничиваем два знака после разделителя
+  value = value.replace(/^(\d+)([.,])(\d{0,2}).*$/, (_, int, sep, frac) =>
+    frac !== undefined ? int + sep + frac : int
+  );
+
+  this.value = value;
+});
 
     // Валидация при отправке формы
     form.addEventListener("submit", function(e) {
         e.preventDefault();
         
-        const value = salaryInput.value.trim().replace(/\s/g, '').replace(',', '.');
-        const salary = parseFloat(value);
+        const rawValue = salaryInput.value.trim().replace(/\s/g, '').replace(',', '.');
+        const salary = parseFloat(rawValue);
         
         clearMessages();
-
         let isValid = true;
 
         // Проверка на пустое или некорректное значение
-        if (!value || isNaN(salary) || salary <= 0) {
+        if (!rawValue || isNaN(salary)) {
             showError("Введите корректный оклад (например, 10000.00)");
             isValid = false;
         }
@@ -63,56 +81,56 @@ document.addEventListener("DOMContentLoaded", function() {
             showError(`Минимальный оклад — ${MIN_SALARY.toLocaleString('ru-RU')} ₽`);
             isValid = false;
         }
+        // Проверка максимального оклада
+        else if (salary > MAX_SALARY) {
+            showError(`Сумма слишком велика. Максимум — ${MAX_SALARY.toLocaleString('ru-RU')} ₽`);
+            isValid = false;
+        }
 
-        // Если валидация прошла успешно, отправляем форму
+        // Если валидация прошла успешно — отправляем форму
         if (isValid) {
             form.submit();
         }
     });
 
-    // Автоматическое форматирование оклада
+    // Автоматическое форматирование при blur
     salaryInput.addEventListener('blur', function() {
         let value = this.value.trim().replace(/\s/g, '').replace(',', '.');
         if (value && !isNaN(parseFloat(value))) {
             const number = parseFloat(value);
             this.value = number.toLocaleString('ru-RU', {
-                minimumFractionDigits: 2,
+                minimumFractionDigits: value.includes('.') || value.includes(',') ? 2 : 0,
                 maximumFractionDigits: 2
             });
         }
     });
     
     salaryInput.addEventListener('focus', function() {
-        let value = this.value.replace(/\s/g, '').replace(',', '.');
-        if (value && !isNaN(parseFloat(value))) {
-            this.value = parseFloat(value);
-        }
+        this.value = this.value.replace(/\s/g, '').replace(',', '.');
     });
 
+    // ======== Exclusive checkboxes ========
     function initExclusiveCheckboxes() {
         const options = document.querySelectorAll('.exclusive-option');
-        console.log('🔍 Found exclusive options:', options.length); // Отладочный вывод
+        console.log('🔍 Found exclusive options:', options.length);
         
         options.forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
-            console.log('🔍 Checkbox:', checkbox); // Отладочный вывод
+            if (!checkbox) return;
             
             checkbox.addEventListener('change', function() {
-                console.log('🔍 Checkbox changed:', this.name, this.checked); // Отладочный вывод
-                
                 if (this.checked) {
-                    // Добавляем класс selected
                     option.classList.add('selected');
                     
-                    // Снимаем выбор с других
                     options.forEach(otherOption => {
                         if (otherOption !== option) {
                             const otherCheckbox = otherOption.querySelector('input[type="checkbox"]');
-                            otherCheckbox.checked = false;
-                            otherOption.classList.remove('selected');
+                            if (otherCheckbox) {
+                                otherCheckbox.checked = false;
+                                otherOption.classList.remove('selected');
+                            }
                         }
                     });
-                    
                     showCheckboxHint(this);
                 } else {
                     option.classList.remove('selected');
@@ -124,7 +142,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function showCheckboxHint(checkedCheckbox) {
         removeCheckboxHint();
-        
         const hint = document.createElement('div');
         hint.className = 'checkbox-hint';
         
@@ -135,9 +152,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         const container = checkedCheckbox.closest('.exclusive-checkboxes');
-        if (container) {
-            container.appendChild(hint);
-        }
+        if (container) container.appendChild(hint);
     }
 
     function removeCheckboxHint() {
