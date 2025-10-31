@@ -3,6 +3,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Расчёт НДФЛ</title>
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/script.js" defer></script>
@@ -22,7 +23,7 @@ window.APP_CONFIG = {
 
   <main>
     <form action="/calculate" method="post" class="form" 
-      data-min-salary="{{getMinSalary}}">
+      data-min-salary="{{getMinSalary}}" novalidate>
       <!-- оклад -->
 <div class="field-row">
     <div class="field-left">
@@ -37,10 +38,17 @@ window.APP_CONFIG = {
     <div class="field-right">
         <div class="salary-field-container">
             <div class="salary-field">
-                <input type="text" id="grossSalary" name="grossSalary" inputmode="decimal" required placeholder="Введите сумму">
+                <input
+                  type="text"
+                  id="grossSalary"
+                  name="grossSalary"
+                  inputmode="decimal"
+                  required
+                  placeholder="Введите сумму"
+                />
                 <span class="ruble">₽</span>
             </div>
-            <!-- Сообщение об ошибке будет добавляться сюда -->
+            
         </div>
     </div>
 </div>
@@ -138,8 +146,12 @@ window.APP_CONFIG = {
       <button type="submit">Рассчитать</button>
 
       <div class="calculator-note">
-        <p>🔍 Все расчёты выполняются по открытым формулам и не сохраняются на сервере. Это инструмент для справочных целей, чтобы вы могли оценить свой доход «на руки».</p>
-        <a href="/how-it-works" class="calculator-link">подробнее о работе калькулятора →</a>
+        <p>
+          🔍 Все расчёты выполняются по открытым формулам и <b>не сохраняются на сервере</b>.
+          Калькулятор предназначен исключительно <i>для справочных целей</i>, чтобы вы могли
+          оценить свой чистый доход и размер НДФЛ, который будете уплачивать после 2025 года.
+        </p>
+      <a href="/how-it-works" class="calculator-link">подробнее о работе калькулятора →</a>
       </div>
     </form>
   </main>
