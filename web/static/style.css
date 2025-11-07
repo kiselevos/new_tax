@@ -618,18 +618,57 @@ select {
         border-radius: 10px;
     }
 
+    @media (max-width: 480px) {
+    .field-tooltip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
     .tooltip-icon {
         width: 18px;
         height: 18px;
-        font-size: 11px;
+        font-size: 12px;
+        flex-shrink: 0;
     }
 
     .tooltip-text {
-        width: 90vw;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.8rem;
-    }
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(100% + 10px);
+    width: max(70vw, 220px);
+    max-width: 320px;
+    font-size: 0.9rem;
+    padding: 12px 14px;
+    background: rgba(44,62,80,0.95);
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-align: left;
+    line-height: 1.4;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+    z-index: 1000;
+    pointer-events: none;
+}
+.tooltip-text.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(44,62,80,0.95) transparent transparent transparent;
+}
 
     .checkbox-column {
         gap: 0.5rem;
@@ -654,4 +693,5 @@ select {
         margin-top: 1rem;
         font-size: 0.75rem;
     }
+}
 }

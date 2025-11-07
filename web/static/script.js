@@ -109,6 +109,63 @@ document.addEventListener("DOMContentLoaded", function() {
         this.value = this.value.replace(/\s/g, '').replace(',', '.');
     });
 
+
+    function initTooltips() {
+    const tooltips = document.querySelectorAll('.field-tooltip');
+
+    tooltips.forEach(tooltip => {
+        const icon = tooltip.querySelector('.tooltip-icon');
+        const text = tooltip.querySelector('.tooltip-text');
+        if (!icon || !text) return;
+
+        const isTouch = window.matchMedia('(hover: none)').matches;
+
+        function adjustTooltipPosition() {
+            text.style.left = '50%';
+            text.style.right = 'auto';
+            text.style.transform = 'translateX(-50%)';
+
+            const rect = text.getBoundingClientRect();
+
+            // Если тултип выходит за левый край
+            if (rect.left < 8) {
+                text.style.left = '0';
+                text.style.transform = 'none';
+            }
+
+            // Если выходит за правый край
+            if (rect.right > window.innerWidth - 8) {
+                text.style.left = 'auto';
+                text.style.right = '0';
+                text.style.transform = 'none';
+            }
+        }
+
+        if (isTouch) {
+            icon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = text.classList.contains('visible');
+                document.querySelectorAll('.tooltip-text.visible').forEach(el => el.classList.remove('visible'));
+
+                if (!isVisible) {
+                    text.classList.add('visible');
+                    adjustTooltipPosition();
+                }
+            });
+
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.tooltip-text.visible').forEach(el => el.classList.remove('visible'));
+            });
+        } else {
+            tooltip.addEventListener('mouseenter', () => {
+                text.classList.add('visible');
+                adjustTooltipPosition();
+            });
+            tooltip.addEventListener('mouseleave', () => text.classList.remove('visible'));
+        }
+    });
+}
+
     // ======== Exclusive checkboxes ========
     function initExclusiveCheckboxes() {
         const options = document.querySelectorAll('.exclusive-option');
