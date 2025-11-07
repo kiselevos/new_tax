@@ -21,12 +21,8 @@ document.addEventListener("DOMContentLoaded", function() {
         messageEl.className = "field-message error";
         salaryInput.classList.add("field-error");
         salaryInput.focus();
-        
-        // Анимация для привлечения внимания
         salaryInput.style.animation = 'shake 0.3s ease';
-        setTimeout(() => {
-            salaryInput.style.animation = '';
-        }, 300);
+        setTimeout(() => salaryInput.style.animation = '', 300);
     }
 
     function clearMessages() {
@@ -35,33 +31,53 @@ document.addEventListener("DOMContentLoaded", function() {
         salaryInput.classList.remove("field-error");
     }
 
-    // 💡 Фильтрация: разрешаем цифры, запятую и точку
+    // 💡 Разрешаем цифры, запятую и точку
     salaryInput.addEventListener('input', function () {
-  let value = this.value;
+        let value = this.value;
 
-  // Убираем всё кроме цифр, точки и запятой
-  value = value.replace(/[^0-9.,]/g, '');
+        // Убираем всё кроме цифр, точки и запятой
+        value = value.replace(/[^0-9.,]/g, '');
 
-  // Если несколько точек/запятых — оставляем только первую
-  const firstSeparator = value.match(/[.,]/);
-  if (firstSeparator) {
-    const sep = firstSeparator[0];
-    const pos = firstSeparator.index;
-    // удаляем все остальные разделители
-    value = value.replace(/[.,]/g, '');
-    // вставляем только первую найденную
-    value = value.slice(0, pos) + sep + value.slice(pos);
-  }
+        // Если несколько точек/запятых — оставляем только первую
+        const firstSeparator = value.match(/[.,]/);
+        if (firstSeparator) {
+            const sep = firstSeparator[0];
+            const pos = firstSeparator.index;
+            // удаляем все остальные разделители
+            value = value.replace(/[.,]/g, '');
+            // вставляем только первую найденную
+            value = value.slice(0, pos) + sep + value.slice(pos);
+        }
 
-  // Ограничиваем два знака после разделителя
-  value = value.replace(/^(\d+)([.,])(\d{0,2}).*$/, (_, int, sep, frac) =>
-    frac !== undefined ? int + sep + frac : int
-  );
+        // Ограничиваем два знака после разделителя
+        value = value.replace(/^(\d+)([.,])(\d{0,2}).*$/, (_, int, sep, frac) =>
+            frac !== undefined ? int + sep + frac : int
+        );
 
-  this.value = value;
-});
+        this.value = value;
+    });
 
-    // Валидация при отправке формы
+    // 💰 Форматирование при blur (всегда с двумя копейками)
+    salaryInput.addEventListener('blur', function() {
+        let value = this.value.trim().replace(/\s/g, '').replace(',', '.');
+        const number = parseFloat(value);
+
+        if (!isNaN(number)) {
+            this.value = number.toLocaleString('ru-RU', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    });
+
+    // 💬 При фокусе убираем форматирование, чтобы ввод был удобным
+    salaryInput.addEventListener('focus', function() {
+        let value = this.value.trim();
+        // Убираем пробелы и заменяем запятую на точку (для удобного редактирования)
+        this.value = value.replace(/\s/g, '').replace(',', '.');
+    });
+
+    // === Проверка при отправке формы ===
     form.addEventListener("submit", function(e) {
         e.preventDefault();
         
@@ -71,106 +87,78 @@ document.addEventListener("DOMContentLoaded", function() {
         clearMessages();
         let isValid = true;
 
-        // Проверка на пустое или некорректное значение
         if (!rawValue || isNaN(salary)) {
             showError("Введите корректный оклад (например, 50000)");
             isValid = false;
-        }
-        // Проверка минимального оклада
-        else if (salary < MIN_SALARY) {
+        } else if (salary < MIN_SALARY) {
             showError(`Минимальный оклад — ${MIN_SALARY.toLocaleString('ru-RU')} ₽`);
             isValid = false;
-        }
-        // Проверка максимального оклада
-        else if (salary > MAX_SALARY) {
+        } else if (salary > MAX_SALARY) {
             showError(`Сумма слишком велика. Максимум — ${MAX_SALARY.toLocaleString('ru-RU')} ₽`);
             isValid = false;
         }
 
-        // Если валидация прошла успешно — отправляем форму
-        if (isValid) {
-            form.submit();
-        }
+        if (isValid) form.submit();
     });
 
-    // Автоматическое форматирование при blur
-    salaryInput.addEventListener('blur', function() {
-        let value = this.value.trim().replace(/\s/g, '').replace(',', '.');
-        if (value && !isNaN(parseFloat(value))) {
-            const number = parseFloat(value);
-            this.value = number.toLocaleString('ru-RU', {
-                minimumFractionDigits: value.includes('.') || value.includes(',') ? 2 : 0,
-                maximumFractionDigits: 2
-            });
-        }
-    });
-    
-    salaryInput.addEventListener('focus', function() {
-        this.value = this.value.replace(/\s/g, '').replace(',', '.');
-    });
-
-
+    // === Подсказки ===
     function initTooltips() {
-    const tooltips = document.querySelectorAll('.field-tooltip');
+        const tooltips = document.querySelectorAll('.field-tooltip');
 
-    tooltips.forEach(tooltip => {
-        const icon = tooltip.querySelector('.tooltip-icon');
-        const text = tooltip.querySelector('.tooltip-text');
-        if (!icon || !text) return;
+        tooltips.forEach(tooltip => {
+            const icon = tooltip.querySelector('.tooltip-icon');
+            const text = tooltip.querySelector('.tooltip-text');
+            if (!icon || !text) return;
 
-        const isTouch = window.matchMedia('(hover: none)').matches;
+            const isTouch = window.matchMedia('(hover: none)').matches;
 
-        function adjustTooltipPosition() {
-            text.style.left = '50%';
-            text.style.right = 'auto';
-            text.style.transform = 'translateX(-50%)';
+            function adjustTooltipPosition() {
+                text.style.left = '50%';
+                text.style.right = 'auto';
+                text.style.transform = 'translateX(-50%)';
 
-            const rect = text.getBoundingClientRect();
+                const rect = text.getBoundingClientRect();
 
-            // Если тултип выходит за левый край
-            if (rect.left < 8) {
-                text.style.left = '0';
-                text.style.transform = 'none';
+                if (rect.left < 8) {
+                    text.style.left = '0';
+                    text.style.transform = 'none';
+                }
+
+                if (rect.right > window.innerWidth - 8) {
+                    text.style.left = 'auto';
+                    text.style.right = '0';
+                    text.style.transform = 'none';
+                }
             }
 
-            // Если выходит за правый край
-            if (rect.right > window.innerWidth - 8) {
-                text.style.left = 'auto';
-                text.style.right = '0';
-                text.style.transform = 'none';
-            }
-        }
+            if (isTouch) {
+                icon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = text.classList.contains('visible');
+                    document.querySelectorAll('.tooltip-text.visible').forEach(el => el.classList.remove('visible'));
 
-        if (isTouch) {
-            icon.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const isVisible = text.classList.contains('visible');
-                document.querySelectorAll('.tooltip-text.visible').forEach(el => el.classList.remove('visible'));
+                    if (!isVisible) {
+                        text.classList.add('visible');
+                        adjustTooltipPosition();
+                    }
+                });
 
-                if (!isVisible) {
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.tooltip-text.visible').forEach(el => el.classList.remove('visible'));
+                });
+            } else {
+                tooltip.addEventListener('mouseenter', () => {
                     text.classList.add('visible');
                     adjustTooltipPosition();
-                }
-            });
+                });
+                tooltip.addEventListener('mouseleave', () => text.classList.remove('visible'));
+            }
+        });
+    }
 
-            document.addEventListener('click', () => {
-                document.querySelectorAll('.tooltip-text.visible').forEach(el => el.classList.remove('visible'));
-            });
-        } else {
-            tooltip.addEventListener('mouseenter', () => {
-                text.classList.add('visible');
-                adjustTooltipPosition();
-            });
-            tooltip.addEventListener('mouseleave', () => text.classList.remove('visible'));
-        }
-    });
-}
-
-    // ======== Exclusive checkboxes ========
+    // === Взаимоисключающие чекбоксы ===
     function initExclusiveCheckboxes() {
         const options = document.querySelectorAll('.exclusive-option');
-        console.log('🔍 Found exclusive options:', options.length);
-        
         options.forEach(option => {
             const checkbox = option.querySelector('input[type="checkbox"]');
             if (!checkbox) return;
