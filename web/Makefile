@@ -28,24 +28,6 @@ setup-frontend: ## Устанавливает зависимости для fron
 	@go mod download
 	@echo "✅ Frontend dependencies installed"
 
-
-# ============================================================
-# 🧬 Code Generation
-# ============================================================
-.PHONY: codegen
-codegen: ## Generate ConnectRPC client code from .proto
-	@echo "🧬 Generating ConnectRPC client code..."
-	@mkdir -p ./gen/grpc/api
-	@protoc \
-	  --proto_path=../docs/grpc \
-	  --plugin=protoc-gen-go=$(shell which protoc-gen-go) \
-	  --plugin=protoc-gen-connect-go=$(shell which protoc-gen-connect-go) \
-	  --go_out=./gen/grpc/api --go_opt=paths=source_relative \
-	  --connect-go_out=./gen/grpc/api --connect-go_opt=paths=source_relative \
-	  $(shell find ../docs/grpc -name "*.proto" -type f)
-	@echo "✅ ConnectRPC client code generated → gen/grpc/api"
-
-
 # ============================================================
 # 🧱 Build & Run
 # ============================================================
