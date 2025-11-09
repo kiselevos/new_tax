@@ -1,0 +1,67 @@
+{{define "employer_contributions"}}
+<section class="employer-contrib">
+  <button class="employer-toggle" id="toggle-employer">
+    Сколько на самом деле стоит ваш труд?
+    <span class="arrow">▼</span>
+  </button>
+
+  <div class="employer-content" id="employer-content">
+    <p>
+      Когда вы получаете зарплату, кажется, что государство забирает лишь НДФЛ.
+      Однако, ваш труд создаёт <strong>гораздо большую ценность</strong>. Часть идёт вам, 
+      остальное распределяется между налогами, фондами и системой.
+    </p>
+
+    <p>За выбранный период ваш работодатель перечислит в государственные фонды:</p>
+
+    <div class="employer-table">
+      <div class="employer-row">
+        <span class="employer-fund">Пенсионный фонд (ПФР):</span>
+        <span class="employer-value">{{fmtMoney .AnnualPFR}}</span>
+      </div>
+      <div class="employer-row">
+        <span class="employer-fund">Фонд обязательного медицинского страхования (ФОМС):</span>
+        <span class="employer-value">{{fmtMoney .AnnualFOMS}}</span>
+      </div>
+      <div class="employer-row">
+        <span class="employer-fund">Фонд социального страхования (ФСС):</span>
+        <span class="employer-value">{{fmtMoney .AnnualFSS}}</span>
+      </div>
+      <hr>
+      <div class="employer-row total">
+        <span class="employer-fund">Всего взносов:</span>
+        <span class="employer-value">{{fmtMoney (sum .AnnualPFR .AnnualFOMS .AnnualFSS)}}</span>
+      </div>
+    </div>
+
+    <p class="employer-note">
+        Эти деньги не видны в вашем платёжном листе, не проходят через ваши руки, 
+        но они часть стоимости, которую создаёт ваш труд.
+    </p>
+
+<div class="employer-highlight">
+  💰 <strong>Итого, за выбранный период государство получит налогов и взносов  
+  на сумму {{fmtMoney (sum .AnnualTaxAmount .AnnualPFR .AnnualFOMS .AnnualFSS)}}</strong>
+</div>
+
+<p class="employer-note">
+  Ваш труд создаёт больше, чем вы получаете.
+<strong>Понимание этого — первый шаг к реальной экономической зрелости.</strong>
+</p>
+
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const toggle = document.getElementById('toggle-employer');
+  const content = document.getElementById('employer-content');
+  const arrow = toggle.querySelector('.arrow');
+
+  toggle.addEventListener('click', () => {
+    content.classList.toggle('open');
+    arrow.textContent = content.classList.contains('open') ? '▲' : '▼';
+  });
+});
+</script>
+{{end}}

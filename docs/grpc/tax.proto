@@ -23,19 +23,6 @@ message CalculatePrivateRequest {
   optional bool is_not_resident = 6; // Статус налогового нерезидента
 }
 
-// Ответ для авторизованных пользователей (подробный)
-message CalculatePrivateResponse {
-  repeated MonthlyPrivateTax monthly_details = 1; // Помесячная детализация
-
-  uint64 annual_tax_amount = 2; // Уплаченный налог с начала выбранного периода 
-  uint64 annual_gross_income = 3; // Гросс доход с начала указанного периода 
-  uint64 annual_net_income = 4; // Чистый доход с начала указанного периода 
-
-  uint64 gross_salary = 5; // Указаный оклад в запросе
-  optional uint64 territorial_multiplier = 6; // Указаный в запросе территориальный коэффициент
-  optional uint64 northern_coefficient = 7; // Указанная в запросе северная надбавка
-}
-
 // Ответ для гостей (усечённый)
 message CalculatePublicResponse {
   repeated MonthlyPublicTax monthly_details = 1; // Помесячная детализация
@@ -47,6 +34,23 @@ message CalculatePublicResponse {
   uint64 gross_salary = 5; // Указаный оклад в запросе
   optional uint64 territorial_multiplier = 6; // Указаный в запросе территориальный коэффициент
   optional uint64 northern_coefficient = 7; // Указанная в запросе северная надбавка
+}
+
+// Ответ для авторизованных пользователей (подробный)
+message CalculatePrivateResponse {
+  repeated MonthlyPrivateTax monthly_details = 1; // Помесячная детализация
+
+  uint64 annual_tax_amount = 2; // Уплаченный налог с начала выбранного периода 
+  uint64 annual_gross_income = 3; // Гросс доход с начала указанного периода 
+  uint64 annual_net_income = 4; // Чистый доход с начала указанного периода 
+
+  uint64 gross_salary = 5; // Указаный оклад в запросе
+  optional uint64 territorial_multiplier = 6; // Указаный в запросе территориальный коэффициент
+  optional uint64 northern_coefficient = 7; // Указанная в запросе северная надбавка
+
+  uint64 annualPFR = 20; // Налог с начала выбранного периода работодателя в Пенсионный фонд России
+  uint64 annualFOMS = 21; //Налог с начала выбранного периода работодателя в Фонд Обязательного медиционского страхования
+  uint64 annualFSS = 22; //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
 }
 
 // Полный расчёт на месяц для авторизованного пользователя
@@ -71,6 +75,14 @@ message MonthlyPrivateTax {
 
   uint64 annual_north_tax_amount = 15; // Налог с начала года с северной надбавки
   uint64 annual_base_tax_amount = 16; // Налог с начала года с оклада + территориального коэффициента
+
+  uint64 monthlyPFR = 17; //Месячный налог с работодателя в Пенсионный фонд России
+  uint64 monthlyFOMS = 18; //Месячный налог с работодателя в Фонд Обязательного медиционского страхования
+  uint64 monthlyFSS = 19; //Месячный налог с работодателя в Фонд социального страхования (Больничные, декреты)
+
+  uint64 annualPFR = 20; // Налог с начала выбранного периода работодателя в Пенсионный фонд России
+  uint64 annualFOMS = 21; //Налог с начала выбранного периода работодателя в Фонд Обязательного медиционского страхования
+  uint64 annualFSS = 22; //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
 }
 
 // Упрощённый расчёт на месяц для гостей

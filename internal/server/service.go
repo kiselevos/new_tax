@@ -44,11 +44,16 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		return nil, status.Error(codes.Internal, "no data produced")
 	}
 
+	last := months[len(months)-1]
+
 	resp := &pb.CalculatePrivateResponse{
 		MonthlyDetails:        calculate.ToGRPCPrivateResponse(months),
-		AnnualTaxAmount:       months[len(months)-1].AnnualTaxAmount,
-		AnnualGrossIncome:     months[len(months)-1].AnnualGrossIncome,
-		AnnualNetIncome:       months[len(months)-1].AnnualNetIncome,
+		AnnualTaxAmount:       last.AnnualTaxAmount,
+		AnnualGrossIncome:     last.AnnualGrossIncome,
+		AnnualNetIncome:       last.AnnualNetIncome,
+		AnnualPFR:             last.AnnualPFR,
+		AnnualFSS:             last.AnnualFSS,
+		AnnualFOMS:            last.AnnualFOMS,
 		GrossSalary:           input.GrossSalary,
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,

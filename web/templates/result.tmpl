@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/static/monthly_accordion.css">
     <link rel="stylesheet" href="/static/parameters_section.css">
     <link rel="stylesheet" href="/static/summary_section.css">
+    <link rel="stylesheet" href="/static/employer_contrib.css">
 </head>
 <body>
     <div class="container">
@@ -25,6 +26,9 @@
 
         <!-- Основная сводка -->
         {{template "summary_section" .}}
+
+        <!-- Вкладка: взносы работодателя -->
+        {{template "employer_contributions" .}}
 
         <!-- Помесячная детализация -->
         {{template "monthly_accordion" .}}

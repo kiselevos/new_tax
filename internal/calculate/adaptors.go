@@ -43,6 +43,15 @@ type MonthlyTax struct {
 	AnnualNorthTaxAmount   uint64
 	AnnualBaseGrossIncome  uint64
 	AnnualBaseTaxAmount    uint64
+
+	// Расчет налоговой нагрузки для работодателя
+	MonthlyPFR  uint64 //Месячный налог с работодателя в Пенсионный фонд России
+	MonthlyFOMS uint64 //Месячный налог с работодателя в Фонд Обязательного медиционского страхования
+	MonthlyFSS  uint64 //Месячный налог с работодателя в Фонд социального страхования (Больничные, декреты)
+
+	AnnualPFR  uint64 //Налог с начала выбранного периода работодателя в Пенсионный фонд России
+	AnnualFOMS uint64 //Налог с начала выбранного периода работодателя в Фонд Обязательного медиционского страхования
+	AnnualFSS  uint64 //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
 }
 
 // FromPrivateRequest преобразует gRPC-запрос от зарегистрированного пользователя в структуру CalculateInput.
@@ -124,6 +133,12 @@ func ToGRPCPrivateResponse(monthDetails []MonthlyTax) []*pb.MonthlyPrivateTax {
 			MonthlyBaseGrossIncome:  m.MonthlyBaseGrossIncome,
 			MonthlyBaseTaxAmount:    m.MonthlyBaseTaxAmount,
 			MonthlyNorthGrossIncome: m.MonthlyNorthGrossIncome,
+			MonthlyFSS:              m.MonthlyFSS,
+			MonthlyPFR:              m.MonthlyPFR,
+			MonthlyFOMS:             m.MonthlyFOMS,
+			AnnualFSS:               m.AnnualFSS,
+			AnnualFOMS:              m.AnnualFOMS,
+			AnnualPFR:               m.AnnualPFR,
 		})
 	}
 

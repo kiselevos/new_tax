@@ -3,11 +3,11 @@
 }
 
 .accordion h2 {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .accordion-item:first-child {
-    margin-top: 0; 
+  margin-top: 0;
 }
 
 .accordion-header {
@@ -31,7 +31,7 @@
   margin-bottom: 1rem;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .accordion-content {
@@ -65,19 +65,44 @@
   gap: 0.5rem;
 }
 
+/* --- Основные строки расчёта --- */
 .calc-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   font-size: 0.95rem;
   color: #2c3e50;
+  padding: 0.25rem 0;
 }
 
+.calc-row .label {
+  flex: 1;
+  word-break: break-word;
+}
+
+.calc-row .value {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #2f6bff; /* нейтральные данные */
+}
+
+/* --- Цветовые акценты --- */
+.calc-row.minus .value {
+  color: #d9534f; /* налоги, вычеты */
+}
+
+.calc-row.result .value {
+  color: #1a9e4f; /* чистый доход */
+}
+
+/* --- Мелкие строки --- */
 .calc-row.small {
   font-size: 0.85rem;
   color: #666;
 }
 
+/* --- Суммарные строки --- */
 .calc-row.total {
   font-weight: 600;
   border-top: 1px solid #e5e9f0;
@@ -85,25 +110,77 @@
   margin-top: 0.2rem;
 }
 
+/* --- Отрицательные строки --- */
 .calc-row.minus {
   color: #d9534f;
 }
 
+/* --- Итоговые строки (чистый доход) --- */
 .calc-row.result {
   font-weight: 700;
-  color: #1a9e4f;
   font-size: 1.05rem;
   margin-top: 0.6rem;
   background: #f6fff8;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.9rem;
   border-radius: 6px;
   border: 1px solid #d8f2dc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
-@media (max-width: 768px) {
+/* --- Мобильная адаптация --- */
+@media (max-width: 400px) {
+  .calc-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    padding: 0.4rem 0;
+  }
+
+  .calc-row .label {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.3;
+  }
+
+  .calc-row .value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2f6bff;
+  }
+
+  /* Скрываем пунктир на мобильных */
+  .calc-row .dots {
+    display: none;
+  }
+
+  /* Цветовые акценты сохраняются */
+  .calc-row.minus .value {
+    color: #d9534f;
+  }
+
+  .calc-row.result {
+    background: #f6fff8;
+    border: 1px solid #cdeed3;
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    margin-top: 0.8rem;
+  }
+
+  .calc-row.result .value {
+    color: #148f44;
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
   .accordion-header {
     flex-direction: column;
     gap: 0.25rem;
   }
-  .calc-card { padding: 0.8rem; }
+
+  .calc-card {
+    padding: 0.8rem;
+  }
 }

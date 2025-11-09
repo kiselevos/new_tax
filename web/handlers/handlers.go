@@ -104,6 +104,9 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		ShowWarning       bool
 		HasTaxPrivilege   bool
 		IsNotResident     bool
+		AnnualPFR         uint64
+		AnnualFOMS        uint64
+		AnnualFSS         uint64
 	}{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
 		AnnualGrossIncome: res.AnnualGrossIncome,
@@ -115,6 +118,9 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		ShowWarning:       showWarning,
 		HasTaxPrivilege:   getBool(req.HasTaxPrivilege),
 		IsNotResident:     getBool(req.IsNotResident),
+		AnnualPFR:         res.AnnualPFR,
+		AnnualFOMS:        res.AnnualFOMS,
+		AnnualFSS:         res.AnnualFSS,
 	}
 
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {

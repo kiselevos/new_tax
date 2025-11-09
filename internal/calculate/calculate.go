@@ -17,29 +17,55 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	// Оклад с учётом районного коэффициента (РК)
 	monthlyGrossWithTerritorial := grossSalary * territorialMultiplier / 100
 
+	var months []MonthlyTax
+
 	switch {
 	case input.IsNotResident: // Для нерезидентов: 30% со всего дохода
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
-		return TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth)
+		months = TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth)
 
 	case input.HasTaxPrivilege: // Для льготников (силовые ведомства): единая шкала 13%/15%
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
-		return TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth)
+		months = TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth)
 
 	case noTerritorial && noNorthern: // Без РК и СН
-		return TaxCalculateOnlySalary(grossSalary, startDate, startMonth)
+		months = TaxCalculateOnlySalary(grossSalary, startDate, startMonth)
 
 	case noNorthern: // Есть РК, нет СН
-		return TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth)
+		months = TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth)
 
 	case noTerritorial: // Нет РК, есть СН
 		northernAddition := grossSalary * (northernCoefficient - 100) / 100
-		return TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth)
+		months = TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth)
 
 	default: // Есть и РК, и СН (СН начисляется на оклад с РК)
 		northernAddition := monthlyGrossWithTerritorial * (northernCoefficient - 100) / 100
-		return TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth)
+		months = TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth)
 	}
+
+	// Добавляем взносы от работодателя.
+	var annualPFR, annualFOMS, annualFSS uint64
+
+	for i := range months {
+		gross := months[i].MonthlyGrossIncome
+		incomeYTD := months[i].AnnualGrossIncome
+
+		pfr, foms, fss := calcEmployerContributions(incomeYTD-gross, gross)
+
+		months[i].MonthlyPFR = pfr
+		months[i].MonthlyFOMS = foms
+		months[i].MonthlyFSS = fss
+
+		annualPFR += pfr
+		annualFOMS += foms
+		annualFSS += fss
+
+		months[i].AnnualPFR = annualPFR
+		months[i].AnnualFOMS = annualFOMS
+		months[i].AnnualFSS = annualFSS
+	}
+
+	return months
 }
 
 // TaxCalculateForNotResident — расчёт налога для налоговых нерезидентов РФ (30% со всех доходов).
@@ -305,4 +331,35 @@ func RoundTaxAmount(value uint64) uint64 {
 		return value - remainder
 	}
 	return value + (100 - remainder)
+}
+
+// Расчет налоговой нагрузки на работодателя.
+func calcEmployerContributions(income, gross uint64) (pfr, foms, fss uint64) {
+
+	// Расчет ПФР
+	if income < PfrLimit {
+		remaining := PfrLimit - income // Вычисляем сколько осталось до перехода лимита
+		if gross <= remaining {
+			pfr = gross * PfrRate / 1000
+		} else {
+			pfr = remaining*PfrRate/1000 + (gross-remaining)*PfrRateHi/1000
+		}
+	} else {
+		pfr = gross * PfrRateHi / 1000
+	}
+
+	// Рассчет ФОМС
+	foms = gross * FomsRate / 1000 // всегда 5.1%
+
+	// Рассчет ФСС
+	if income < FssLimit {
+		remaining := FssLimit - income
+		if gross <= remaining {
+			fss = gross * FssRate / 1000
+		} else {
+			fss = remaining * FssRate / 1000
+		}
+	}
+
+	return
 }
