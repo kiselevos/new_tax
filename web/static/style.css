@@ -1,10 +1,11 @@
-/* static/style.css */
+/* === GLOBAL RESET === */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* === BODY & BASIC LAYOUT === */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
@@ -39,6 +40,7 @@ main {
     backdrop-filter: blur(10px);
 }
 
+/* === FORM STRUCTURE === */
 .form {
     display: flex;
     flex-direction: column;
@@ -72,336 +74,12 @@ main {
     min-width: 320px;
 }
 
-/* Контейнер для поля с ошибкой */
+/* === SALARY FIELD & ERRORS === */
 .salary-field-container {
     position: relative;
     width: 100%;
 }
 
-/* Новые стили для заголовков с подсказками */
-.field-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 0.5rem;
-}
-
-.field-header label {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 1rem;
-    margin: 0;
-}
-
-/* Стили для подсказок слева от заголовка */
-.field-tooltip {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    cursor: help;
-}
-
-.tooltip-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    background: #3498db;
-    color: white;
-    border-radius: 50%;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: help;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.tooltip-icon:hover {
-    background: #2980b9;
-    transform: scale(1.1);
-}
-
-.tooltip-text {
-    visibility: hidden;
-    width: 300px;
-    background: #2c3e50;
-    color: white;
-    text-align: left;
-    border-radius: 8px;
-    padding: 12px;
-    position: absolute;
-    z-index: 1000;
-    bottom: 100%;
-    left: 0;
-    margin-bottom: 10px;
-    opacity: 0;
-    transition: all 0.3s ease;
-    font-size: 0.875rem;
-    line-height: 1.4;
-    font-weight: normal;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    pointer-events: none;
-}
-
-/* Стрелка тултипа */
-.tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 15px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: #2c3e50 transparent transparent transparent;
-}
-
-/* Показываем тултип при ховере на иконку ИЛИ на сам тултип */
-.field-tooltip:hover .tooltip-text,
-.tooltip-text:hover {
-    visibility: visible;
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.under-title {
-    font-size: 0.875rem;
-    color: #666;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    display: block;
-    margin-top: 4px;
-}
-
-.under-title:hover {
-    color: #3498db;
-}
-
-/* Стили для полей ввода */
-input[type="text"], select {
-    width: 100%;
-    padding: 0.875rem;
-    border: 2px solid #e1e8ed;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    background: #fafbfc;
-}
-
-input[type="text"]:focus, select:focus {
-    outline: none;
-    border-color: #3498db;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-/* Специальные стили для поля оклада */
-.salary-field {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-}
-
-.salary-field input {
-    padding-right: 2.5rem;
-}
-
-.ruble {
-    position: absolute;
-    right: 0.875rem;
-    color: #666;
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-/* Стили для даты */
-.date-field {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.date-field span {
-    color: #666;
-    font-weight: 500;
-}
-
-.date-field select {
-    min-width: 140px;
-}
-
-/* Стили для чекбоксов */
-.checkbox-column {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.checkbox-inline {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
-}
-
-.checkbox-inline:hover {
-    background: #f8f9fa;
-}
-
-.checkbox-inline input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-    transform: scale(1.2);
-    accent-color: #3498db;
-}
-
-.checkbox-inline span {
-    font-weight: 500;
-}
-
-
-/* Базовый стиль для всех кнопок и кнопкоподобных ссылок */
-button, 
-a.button,
-a.back-button,
-a.primary-button {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
-}
-
-/* Ховер-эффект для всех кнопок */
-button:hover, 
-a.button:hover,
-a.back-button:hover,
-a.primary-button:hover {
-    background: linear-gradient(135deg, #2980b9, #2471a3);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
-    text-decoration: none;
-    color: white;
-}
-
-/* Активное состояние */
-button:active, 
-a.button:active,
-a.back-button:active,
-a.primary-button:active {
-    transform: translateY(0);
-}
-
-/* Фокус состояние */
-button:focus, 
-a.button:focus,
-a.back-button:focus,
-a.primary-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
-}
-
-/* Отключенное состояние */
-button:disabled {
-    background: #bdc3c7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-/* Разные размеры кнопок */
-
-/* Маленькие кнопки (Назад) */
-a.back-button,
-button.small {
-    padding: 10px 20px;
-    font-size: 14px;
-}
-
-/* Средние кнопки (Основные действия) */
-button,
-a.primary-button,
-a.button {
-    padding: 12px 24px;
-    font-size: 16px;
-}
-
-/* Большие кнопки (Главные призывы к действию) */
-button.large,
-a.button.large {
-    padding: 1.125rem 2.5rem;
-    font-size: 1.1rem;
-    width: 100%;
-    max-width: 300px;
-    align-self: center;
-}
-
-/* Адаптивность для кнопок */
-@media (max-width: 768px) {
-    button, 
-    a.button,
-    a.back-button,
-    a.primary-button {
-        width: 100%;
-        text-align: center;
-    }
-    
-    button.large,
-    a.button.large {
-        max-width: 100%;
-    }
-}
-
-
-/* Блок с примечанием */
-.calculator-note {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    padding: 1.5rem;
-    border-radius: 12px;
-    border-left: 4px solid #3498db;
-    margin-top: 2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.calculator-note p {
-    margin-bottom: 0.75rem;
-    color: #555;
-    line-height: 1.5;
-}
-
-.calculator-link {
-    color: #3498db;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.calculator-link:hover {
-    text-decoration: underline;
-    color: #2980b9;
-}
-
-/* Футер */
-footer {
-    text-align: center;
-    margin-top: 2rem;
-    color: rgba(255,255,255,0.8);
-    font-size: 0.875rem;
-}
-
-/* Стили для сообщений об ошибках */
-/* Стили для сообщений об ошибках */
 .field-message {
     position: absolute;
     top: 100%;
@@ -421,15 +99,18 @@ footer {
     align-items: flex-start;
     gap: 8px;
     line-height: 1.4;
-    visibility: hidden; /* Скрываем по умолчанию */
-    opacity: 0; /* Прозрачный по умолчанию */
-    transform: translateY(-10px); /* Сдвигаем вверх */
-    transition: all 0.3s ease; /* Плавные переходы */
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
 }
 
-/* Когда есть сообщение - показываем */
-.field-message.error,
-.field-message.warning {
+.field-message:empty {
+    display: none !important;
+}
+
+.field-message.error:not(:empty),
+.field-message.warning:not(:empty) {
     visibility: visible;
     opacity: 1;
     transform: translateY(0);
@@ -452,114 +133,214 @@ footer {
     content: "💡";
 }
 
-/* Убираем отдельную анимацию slideDown, используем transition */
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
-
 .field-error {
     border: 2px solid #e74c3c !important;
     background: #fff5f5 !important;
     animation: shake 0.3s ease;
 }
 
-.field-warning {
-    border: 2px solid #f57c00 !important;
-    background: #fffaf2 !important;
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .field-message {
-        font-size: 0.85rem;
-        padding: 10px;
-    }
-    
-    /* Убираем лишний отступ на мобильных */
-    .salary-field-container {
-        margin-bottom: 0;
-    }
+/* === TOOLTIP SYSTEM === */
+.field-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
 }
 
-/* Placeholder стили */
+.field-header label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.field-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+  z-index: 50;
+}
+
+.tooltip-icon {
+  background: #2980b9;
+  color: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.tooltip-icon:hover {
+  transform: scale(1.1);
+  background: #3498db;
+}
+
+.tooltip-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max(70vw, 220px);
+  max-width: calc(100vw - 16px);
+  font-size: 0.9rem;
+  padding: 12px 14px;
+  background: rgba(44,62,80,0.95);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  pointer-events: none;
+  z-index: 1000;
+  will-change: top, bottom, left, transform;
+  word-wrap: break-word;
+}
+
+.tooltip-text.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* стрелки */
+.tooltip-text.tooltip-above::after,
+.tooltip-text.tooltip-below::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(44,62,80,0.95);
+}
+
+.tooltip-text.tooltip-above::after {
+  top: 100%;
+}
+
+.tooltip-text.tooltip-below::after {
+  bottom: 100%;
+  transform: translateX(-50%) rotate(180deg);
+}
+
+/* === INPUTS === */
+input[type="text"], select {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: #3498db;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
 input::placeholder {
     color: #999;
     font-style: italic;
 }
 
-/* Стили для селектов */
-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.875rem center;
-    background-size: 16px;
+/* === SALARY FIELD === */
+.salary-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.salary-field input {
+    padding-right: 2.5rem;
+}
+
+.ruble {
+    position: absolute;
+    right: 0.875rem;
+    color: #666;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* === DATE FIELD === */
+.date-field {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.date-field span {
+    color: #666;
+    font-weight: 500;
+}
+
+.date-field select {
+    min-width: 140px;
+}
+
+/* === CHECKBOXES === */
+.checkbox-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Уменьшили с 0.75rem */
+}
+
+.checkbox-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Уменьшили с 0.75rem */
     cursor: pointer;
+    padding: 0.375rem 0.5rem; /* Уменьшили верхний/нижний паддинг */
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 0; /* На всякий случай убираем отступ снизу */
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .field-row {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .field-left, .field-right {
-        min-width: auto;
-        width: 100%;
-    }
-    
-    body {
-        padding: 15px;
-    }
-    
-    main {
-        padding: 1.5rem;
-        max-width: 100%;
-    }
-    
-    header h1 {
-        font-size: 2rem;
-    }
-    
-    .field-row:hover {
-        margin: 0;
-    }
-    
-    .tooltip-text {
-        width: 250px;
-        left: -50px;
-    }
-    
-    .tooltip-text::after {
-        left: 70px;
-    }
-    
-    .field-header {
-        flex-wrap: wrap;
-    }
-    
-    .field-message {
-        font-size: 0.85rem;
-        padding: 10px;
-    }
-    
-    .salary-field-container {
-        margin-bottom: 50px; /* Добавляем место для сообщения об ошибке */
-    }
+.checkbox-inline:hover {
+    background: #f8f9fa;
 }
 
-/* Стили для взаимоисключающих чекбоксов */
+.checkbox-inline input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+    transform: scale(1.2);
+    accent-color: #3498db;
+}
+
+.checkbox-inline span {
+    font-weight: 500;
+}
+
+
+/* === EXCLUSIVE CHECKBOXES === */
 .exclusive-checkboxes {
     position: relative;
+    gap: 4px !important; /* ← ДОБАВИТЬ: уменьшаем расстояние между чекбоксами */
 }
 
 .exclusive-option {
     transition: all 0.3s ease;
     border-radius: 6px;
-    margin-bottom: 4px;
+    margin-bottom: 0 !important; /* ← ИЗМЕНИТЬ: убираем отступ снизу */
+    padding: 2px 8px !important; /* ← ДОБАВИТЬ: компактные отступы */
+    min-height: auto !important; /* ← ДОБАВИТЬ: убираем мин. высоту */
 }
 
 .exclusive-option.selected {
@@ -580,7 +361,155 @@ select {
     animation: fadeIn 0.3s ease;
 }
 
-/* Для мобильных версий */
+/* === UNDER-TITLE LINKS (gray helper links) === */
+.under-title {
+    font-size: 0.875rem;
+    color: #666 !important;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: block;
+    margin-top: 4px;
+}
+
+.under-title:hover {
+    color: #3498db !important;
+}
+
+/* === BUTTONS === */
+button, 
+a.button,
+a.back-button,
+a.primary-button {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+button:hover, 
+a.button:hover,
+a.back-button:hover,
+a.primary-button:hover {
+    background: linear-gradient(135deg, #2980b9, #2471a3);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+button:active, 
+a.button:active,
+a.back-button:active,
+a.primary-button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* === BUTTON SIZES === */
+a.back-button,
+button.small {
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+button,
+a.primary-button,
+a.button {
+    padding: 12px 24px;
+    font-size: 16px;
+}
+
+button.large,
+a.button.large {
+    padding: 1.125rem 2.5rem;
+    font-size: 1.1rem;
+    width: 100%;
+    max-width: 300px;
+    align-self: center;
+}
+
+/* === NOTE BLOCK === */
+.calculator-note {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border-left: 4px solid #3498db;
+    margin-top: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.calculator-note p {
+    margin-bottom: 0.75rem;
+    color: #555;
+}
+
+.calculator-link {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.calculator-link:hover {
+    text-decoration: underline;
+    color: #2980b9;
+}
+
+/* === FOOTER === */
+footer {
+    text-align: center;
+    margin-top: 2rem;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.875rem;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .field-row {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem 0;
+        align-items: stretch;
+    }
+
+    .field-left, .field-right {
+        width: 100%;
+        min-width: auto;
+    }
+
+    main {
+        padding: 1.5rem;
+        max-width: 100%;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .tooltip-text {
+        width: 280px;
+    }
+
+    .field-message {
+        font-size: 0.85rem;
+        padding: 10px;
+        position: relative;
+        margin-top: 0.5rem;
+    }
+}
+
 @media (max-width: 480px) {
     body {
         padding: 10px;
@@ -598,41 +527,15 @@ select {
         margin-bottom: 1rem;
     }
 
-    .field-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.75rem;
-        padding: 0.75rem 0;
-        border: none;
-        background: transparent;
-    }
-
-    .field-left, .field-right {
-        width: 100%;
-        min-width: auto;
+    .tooltip-text {
+        width: min(90vw, 320px);
+        font-size: 0.9rem;
     }
 
     input[type="text"], select {
         font-size: 1rem;
         padding: 0.75rem;
         border-radius: 10px;
-    }
-
-    .tooltip-icon {
-        width: 18px;
-        height: 18px;
-        font-size: 11px;
-    }
-
-    .tooltip-text {
-        width: 90vw;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.8rem;
-    }
-
-    .checkbox-column {
-        gap: 0.5rem;
     }
 
     button,
@@ -644,14 +547,16 @@ select {
         width: 100%;
     }
 
-    .calculator-note {
-        padding: 1rem;
-        margin-top: 1rem;
-        border-radius: 10px;
-    }
-
     footer {
         margin-top: 1rem;
         font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .date-field select {
+        min-width: 100px;
+        font-size: 0.85rem;
+        padding: 0.5rem;
     }
 }
