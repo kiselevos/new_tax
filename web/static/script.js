@@ -88,11 +88,11 @@ document.addEventListener("DOMContentLoaded", function() {
             showError("Введите корректный оклад (например, 50000)");
             isValid = false;
         } else if (salary < MIN_SALARY) {
-            showError(`Минимальный оклад — ${MIN_SALARY.toLocaleString("ru-RU")} ₽`);
+            showError(`Минимальный оклад - ${MIN_SALARY.toLocaleString("ru-RU")} ₽`);
             isValid = false;
         } else if (salary > MAX_SALARY) {
             showError(
-                `Сумма слишком велика. Максимум — ${MAX_SALARY.toLocaleString("ru-RU")} ₽`
+                `Сумма слишком велика. Максимум - ${MAX_SALARY.toLocaleString("ru-RU")} ₽`
             );
             isValid = false;
         }

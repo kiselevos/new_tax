@@ -1,0 +1,209 @@
+.employer-contrib {
+  margin-top: 2rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* --- Просветительская подсказка --- */
+.employer-toggle {
+  width: 100%;
+  background: #fff8e1;
+  border-left: 4px solid #ffb300;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #4a3f00;
+  font-weight: 500;
+  font-style: italic;
+  box-shadow: 0 2px 6px rgba(255, 179, 0, 0.08);
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.employer-toggle:hover {
+  background: #fff4cc;
+  box-shadow: 0 3px 8px rgba(255, 179, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.employer-toggle .arrow {
+  font-size: 1rem;
+  transition: transform 0.25s ease;
+  color: #c47f00;
+  margin-left: 0.5rem;
+}
+
+.employer-toggle.open .arrow {
+  transform: rotate(180deg);
+}
+
+.employer-toggle::before {
+  content: "💡";
+  margin-right: 0.6rem;
+  font-style: normal;
+}
+
+/* ——— Контент внутри блока ——— */
+.employer-content {
+  display: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 0.6rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.employer-content.open {
+  display: block;
+  animation: fadeIn 0.25s ease-in;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-4px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* ——— Заголовок и вводная часть ——— */
+.employer-content h3 {
+  color: #333;
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+
+.employer-content p {
+  color: #444;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.employer-content strong {
+  color: #111;
+}
+
+/* 💡 акцент на ключевых словах */
+.employer-content em {
+  color: #764ba2;
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* --- Стандартная версия (десктоп) --- */
+.employer-table {
+  margin: 1rem 0;
+  background: #fcfcfc;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  font-family: "Courier New", monospace;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.03);
+}
+
+.employer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+  flex-wrap: nowrap;
+}
+
+.employer-fund {
+  flex: 1;
+  padding-right: 0.5rem;
+  word-break: break-word;
+}
+
+.employer-value {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #2f6bff;
+}
+
+.employer-row.total {
+  font-weight: 700;
+  border-top: 1px dashed #ccc;
+  padding-top: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+/* 💰 акцент на цифрах */
+.employer-value {
+  font-weight: 500;
+  color: #2f6bff;
+}
+
+/* ——— Завершающий текст ——— */
+
+.employer-note strong {
+  color: #000;
+  font-weight: 600;
+}
+
+.employer-note br + br {
+  line-height: 2;
+}
+
+/* --- Акцент на итоговую строку 💰 --- */
+.employer-highlight {
+  background: linear-gradient(90deg, #fff7da, #fff2b8);
+  border-left: 4px solid #ffb400;
+  padding: 1rem 1.2rem;
+  margin-top: 1.2rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-style: italic;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.employer-highlight strong {
+  font-weight: 700;
+  color: #000;
+  font-style: normal;
+}
+
+.employer-note {
+  font-size: 0.95rem;
+  color: #555;
+  margin-top: 1rem;
+  line-height: 1.5;
+}
+
+/* --- Мобильная адаптация --- */
+@media (max-width: 600px) {
+  .employer-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed #eee;
+  }
+
+  .employer-row.total {
+    border-top: 2px dashed #ccc;
+    border-bottom: none;
+    padding-top: 0.8rem;
+  }
+
+  .employer-fund {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.25rem;
+  }
+
+  .employer-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2f6bff;
+  }
+
+  .employer-table {
+    padding: 0.6rem 0.9rem;
+  }
+}

@@ -34,6 +34,7 @@ window.APP_CONFIG = {
             <label for="grossSalary">Оклад:</label>
         </div>
     </div>
+    
     <div class="field-right">
         <div class="salary-field-container">
             <div class="salary-field">
@@ -51,49 +52,57 @@ window.APP_CONFIG = {
     </div>
 </div>
 
-      <!-- территориальный коэффициент -->
-      <div class="field-row">
-        <div class="field-left">
-          <div class="field-header">
-            <div class="field-tooltip">
-              <span class="tooltip-icon">?</span>
-              <div class="tooltip-text">Устанавливается в зависимости от региона, где вы работаете. Например, для районов Крайнего Севера применяются повышающие коэффициенты.</div>
-            </div>
-            <label for="territorialMultiplier">Территориальный коэффициент:</label>
-          </div>
-          <a href="/regional-info" class="under-title">Подробнее →</a>
-        </div>
-        <div class="field-right">
-          <select id="territorialMultiplier" name="territorialMultiplier" class="field-select">
-            <option value="100" selected> -- без коэффициента -- </option>
-            {{range .Territorial}}
-              <option value="{{.Value}}">{{.Label}}</option>
-            {{end}}
-          </select>
+  <!-- территориальный коэффициент -->
+<div class="field-row">
+  <div class="field-left">
+    <div class="field-header">
+      <div class="field-tooltip">
+        <span class="tooltip-icon">?</span>
+        <div class="tooltip-text">
+          Устанавливается в зависимости от региона, где вы работаете. 
+          Например, для районов Крайнего Севера применяются повышающие коэффициенты.
         </div>
       </div>
+      <label for="territorialMultiplier">Территориальный коэффициент:</label>
+    </div>
+    <a href="/regional-info" class="under-title">Подробнее →</a>
+  </div>
+
+  <div class="field-right date-field">
+    <select id="territorialMultiplier" name="territorialMultiplier" class="wide-select">
+      <option value="100" selected>— без коэффициента —</option>
+      {{range .Territorial}}
+        <option value="{{.Value}}">{{.Label}}</option>
+      {{end}}
+    </select>
+  </div>
+</div>
 
       <!-- северная надбавка -->
-      <div class="field-row">
-        <div class="field-left">
-          <div class="field-header">
-            <div class="field-tooltip">
-              <span class="tooltip-icon">?</span>
-              <div class="tooltip-text">Северная надбавка зависит от региона и стажа работы. Начисляется постепенно с увеличением процента за каждый год работы.</div>
-            </div>
-            <label for="northernCoefficient">Северная надбавка:</label>
-          </div>
-          <a href="/regional-info" class="under-title">Подробнее →</a>
-        </div>
-        <div class="field-right">
-          <select id="northernCoefficient" name="northernCoefficient" class="field-select">
-            <option value="100" selected> -- без надбавки -- </option>
-            {{range .Northern}}
-              <option value="{{.Value}}">{{.Label}}</option>
-            {{end}}
-          </select>
+<div class="field-row">
+  <div class="field-left">
+    <div class="field-header">
+      <div class="field-tooltip">
+        <span class="tooltip-icon">?</span>
+        <div class="tooltip-text">
+          Северная надбавка зависит от региона и стажа работы. 
+          Начисляется постепенно с увеличением процента за каждый год работы.
         </div>
       </div>
+      <label for="northernCoefficient">Северная надбавка:</label>
+    </div>
+    <a href="/regional-info" class="under-title">Подробнее →</a>
+  </div>
+
+  <div class="field-right date-field">
+    <select id="northernCoefficient" name="northernCoefficient" class="wide-select">
+      <option value="100" selected>— без надбавки —</option>
+      {{range .Northern}}
+        <option value="{{.Value}}">{{.Label}}</option>
+      {{end}}
+    </select>
+  </div>
+</div>
 
       <!-- дата начала расчёта -->
       <div class="field-row">

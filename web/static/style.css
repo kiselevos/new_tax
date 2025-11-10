@@ -71,7 +71,7 @@ main {
 
 .field-right {
     flex: 1;
-    min-width: 320px;
+    min-width: 240px;
 }
 
 /* === SALARY FIELD & ERRORS === */
@@ -137,6 +137,30 @@ main {
     border: 2px solid #e74c3c !important;
     background: #fff5f5 !important;
     animation: shake 0.3s ease;
+}
+
+.field-select {
+  width: 100%;
+  max-width: 230px;
+  box-sizing: border-box;
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.field-select:hover,
+.field-select:focus {
+  border-color: #999;
+}
+
+.field-select option {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 @keyframes shake {
@@ -284,6 +308,7 @@ input::placeholder {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    width: 100%;
 }
 
 .date-field span {
@@ -291,8 +316,55 @@ input::placeholder {
     font-weight: 500;
 }
 
-.date-field select {
-    min-width: 140px;
+/* Селекты для даты и аналогичных полей (единый стиль) */
+.date-field select,
+.field-right.date-field select {
+    flex: 1; /* растягивается по ширине блока */
+    min-width: 0;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 0.95rem;
+    appearance: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.date-field select:hover,
+.date-field select:focus {
+    border-color: #999;
+}
+
+.date-field span {
+    color: #444;
+    font-size: 1rem;
+}
+
+/* === TERRITORIAL MULTIPLIER - СОВПАДЕНИЕ ПО ШИРИНЕ С ДАТОЙ === */
+.field-right.date-field.wide-block {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.field-right.date-field.wide-block select {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 0.95rem;
+    appearance: none;
+    transition: border-color 0.2s ease;
+}
+
+.field-right.date-field.wide-block select:hover,
+.field-right.date-field.wide-block select:focus {
+    border-color: #999;
 }
 
 /* === CHECKBOXES === */

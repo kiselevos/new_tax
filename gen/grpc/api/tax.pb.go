@@ -168,99 +168,6 @@ func (x *CalculatePrivateRequest) GetIsNotResident() bool {
 	return false
 }
 
-// Ответ для авторизованных пользователей (подробный)
-type CalculatePrivateResponse struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	MonthlyDetails        []*MonthlyPrivateTax   `protobuf:"bytes,1,rep,name=monthly_details,json=monthlyDetails,proto3" json:"monthly_details,omitempty"`                             // Помесячная детализация
-	AnnualTaxAmount       uint64                 `protobuf:"varint,2,opt,name=annual_tax_amount,json=annualTaxAmount,proto3" json:"annual_tax_amount,omitempty"`                       // Уплаченный налог с начала выбранного периода
-	AnnualGrossIncome     uint64                 `protobuf:"varint,3,opt,name=annual_gross_income,json=annualGrossIncome,proto3" json:"annual_gross_income,omitempty"`                 // Гросс доход с начала указанного периода
-	AnnualNetIncome       uint64                 `protobuf:"varint,4,opt,name=annual_net_income,json=annualNetIncome,proto3" json:"annual_net_income,omitempty"`                       // Чистый доход с начала указанного периода
-	GrossSalary           uint64                 `protobuf:"varint,5,opt,name=gross_salary,json=grossSalary,proto3" json:"gross_salary,omitempty"`                                     // Указаный оклад в запросе
-	TerritorialMultiplier *uint64                `protobuf:"varint,6,opt,name=territorial_multiplier,json=territorialMultiplier,proto3,oneof" json:"territorial_multiplier,omitempty"` // Указаный в запросе территориальный коэффициент
-	NorthernCoefficient   *uint64                `protobuf:"varint,7,opt,name=northern_coefficient,json=northernCoefficient,proto3,oneof" json:"northern_coefficient,omitempty"`       // Указанная в запросе северная надбавка
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
-}
-
-func (x *CalculatePrivateResponse) Reset() {
-	*x = CalculatePrivateResponse{}
-	mi := &file_tax_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CalculatePrivateResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CalculatePrivateResponse) ProtoMessage() {}
-
-func (x *CalculatePrivateResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_tax_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CalculatePrivateResponse.ProtoReflect.Descriptor instead.
-func (*CalculatePrivateResponse) Descriptor() ([]byte, []int) {
-	return file_tax_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CalculatePrivateResponse) GetMonthlyDetails() []*MonthlyPrivateTax {
-	if x != nil {
-		return x.MonthlyDetails
-	}
-	return nil
-}
-
-func (x *CalculatePrivateResponse) GetAnnualTaxAmount() uint64 {
-	if x != nil {
-		return x.AnnualTaxAmount
-	}
-	return 0
-}
-
-func (x *CalculatePrivateResponse) GetAnnualGrossIncome() uint64 {
-	if x != nil {
-		return x.AnnualGrossIncome
-	}
-	return 0
-}
-
-func (x *CalculatePrivateResponse) GetAnnualNetIncome() uint64 {
-	if x != nil {
-		return x.AnnualNetIncome
-	}
-	return 0
-}
-
-func (x *CalculatePrivateResponse) GetGrossSalary() uint64 {
-	if x != nil {
-		return x.GrossSalary
-	}
-	return 0
-}
-
-func (x *CalculatePrivateResponse) GetTerritorialMultiplier() uint64 {
-	if x != nil && x.TerritorialMultiplier != nil {
-		return *x.TerritorialMultiplier
-	}
-	return 0
-}
-
-func (x *CalculatePrivateResponse) GetNorthernCoefficient() uint64 {
-	if x != nil && x.NorthernCoefficient != nil {
-		return *x.NorthernCoefficient
-	}
-	return 0
-}
-
 // Ответ для гостей (усечённый)
 type CalculatePublicResponse struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
@@ -277,7 +184,7 @@ type CalculatePublicResponse struct {
 
 func (x *CalculatePublicResponse) Reset() {
 	*x = CalculatePublicResponse{}
-	mi := &file_tax_proto_msgTypes[3]
+	mi := &file_tax_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +196,7 @@ func (x *CalculatePublicResponse) String() string {
 func (*CalculatePublicResponse) ProtoMessage() {}
 
 func (x *CalculatePublicResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_tax_proto_msgTypes[3]
+	mi := &file_tax_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +209,7 @@ func (x *CalculatePublicResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CalculatePublicResponse.ProtoReflect.Descriptor instead.
 func (*CalculatePublicResponse) Descriptor() ([]byte, []int) {
-	return file_tax_proto_rawDescGZIP(), []int{3}
+	return file_tax_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CalculatePublicResponse) GetMonthlyDetails() []*MonthlyPublicTax {
@@ -354,6 +261,123 @@ func (x *CalculatePublicResponse) GetNorthernCoefficient() uint64 {
 	return 0
 }
 
+// Ответ для авторизованных пользователей (подробный)
+type CalculatePrivateResponse struct {
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	MonthlyDetails        []*MonthlyPrivateTax   `protobuf:"bytes,1,rep,name=monthly_details,json=monthlyDetails,proto3" json:"monthly_details,omitempty"`                             // Помесячная детализация
+	AnnualTaxAmount       uint64                 `protobuf:"varint,2,opt,name=annual_tax_amount,json=annualTaxAmount,proto3" json:"annual_tax_amount,omitempty"`                       // Уплаченный налог с начала выбранного периода
+	AnnualGrossIncome     uint64                 `protobuf:"varint,3,opt,name=annual_gross_income,json=annualGrossIncome,proto3" json:"annual_gross_income,omitempty"`                 // Гросс доход с начала указанного периода
+	AnnualNetIncome       uint64                 `protobuf:"varint,4,opt,name=annual_net_income,json=annualNetIncome,proto3" json:"annual_net_income,omitempty"`                       // Чистый доход с начала указанного периода
+	GrossSalary           uint64                 `protobuf:"varint,5,opt,name=gross_salary,json=grossSalary,proto3" json:"gross_salary,omitempty"`                                     // Указаный оклад в запросе
+	TerritorialMultiplier *uint64                `protobuf:"varint,6,opt,name=territorial_multiplier,json=territorialMultiplier,proto3,oneof" json:"territorial_multiplier,omitempty"` // Указаный в запросе территориальный коэффициент
+	NorthernCoefficient   *uint64                `protobuf:"varint,7,opt,name=northern_coefficient,json=northernCoefficient,proto3,oneof" json:"northern_coefficient,omitempty"`       // Указанная в запросе северная надбавка
+	AnnualPFR             uint64                 `protobuf:"varint,20,opt,name=annualPFR,proto3" json:"annualPFR,omitempty"`                                                           // Налог с начала выбранного периода работодателя в Пенсионный фонд России
+	AnnualFOMS            uint64                 `protobuf:"varint,21,opt,name=annualFOMS,proto3" json:"annualFOMS,omitempty"`                                                         //Налог с начала выбранного периода работодателя в Фонд Обязательного медиционского страхования
+	AnnualFSS             uint64                 `protobuf:"varint,22,opt,name=annualFSS,proto3" json:"annualFSS,omitempty"`                                                           //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *CalculatePrivateResponse) Reset() {
+	*x = CalculatePrivateResponse{}
+	mi := &file_tax_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CalculatePrivateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CalculatePrivateResponse) ProtoMessage() {}
+
+func (x *CalculatePrivateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_tax_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CalculatePrivateResponse.ProtoReflect.Descriptor instead.
+func (*CalculatePrivateResponse) Descriptor() ([]byte, []int) {
+	return file_tax_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CalculatePrivateResponse) GetMonthlyDetails() []*MonthlyPrivateTax {
+	if x != nil {
+		return x.MonthlyDetails
+	}
+	return nil
+}
+
+func (x *CalculatePrivateResponse) GetAnnualTaxAmount() uint64 {
+	if x != nil {
+		return x.AnnualTaxAmount
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetAnnualGrossIncome() uint64 {
+	if x != nil {
+		return x.AnnualGrossIncome
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetAnnualNetIncome() uint64 {
+	if x != nil {
+		return x.AnnualNetIncome
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetGrossSalary() uint64 {
+	if x != nil {
+		return x.GrossSalary
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetTerritorialMultiplier() uint64 {
+	if x != nil && x.TerritorialMultiplier != nil {
+		return *x.TerritorialMultiplier
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetNorthernCoefficient() uint64 {
+	if x != nil && x.NorthernCoefficient != nil {
+		return *x.NorthernCoefficient
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetAnnualPFR() uint64 {
+	if x != nil {
+		return x.AnnualPFR
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetAnnualFOMS() uint64 {
+	if x != nil {
+		return x.AnnualFOMS
+	}
+	return 0
+}
+
+func (x *CalculatePrivateResponse) GetAnnualFSS() uint64 {
+	if x != nil {
+		return x.AnnualFSS
+	}
+	return 0
+}
+
 // Полный расчёт на месяц для авторизованного пользователя
 type MonthlyPrivateTax struct {
 	state                   protoimpl.MessageState `protogen:"open.v1"`
@@ -373,6 +397,12 @@ type MonthlyPrivateTax struct {
 	AnnualBaseGrossIncome   uint64                 `protobuf:"varint,14,opt,name=annual_base_gross_income,json=annualBaseGrossIncome,proto3" json:"annual_base_gross_income,omitempty"`      // Доход с начала года оклад + территориальный коэффициент
 	AnnualNorthTaxAmount    uint64                 `protobuf:"varint,15,opt,name=annual_north_tax_amount,json=annualNorthTaxAmount,proto3" json:"annual_north_tax_amount,omitempty"`         // Налог с начала года с северной надбавки
 	AnnualBaseTaxAmount     uint64                 `protobuf:"varint,16,opt,name=annual_base_tax_amount,json=annualBaseTaxAmount,proto3" json:"annual_base_tax_amount,omitempty"`            // Налог с начала года с оклада + территориального коэффициента
+	MonthlyPFR              uint64                 `protobuf:"varint,17,opt,name=monthlyPFR,proto3" json:"monthlyPFR,omitempty"`                                                             //Месячный налог с работодателя в Пенсионный фонд России
+	MonthlyFOMS             uint64                 `protobuf:"varint,18,opt,name=monthlyFOMS,proto3" json:"monthlyFOMS,omitempty"`                                                           //Месячный налог с работодателя в Фонд Обязательного медиционского страхования
+	MonthlyFSS              uint64                 `protobuf:"varint,19,opt,name=monthlyFSS,proto3" json:"monthlyFSS,omitempty"`                                                             //Месячный налог с работодателя в Фонд социального страхования (Больничные, декреты)
+	AnnualPFR               uint64                 `protobuf:"varint,20,opt,name=annualPFR,proto3" json:"annualPFR,omitempty"`                                                               // Налог с начала выбранного периода работодателя в Пенсионный фонд России
+	AnnualFOMS              uint64                 `protobuf:"varint,21,opt,name=annualFOMS,proto3" json:"annualFOMS,omitempty"`                                                             //Налог с начала выбранного периода работодателя в Фонд Обязательного медиционского страхования
+	AnnualFSS               uint64                 `protobuf:"varint,22,opt,name=annualFSS,proto3" json:"annualFSS,omitempty"`                                                               //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
 	unknownFields           protoimpl.UnknownFields
 	sizeCache               protoimpl.SizeCache
 }
@@ -515,6 +545,48 @@ func (x *MonthlyPrivateTax) GetAnnualNorthTaxAmount() uint64 {
 func (x *MonthlyPrivateTax) GetAnnualBaseTaxAmount() uint64 {
 	if x != nil {
 		return x.AnnualBaseTaxAmount
+	}
+	return 0
+}
+
+func (x *MonthlyPrivateTax) GetMonthlyPFR() uint64 {
+	if x != nil {
+		return x.MonthlyPFR
+	}
+	return 0
+}
+
+func (x *MonthlyPrivateTax) GetMonthlyFOMS() uint64 {
+	if x != nil {
+		return x.MonthlyFOMS
+	}
+	return 0
+}
+
+func (x *MonthlyPrivateTax) GetMonthlyFSS() uint64 {
+	if x != nil {
+		return x.MonthlyFSS
+	}
+	return 0
+}
+
+func (x *MonthlyPrivateTax) GetAnnualPFR() uint64 {
+	if x != nil {
+		return x.AnnualPFR
+	}
+	return 0
+}
+
+func (x *MonthlyPrivateTax) GetAnnualFOMS() uint64 {
+	if x != nil {
+		return x.AnnualFOMS
+	}
+	return 0
+}
+
+func (x *MonthlyPrivateTax) GetAnnualFSS() uint64 {
+	if x != nil {
+		return x.AnnualFSS
 	}
 	return 0
 }
@@ -715,17 +787,7 @@ const file_tax_proto_rawDesc = "" +
 	"\x15_northern_coefficientB\r\n" +
 	"\v_start_dateB\x14\n" +
 	"\x12_has_tax_privilegeB\x12\n" +
-	"\x10_is_not_resident\"\xae\x03\n" +
-	"\x18CalculatePrivateResponse\x12?\n" +
-	"\x0fmonthly_details\x18\x01 \x03(\v2\x16.tax.MonthlyPrivateTaxR\x0emonthlyDetails\x12*\n" +
-	"\x11annual_tax_amount\x18\x02 \x01(\x04R\x0fannualTaxAmount\x12.\n" +
-	"\x13annual_gross_income\x18\x03 \x01(\x04R\x11annualGrossIncome\x12*\n" +
-	"\x11annual_net_income\x18\x04 \x01(\x04R\x0fannualNetIncome\x12!\n" +
-	"\fgross_salary\x18\x05 \x01(\x04R\vgrossSalary\x12:\n" +
-	"\x16territorial_multiplier\x18\x06 \x01(\x04H\x00R\x15territorialMultiplier\x88\x01\x01\x126\n" +
-	"\x14northern_coefficient\x18\a \x01(\x04H\x01R\x13northernCoefficient\x88\x01\x01B\x19\n" +
-	"\x17_territorial_multiplierB\x17\n" +
-	"\x15_northern_coefficient\"\xac\x03\n" +
+	"\x10_is_not_resident\"\xac\x03\n" +
 	"\x17CalculatePublicResponse\x12>\n" +
 	"\x0fmonthly_details\x18\x01 \x03(\v2\x15.tax.MonthlyPublicTaxR\x0emonthlyDetails\x12*\n" +
 	"\x11annual_tax_amount\x18\x02 \x01(\x04R\x0fannualTaxAmount\x12.\n" +
@@ -735,7 +797,22 @@ const file_tax_proto_rawDesc = "" +
 	"\x16territorial_multiplier\x18\x06 \x01(\x04H\x00R\x15territorialMultiplier\x88\x01\x01\x126\n" +
 	"\x14northern_coefficient\x18\a \x01(\x04H\x01R\x13northernCoefficient\x88\x01\x01B\x19\n" +
 	"\x17_territorial_multiplierB\x17\n" +
-	"\x15_northern_coefficient\"\xbe\x06\n" +
+	"\x15_northern_coefficient\"\x8a\x04\n" +
+	"\x18CalculatePrivateResponse\x12?\n" +
+	"\x0fmonthly_details\x18\x01 \x03(\v2\x16.tax.MonthlyPrivateTaxR\x0emonthlyDetails\x12*\n" +
+	"\x11annual_tax_amount\x18\x02 \x01(\x04R\x0fannualTaxAmount\x12.\n" +
+	"\x13annual_gross_income\x18\x03 \x01(\x04R\x11annualGrossIncome\x12*\n" +
+	"\x11annual_net_income\x18\x04 \x01(\x04R\x0fannualNetIncome\x12!\n" +
+	"\fgross_salary\x18\x05 \x01(\x04R\vgrossSalary\x12:\n" +
+	"\x16territorial_multiplier\x18\x06 \x01(\x04H\x00R\x15territorialMultiplier\x88\x01\x01\x126\n" +
+	"\x14northern_coefficient\x18\a \x01(\x04H\x01R\x13northernCoefficient\x88\x01\x01\x12\x1c\n" +
+	"\tannualPFR\x18\x14 \x01(\x04R\tannualPFR\x12\x1e\n" +
+	"\n" +
+	"annualFOMS\x18\x15 \x01(\x04R\n" +
+	"annualFOMS\x12\x1c\n" +
+	"\tannualFSS\x18\x16 \x01(\x04R\tannualFSSB\x19\n" +
+	"\x17_territorial_multiplierB\x17\n" +
+	"\x15_northern_coefficient\"\xfc\a\n" +
 	"\x11MonthlyPrivateTax\x120\n" +
 	"\x05month\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x05month\x120\n" +
 	"\x14monthly_gross_income\x18\x02 \x01(\x04R\x12monthlyGrossIncome\x12,\n" +
@@ -753,7 +830,19 @@ const file_tax_proto_rawDesc = "" +
 	"\x19annual_north_gross_income\x18\r \x01(\x04R\x16annualNorthGrossIncome\x127\n" +
 	"\x18annual_base_gross_income\x18\x0e \x01(\x04R\x15annualBaseGrossIncome\x125\n" +
 	"\x17annual_north_tax_amount\x18\x0f \x01(\x04R\x14annualNorthTaxAmount\x123\n" +
-	"\x16annual_base_tax_amount\x18\x10 \x01(\x04R\x13annualBaseTaxAmount\"\xda\x02\n" +
+	"\x16annual_base_tax_amount\x18\x10 \x01(\x04R\x13annualBaseTaxAmount\x12\x1e\n" +
+	"\n" +
+	"monthlyPFR\x18\x11 \x01(\x04R\n" +
+	"monthlyPFR\x12 \n" +
+	"\vmonthlyFOMS\x18\x12 \x01(\x04R\vmonthlyFOMS\x12\x1e\n" +
+	"\n" +
+	"monthlyFSS\x18\x13 \x01(\x04R\n" +
+	"monthlyFSS\x12\x1c\n" +
+	"\tannualPFR\x18\x14 \x01(\x04R\tannualPFR\x12\x1e\n" +
+	"\n" +
+	"annualFOMS\x18\x15 \x01(\x04R\n" +
+	"annualFOMS\x12\x1c\n" +
+	"\tannualFSS\x18\x16 \x01(\x04R\tannualFSS\"\xda\x02\n" +
 	"\x10MonthlyPublicTax\x120\n" +
 	"\x05month\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x05month\x120\n" +
 	"\x14monthly_gross_income\x18\x02 \x01(\x04R\x12monthlyGrossIncome\x12,\n" +
@@ -787,8 +876,8 @@ var file_tax_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_tax_proto_goTypes = []any{
 	(*CalculatePublicRequest)(nil),   // 0: tax.CalculatePublicRequest
 	(*CalculatePrivateRequest)(nil),  // 1: tax.CalculatePrivateRequest
-	(*CalculatePrivateResponse)(nil), // 2: tax.CalculatePrivateResponse
-	(*CalculatePublicResponse)(nil),  // 3: tax.CalculatePublicResponse
+	(*CalculatePublicResponse)(nil),  // 2: tax.CalculatePublicResponse
+	(*CalculatePrivateResponse)(nil), // 3: tax.CalculatePrivateResponse
 	(*MonthlyPrivateTax)(nil),        // 4: tax.MonthlyPrivateTax
 	(*MonthlyPublicTax)(nil),         // 5: tax.MonthlyPublicTax
 	(*HealthzRequest)(nil),           // 6: tax.HealthzRequest
@@ -797,15 +886,15 @@ var file_tax_proto_goTypes = []any{
 }
 var file_tax_proto_depIdxs = []int32{
 	8, // 0: tax.CalculatePrivateRequest.start_date:type_name -> google.protobuf.Timestamp
-	4, // 1: tax.CalculatePrivateResponse.monthly_details:type_name -> tax.MonthlyPrivateTax
-	5, // 2: tax.CalculatePublicResponse.monthly_details:type_name -> tax.MonthlyPublicTax
+	5, // 1: tax.CalculatePublicResponse.monthly_details:type_name -> tax.MonthlyPublicTax
+	4, // 2: tax.CalculatePrivateResponse.monthly_details:type_name -> tax.MonthlyPrivateTax
 	8, // 3: tax.MonthlyPrivateTax.month:type_name -> google.protobuf.Timestamp
 	8, // 4: tax.MonthlyPublicTax.month:type_name -> google.protobuf.Timestamp
 	1, // 5: tax.TaxService.CalculatePrivate:input_type -> tax.CalculatePrivateRequest
 	0, // 6: tax.TaxService.CalculatePublic:input_type -> tax.CalculatePublicRequest
 	6, // 7: tax.TaxService.Healthz:input_type -> tax.HealthzRequest
-	2, // 8: tax.TaxService.CalculatePrivate:output_type -> tax.CalculatePrivateResponse
-	3, // 9: tax.TaxService.CalculatePublic:output_type -> tax.CalculatePublicResponse
+	3, // 8: tax.TaxService.CalculatePrivate:output_type -> tax.CalculatePrivateResponse
+	2, // 9: tax.TaxService.CalculatePublic:output_type -> tax.CalculatePublicResponse
 	7, // 10: tax.TaxService.Healthz:output_type -> tax.HealthzResponse
 	8, // [8:11] is the sub-list for method output_type
 	5, // [5:8] is the sub-list for method input_type
