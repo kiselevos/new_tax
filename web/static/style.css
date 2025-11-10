@@ -341,7 +341,7 @@ input::placeholder {
     font-size: 1rem;
 }
 
-/* === TERRITORIAL MULTIPLIER — СОВПАДЕНИЕ ПО ШИРИНЕ С ДАТОЙ === */
+/* === TERRITORIAL MULTIPLIER - СОВПАДЕНИЕ ПО ШИРИНЕ С ДАТОЙ === */
 .field-right.date-field.wide-block {
     display: flex;
     align-items: center;

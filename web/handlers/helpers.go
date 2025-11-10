@@ -73,7 +73,7 @@ func PrepareIndexData() IndexData {
 
 }
 
-// ParseFormToRequest — парсит данные из формы в gRPC-запрос.
+// ParseFormToRequest - парсит данные из формы в gRPC-запрос.
 func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	log := logx.From(r.Context()).With("component", "form_parser")
 

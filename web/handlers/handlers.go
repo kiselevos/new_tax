@@ -15,12 +15,12 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// Server — основной HTTP-сервер, хранящий шаблоны.
+// Server - основной HTTP-сервер, хранящий шаблоны.
 type Server struct {
 	Tmpl *template.Template
 }
 
-// Routes — регистрация всех маршрутов приложения.
+// Routes - регистрация всех маршрутов приложения.
 func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.Index)
 	mux.HandleFunc("/calculate", s.Calculate)
@@ -29,7 +29,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
 }
 
-// Index — главная страница
+// Index - главная страница
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logx.From(ctx).With("page", "index")
@@ -42,7 +42,7 @@ func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 	log.Info("page_rendered")
 }
 
-// Calculate — обработка формы и запрос к gRPC-бэкенду
+// Calculate - обработка формы и запрос к gRPC-бэкенду
 func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logx.From(ctx).With("path", r.URL.Path, "method", r.Method)
@@ -136,7 +136,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// HowItWorks — страница с описанием расчёта
+// HowItWorks - страница с описанием расчёта
 func (s *Server) HowItWorks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logx.From(ctx).With("page", "how_it_works")
@@ -149,7 +149,7 @@ func (s *Server) HowItWorks(w http.ResponseWriter, r *http.Request) {
 	log.Info("page_rendered")
 }
 
-// RegionalInfo — страница с региональными коэффициентами
+// RegionalInfo - страница с региональными коэффициентами
 func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logx.From(ctx).With("page", "regional_info")
@@ -162,7 +162,7 @@ func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
 	log.Info("page_rendered")
 }
 
-// SpecialTaxModes — страница о льготах и нерезидентстве
+// SpecialTaxModes - страница о льготах и нерезидентстве
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logx.From(ctx).With("page", "special_tax_modes")

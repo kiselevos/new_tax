@@ -1,6 +1,6 @@
-# Tax Calculator — налоговый калькулятор (Go + ConnectRPC)
+# Tax Calculator - налоговый калькулятор (Go + ConnectRPC)
 
-**Tax Calculator** — это сервис для расчёта подоходного налога (НДФЛ) в России по правилам, действующим с **2025 года**.  
+**Tax Calculator** - это сервис для расчёта подоходного налога (НДФЛ) в России по правилам, действующим с **2025 года**.  
 Он учитывает **прогрессивную шкалу**, **северные надбавки**, **районные коэффициенты** и **статус налогового резидентства**.  
 
 ## Архитектура проекта
@@ -28,17 +28,17 @@
 - **Go 1.23.10**  
 - **ConnectRPC** (gRPC + gRPC-Web совместимый стек)  
 - **Protocol Buffers** (`google.golang.org/protobuf v1.34.2`)  
-- **pkg/logx** + **log/slog** — кастомная система логирования  
-- **testify** — модульное тестирование  
-- **oapi-codegen/runtime** — вспомогательные утилиты для сериализации и API  
-- **Docker**, **Makefile** — контейнеризация и автоматизация сборки  
+- **pkg/logx** + **log/slog** - кастомная система логирования  
+- **testify** - модульное тестирование  
+- **oapi-codegen/runtime** - вспомогательные утилиты для сериализации и API  
+- **Docker**, **Makefile** - контейнеризация и автоматизация сборки  
 
 ### Frontend
-- **Go Templates (html/template)** — серверная генерация HTML-страниц  
-- **Connect Web Client** (`pb.NewTaxServiceClient(conn)`) — связь с backend через ConnectRPC  
-- **godotenv** — загрузка переменных окружения  
-- **CSS / Vanilla JS** — фронтенд без React, через шаблоны  
-- **Docker**, **Makefile** — сборка и деплой web-приложения 
+- **Go Templates (html/template)** - серверная генерация HTML-страниц  
+- **Connect Web Client** (`pb.NewTaxServiceClient(conn)`) - связь с backend через ConnectRPC  
+- **godotenv** - загрузка переменных окружения  
+- **CSS / Vanilla JS** - фронтенд без React, через шаблоны  
+- **Docker**, **Makefile** - сборка и деплой web-приложения 
 
 ## Возможности
 
@@ -54,11 +54,11 @@
 ## Как считается налог
 
 - **Оклад** (`gross_salary`) указывается в копейках.  
-- **Коэффициенты** (`territorial_multiplier`, `northern_coefficient`) — в процентах (100–200).
-- **Округление** выполняется каждый месяц: 50 коп — отбрасывается, ≥ 50 коп — округляется вверх (п. 6 ст. 52 НК РФ).  
+- **Коэффициенты** (`territorial_multiplier`, `northern_coefficient`) - в процентах (100–200).
+- **Округление** выполняется каждый месяц: 50 коп - отбрасывается, ≥ 50 коп - округляется вверх (п. 6 ст. 52 НК РФ).  
 - **Период**: расчёт с указанного месяца → до декабря текущего года.  
-- **Льготы** (`has_tax_privilege = true`) — применяется упрощённая шкала (13 % / 15 %).  
-- **Нерезиденты** (`is_not_resident = true`) — единая ставка 30 %.  
+- **Льготы** (`has_tax_privilege = true`) - применяется упрощённая шкала (13 % / 15 %).  
+- **Нерезиденты** (`is_not_resident = true`) - единая ставка 30 %.  
 
 ## Быстрый старт
 
@@ -70,7 +70,7 @@
 - **make 4.4.1**  
 - **docker 27.1.2**  
 - **docker-compose 2.29.2**  
-- *(опционально)* `grpcurl 1.9.1`, `golangci-lint 1.60.3` — для отладки и линтинга  ---
+- *(опционально)* `grpcurl 1.9.1`, `golangci-lint 1.60.3` - для отладки и линтинга  ---
 
 
 ### 🔧 Установка и генерация
@@ -133,7 +133,7 @@ docker compose up --build
 # или через Makefile
 make docker-build
 ```
->Все сервисы поднимаются автоматически: web доступен на 8080, backend — на 50051.
+>Все сервисы поднимаются автоматически: web доступен на 8080, backend - на 50051.
 
 ### 💻 Без Docker (локально)
 
@@ -173,10 +173,10 @@ grpcurl -plaintext -d '{
   - CalculatePrivate(CalculatePrivateRequest) → CalculatePrivateResponse
   - Healthz(HealthzRequest) → HealthzResponse
 #### Основные поля:
-  - gross_salary — оклад в копейках
-  - territorial_multiplier, northern_coefficient — 100–200 %
-  - start_date — дата начала периода
-  - has_tax_privilege, is_not_resident — флаги статуса
+  - gross_salary - оклад в копейках
+  - territorial_multiplier, northern_coefficient - 100–200 %
+  - start_date - дата начала периода
+  - has_tax_privilege, is_not_resident - флаги статуса
 
 
 ### Проектная структура

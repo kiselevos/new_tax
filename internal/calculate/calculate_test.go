@@ -150,15 +150,15 @@ func TestCalculateSimpleProgressiveTax_BasicAndBoundaries(t *testing.T) {
 	}{
 		{"zero", 0, 0},
 
-		// ниже порога — 13%
+		// ниже порога - 13%
 		{"well_below", 1_000_000_00, 1_000_000_00 * 13 / 100},
 		{"just_below_by_99kop", limit - 1, (limit - 1) * 13 / 100},
 
-		// ровно на пороге — всё по 13%
+		// ровно на пороге - всё по 13%
 		{"at_threshold", limit, limit * 13 / 100},
 
-		// выше порога — кусочно: 13% на limit + 15% на остаток
-		{"just_above_by_1kop", limit + 1, limit*13/100 + (1 * 15 / 100)}, // обычно даст 0 на «хвосте» из-за целочисленного деления — и это ок
+		// выше порога - кусочно: 13% на limit + 15% на остаток
+		{"just_above_by_1kop", limit + 1, limit*13/100 + (1 * 15 / 100)}, // обычно даст 0 на «хвосте» из-за целочисленного деления - и это ок
 		{"above_some_amount", 6_000_000_00, limit*13/100 + (6_000_000_00-limit)*15/100},
 
 		// большая сумма, но в допустимых бизнес-границах
@@ -207,7 +207,7 @@ func TestCalculateProgressiveTax_BasicAndBoundaries(t *testing.T) {
 
 		// Чуть по обе стороны границ
 		{"just_below_2nd", U[1].U - 1, at(U, 0) + (U[1].U-1-U[0].U)*15/100},
-		{"just_above_2nd", U[1].U + 1, at(U, 0) + (U[1].U-U[0].U)*15/100 + (1*18)/100}, // 1 коп под 18% даёт 0 коп «сырых» — это ожидаемо
+		{"just_above_2nd", U[1].U + 1, at(U, 0) + (U[1].U-U[0].U)*15/100 + (1*18)/100}, // 1 коп под 18% даёт 0 коп «сырых» - это ожидаемо
 
 		{"mid_3rd", 10_000_000_00, // внутри 3-й ступени
 			at(U, 0) + (U[1].U-U[0].U)*15/100 + (10_000_000_00-U[1].U)*18/100,
@@ -254,7 +254,7 @@ func assertMonthInvariant(
 	// 2) gross фиксирован входом
 	assert.Equalf(t, baseA+baseB, got.MonthlyGrossIncome, "gross[%d]", i)
 
-	// 3) если в expectations поле ненулевое — сверяем, иначе пропускаем (маска)
+	// 3) если в expectations поле ненулевое - сверяем, иначе пропускаем (маска)
 	if expect.MonthlyTaxAmount != 0 {
 		assert.Equalf(t, expect.MonthlyTaxAmount, got.MonthlyTaxAmount, "tax[%d]", i)
 	}
@@ -263,7 +263,7 @@ func assertMonthInvariant(
 		if expect.MonthlyBaseTax != 0 {
 			assert.Equalf(t, expect.MonthlyBaseTax, got.MonthlyBaseTaxAmount, "baseTax[%d]", i)
 		}
-		// Если есть северная база (baseB>0), проверяем её даже если в ожидаемом 0 — чтобы не забыть про разложение.
+		// Если есть северная база (baseB>0), проверяем её даже если в ожидаемом 0 - чтобы не забыть про разложение.
 		if expect.MonthlyNorthTax != 0 || baseB > 0 {
 			assert.Equalf(t, expect.MonthlyNorthTax, got.MonthlyNorthTaxAmount, "northTax[%d]", i)
 		}
