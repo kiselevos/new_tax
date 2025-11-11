@@ -216,8 +216,6 @@ main {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: max(70vw, 220px);
-  max-width: calc(100vw - 16px);
   font-size: 0.9rem;
   padding: 12px 14px;
   background: rgba(44,62,80,0.95);
@@ -232,6 +230,10 @@ main {
   z-index: 1000;
   will-change: top, bottom, left, transform;
   word-wrap: break-word;
+  
+  /* Дефолтные стили для десктопа */
+  width: 280px;
+  max-width: 280px;
 }
 
 .tooltip-text.visible {
@@ -570,8 +572,10 @@ footer {
         font-size: 2rem;
     }
 
+    /* Подсказки для планшетов и мобильных */
     .tooltip-text {
-        width: 280px;
+        width: max(70vw, 220px);
+        max-width: calc(100vw - 16px);
     }
 
     .field-message {
@@ -599,8 +603,10 @@ footer {
         margin-bottom: 1rem;
     }
 
+    /* Подсказки для маленьких экранов */
     .tooltip-text {
         width: min(90vw, 320px);
+        max-width: calc(100vw - 16px);
         font-size: 0.9rem;
     }
 
@@ -630,5 +636,13 @@ footer {
         min-width: 100px;
         font-size: 0.85rem;
         padding: 0.5rem;
+    }
+    
+    /* Дополнительные корректировки для очень маленьких экранов */
+    .tooltip-text {
+        width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
+        left: 50%;
+        transform: translateX(-50%);
     }
 }

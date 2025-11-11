@@ -184,3 +184,9 @@
     padding: 0.8rem;
   }
 }
+
+@media (max-width: 360px) {   
+    h2 {
+        font-size: 1.2rem;
+    }
+}
