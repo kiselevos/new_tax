@@ -20,6 +20,15 @@ var Funcs = template.FuncMap{
 	},
 	"minus100": func(a uint64) uint64 { return a - 100 },
 	"divf":     func(a uint64, b float64) float64 { return float64(a) / b },
+	"sum":      sum,
+}
+
+func sum(nums ...uint64) uint64 {
+	var total uint64
+	for _, n := range nums {
+		total += n
+	}
+	return total
 }
 
 func formatMoney(amount uint64) string {

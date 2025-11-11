@@ -7,7 +7,7 @@ type MonthlyTaxLite struct {
 	MonthlyTaxAmount uint64
 	MonthlyBaseTax   uint64 // опционально: если в сценарии есть север, фиксируем разложение A/B
 	MonthlyNorthTax  uint64
-	TaxRate          uint64 // маржинальная по базе A (13/15/18/20/22) — полезно на переходах
+	TaxRate          uint64 // маржинальная по базе A (13/15/18/20/22) - полезно на переходах
 }
 
 type ResultTest struct {

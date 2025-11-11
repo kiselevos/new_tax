@@ -17,32 +17,58 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	// Оклад с учётом районного коэффициента (РК)
 	monthlyGrossWithTerritorial := grossSalary * territorialMultiplier / 100
 
+	var months []MonthlyTax
+
 	switch {
 	case input.IsNotResident: // Для нерезидентов: 30% со всего дохода
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
-		return TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth)
+		months = TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth)
 
 	case input.HasTaxPrivilege: // Для льготников (силовые ведомства): единая шкала 13%/15%
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
-		return TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth)
+		months = TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth)
 
 	case noTerritorial && noNorthern: // Без РК и СН
-		return TaxCalculateOnlySalary(grossSalary, startDate, startMonth)
+		months = TaxCalculateOnlySalary(grossSalary, startDate, startMonth)
 
 	case noNorthern: // Есть РК, нет СН
-		return TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth)
+		months = TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth)
 
 	case noTerritorial: // Нет РК, есть СН
 		northernAddition := grossSalary * (northernCoefficient - 100) / 100
-		return TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth)
+		months = TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth)
 
 	default: // Есть и РК, и СН (СН начисляется на оклад с РК)
 		northernAddition := monthlyGrossWithTerritorial * (northernCoefficient - 100) / 100
-		return TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth)
+		months = TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth)
 	}
+
+	// Добавляем взносы от работодателя.
+	var annualPFR, annualFOMS, annualFSS uint64
+
+	for i := range months {
+		gross := months[i].MonthlyGrossIncome
+		incomeYTD := months[i].AnnualGrossIncome
+
+		pfr, foms, fss := calcEmployerContributions(incomeYTD-gross, gross)
+
+		months[i].MonthlyPFR = pfr
+		months[i].MonthlyFOMS = foms
+		months[i].MonthlyFSS = fss
+
+		annualPFR += pfr
+		annualFOMS += foms
+		annualFSS += fss
+
+		months[i].AnnualPFR = annualPFR
+		months[i].AnnualFOMS = annualFOMS
+		months[i].AnnualFSS = annualFSS
+	}
+
+	return months
 }
 
-// TaxCalculateForNotResident — расчёт налога для налоговых нерезидентов РФ (30% со всех доходов).
+// TaxCalculateForNotResident - расчёт налога для налоговых нерезидентов РФ (30% со всех доходов).
 // Округление выполняется на месячной дельте.
 func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
 	var (
@@ -80,7 +106,7 @@ func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth i
 	return result
 }
 
-// TaxCalculateWithPrivilege — расчёт для льготников (силовые ведомства) по упрощённой шкале 13%/15%.
+// TaxCalculateWithPrivilege - расчёт для льготников (силовые ведомства) по упрощённой шкале 13%/15%.
 // Округление выполняется на месячной дельте.
 func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
 	var (
@@ -119,7 +145,7 @@ func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth in
 	return result
 }
 
-// TaxCalculateOnlySalary — расчёт по общей пятиступенчатой шкале (без учёта северной надбавки).
+// TaxCalculateOnlySalary - расчёт по общей пятиступенчатой шкале (без учёта северной надбавки).
 // Округление выполняется на месячной дельте.
 func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
 	var (
@@ -158,8 +184,8 @@ func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) 
 	return result
 }
 
-// TaxCalculateWithNorth — расчёт при наличии северной надбавки.
-// База A (оклад с РК) облагается по общей шкале; база B (северная надбавка) — по упрощённой 13%/15%.
+// TaxCalculateWithNorth - расчёт при наличии северной надбавки.
+// База A (оклад с РК) облагается по общей шкале; база B (северная надбавка) - по упрощённой 13%/15%.
 // Округление выполняется на месячной дельте по КАЖДОЙ базе отдельно.
 func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time, startMonth int) []MonthlyTax {
 	var (
@@ -237,7 +263,7 @@ func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time,
 	return result
 }
 
-// CalculateProgressiveTax — расчёт по пятиступенчатой шкале (без округления).
+// CalculateProgressiveTax - расчёт по пятиступенчатой шкале (без округления).
 // Не учитывает северную надбавку, облагаемую по упрощённой системе.
 func CalculateProgressiveTax(income uint64) uint64 {
 	var tax uint64
@@ -258,8 +284,8 @@ func CalculateProgressiveTax(income uint64) uint64 {
 	return tax
 }
 
-// CalculateSimpleProgressiveTax — расчёт по упрощённой шкале 13%/15% (без округления).
-// До 5 млн — 13%, всё сверх — 15%.
+// CalculateSimpleProgressiveTax - расчёт по упрощённой шкале 13%/15% (без округления).
+// До 5 млн - 13%, всё сверх - 15%.
 func CalculateSimpleProgressiveTax(income uint64) uint64 {
 	limit := SimpleLimits.UpperLimit
 	if income <= limit {
@@ -270,12 +296,12 @@ func CalculateSimpleProgressiveTax(income uint64) uint64 {
 	return thirteen + fifteen
 }
 
-// CalculateNotResidentTax — расчёт налога для нерезидентов (30% на все доходы).
+// CalculateNotResidentTax - расчёт налога для нерезидентов (30% на все доходы).
 func CalculateNotResidentTax(income uint64) uint64 {
 	return income * NotResident.Rate / 100
 }
 
-// findCurrentRate — текущая маржинальная ставка по общей шкале в зависимости от годового дохода.
+// findCurrentRate - текущая маржинальная ставка по общей шкале в зависимости от годового дохода.
 func findCurrentRate(income uint64) uint64 {
 	for _, limit := range Limits {
 		if income <= limit.UpperLimit {
@@ -285,7 +311,7 @@ func findCurrentRate(income uint64) uint64 {
 	return Limits[len(Limits)-1].Rate
 }
 
-// findSimpleCurrentRate — текущая ставка по упрощённой шкале (13% до 5 млн, далее 15%).
+// findSimpleCurrentRate - текущая ставка по упрощённой шкале (13% до 5 млн, далее 15%).
 func findSimpleCurrentRate(income uint64) uint64 {
 	if income <= SimpleLimits.UpperLimit {
 		return SimpleLimits.Rate // 13
@@ -295,14 +321,45 @@ func findSimpleCurrentRate(income uint64) uint64 {
 
 /*
 Согласно п. 6 ст. 52 НК РФ сумма налога исчисляется в полных рублях:
-сумма менее 50 копеек отбрасывается, 50 копеек и более — округляется до полного рубля.
+сумма менее 50 копеек отбрасывается, 50 копеек и более - округляется до полного рубля.
 */
 
-// RoundTaxAmount — округляет налог до полных рублей по правилу 50 копеек.
+// RoundTaxAmount - округляет налог до полных рублей по правилу 50 копеек.
 func RoundTaxAmount(value uint64) uint64 {
 	remainder := value % 100
 	if remainder < 50 {
 		return value - remainder
 	}
 	return value + (100 - remainder)
+}
+
+// Расчет налоговой нагрузки на работодателя.
+func calcEmployerContributions(income, gross uint64) (pfr, foms, fss uint64) {
+
+	// Расчет ПФР
+	if income < PfrLimit {
+		remaining := PfrLimit - income // Вычисляем сколько осталось до перехода лимита
+		if gross <= remaining {
+			pfr = gross * PfrRate / 1000
+		} else {
+			pfr = remaining*PfrRate/1000 + (gross-remaining)*PfrRateHi/1000
+		}
+	} else {
+		pfr = gross * PfrRateHi / 1000
+	}
+
+	// Рассчет ФОМС
+	foms = gross * FomsRate / 1000 // всегда 5.1%
+
+	// Рассчет ФСС
+	if income < FssLimit {
+		remaining := FssLimit - income
+		if gross <= remaining {
+			fss = gross * FssRate / 1000
+		} else {
+			fss = remaining * FssRate / 1000
+		}
+	}
+
+	return
 }
