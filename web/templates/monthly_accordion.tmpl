@@ -1,6 +1,8 @@
 {{define "monthly_accordion"}}
 <div class="accordion">
-  <h2>Помесячная детализация</h2>
+  <div class="results-header">
+    <h2>Помесячная детализация</h2>
+  </div>
   {{range $i, $m := .MonthlyDetails}}
   <div class="accordion-item {{if eq $i 0}}active{{end}}">
     <div class="accordion-header">
