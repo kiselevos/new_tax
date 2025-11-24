@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /static/*.psd
+Disallow: /static/*.ai
+Disallow: /static/*.zip
+Disallow: /static/*.tmp
+
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content /
+
+Sitemap: https://calculator-ndfl.ru/sitemap.xml
+Host: calculator-ndfl.ru
