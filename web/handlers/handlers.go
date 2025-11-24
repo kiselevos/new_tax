@@ -27,6 +27,8 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/how-it-works", s.HowItWorks)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
+	mux.HandleFunc("/robots.txt", s.GetRobots)
+	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
 }
 
 // Index - главная страница
@@ -173,6 +175,17 @@ func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("page_rendered")
+}
+
+// ----- для SEO -----
+func (s *Server) GetRobots(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	http.ServeFile(w, r, "static/robots.txt")
+}
+
+func (s *Server) GetSitemap(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	http.ServeFile(w, r, "static/sitemap.xml")
 }
 
 // ----- helpers -----
