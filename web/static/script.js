@@ -31,6 +31,8 @@ document.addEventListener("DOMContentLoaded", function() {
         salaryInput.classList.remove("field-error");
     }
 
+    salaryInput.addEventListener("input", clearMessages);
+
     // === Разрешаем только цифры, запятую и точку ===
     salaryInput.addEventListener("input", function () {
         let value = this.value;
