@@ -34,7 +34,6 @@
 
 /* Иконки для визуального подкрепления */
 .summary-card:nth-child(1)::before {
-    content: "💰";
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -43,7 +42,6 @@
 }
 
 .summary-card:nth-child(2)::before {
-    content: "💸";
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -52,7 +50,6 @@
 }
 
 .summary-card:nth-child(3)::before {
-    content: "💚";
     position: absolute;
     top: 1rem;
     right: 1rem;

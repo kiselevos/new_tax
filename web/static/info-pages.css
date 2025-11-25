@@ -10,8 +10,6 @@
   font-family: system-ui, sans-serif;
   color: #333;
   line-height: 1.6;
-  background: linear-gradient(135deg, #d3eaff 0%, #c7ddff 35%, #bad1ff 70%, #aec5ff 100%);
-  background-attachment: fixed;
 }
 
 /* Заголовки */
