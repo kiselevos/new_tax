@@ -238,4 +238,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     initExclusiveCheckboxes();
     initTooltips();
+
+    const toggleBtn = document.querySelector(".additional-toggle");
+const additionalBlock = document.getElementById("additional-params");
+
+if (toggleBtn && additionalBlock) {
+    toggleBtn.addEventListener("click", () => {
+        additionalBlock.classList.toggle("open");
+        toggleBtn.classList.toggle("open");
+    });
+}
 });

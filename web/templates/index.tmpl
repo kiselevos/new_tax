@@ -88,6 +88,35 @@ window.APP_CONFIG = {
     </div>
 </div>
 
+<!-- дата начала расчёта -->
+      <div class="field-row">
+        <div class="field-left">
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.</div>
+            </div>
+            <label>Дата начала расчёта:</label>
+          </div>
+        </div>
+        <div class="field-right date-field">
+          <span>01</span>
+          <select name="startDate">
+            {{range .Months}}
+            <option value="{{.Value}}" {{if eq .Value "01"}}selected{{end}}>{{.Label}}</option>
+            {{end}}
+          </select>
+          <span>{{.CurrentYear}}</span>
+        </div>
+      </div>
+
+
+      <button type="button" class="additional-toggle">
+        Дополнительные параметры расчёта (коэффициенты, льготы)
+      </button>
+
+
+<div id="additional-params" class="hidden">
   <!-- территориальный коэффициент -->
 <div class="field-row">
   <div class="field-left">
@@ -140,27 +169,6 @@ window.APP_CONFIG = {
   </div>
 </div>
 
-      <!-- дата начала расчёта -->
-      <div class="field-row">
-        <div class="field-left">
-          <div class="field-header">
-            <div class="field-tooltip">
-              <span class="tooltip-icon">?</span>
-              <div class="tooltip-text">На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.</div>
-            </div>
-            <label>Дата начала расчёта:</label>
-          </div>
-        </div>
-        <div class="field-right date-field">
-          <span>01</span>
-          <select name="startDate">
-            {{range .Months}}
-            <option value="{{.Value}}" {{if eq .Value "01"}}selected{{end}}>{{.Label}}</option>
-            {{end}}
-          </select>
-          <span>{{.CurrentYear}}</span>
-        </div>
-      </div>
 
       <!-- чекбоксы -->
       <div class="field-row">
@@ -185,6 +193,7 @@ window.APP_CONFIG = {
       </label>
       </div>
 </div>
+</div>
 
       <button type="submit">Рассчитать</button>
 
@@ -200,7 +209,7 @@ window.APP_CONFIG = {
   </main>
 
   <footer>
-    <small>© {{.CurrentYear}} TaxCalc</small>
+    <small>© {{.CurrentYear}} Калькулятор НДФЛ</small>
   </footer>
 </body>
 </html>
