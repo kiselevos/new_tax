@@ -240,12 +240,18 @@ document.addEventListener("DOMContentLoaded", function() {
     initTooltips();
 
     const toggleBtn = document.querySelector(".additional-toggle");
-const additionalBlock = document.getElementById("additional-params");
+    const additionalBlock = document.getElementById("additional-params");
 
 if (toggleBtn && additionalBlock) {
     toggleBtn.addEventListener("click", () => {
-        additionalBlock.classList.toggle("open");
+        const isOpen = additionalBlock.classList.toggle("open");
         toggleBtn.classList.toggle("open");
+
+        if (isOpen) {
+            additionalBlock.style.maxHeight = additionalBlock.scrollHeight + "px";
+        } else {
+            additionalBlock.style.maxHeight = null;
+        }
     });
 }
 });
