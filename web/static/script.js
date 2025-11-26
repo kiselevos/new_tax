@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (!form || !salaryInput) return;
 
-    const MIN_SALARY = window.APP_CONFIG.minSalary;
+    const MIN_SALARY = window.APP_CONFIG?.minSalary || 0;
     const MAX_SALARY = 100000000;
     const salaryContainer = salaryInput.closest(".salary-field-container");
 
@@ -99,143 +99,318 @@ document.addEventListener("DOMContentLoaded", function() {
             isValid = false;
         }
 
-        if (isValid) form.submit();
+        if (isValid) {
+            this.submit();
+        }
     });
 
     // === Подсказки ===
-    function initTooltips() {
-        const tooltips = document.querySelectorAll(".field-tooltip");
+function initTooltips() {
+    const tooltips = document.querySelectorAll(".field-tooltip");
 
-        tooltips.forEach(tooltip => {
-            const icon = tooltip.querySelector(".tooltip-icon");
-            const text = tooltip.querySelector(".tooltip-text");
-            if (!icon || !text) return;
+    tooltips.forEach(tooltip => {
+        const icon = tooltip.querySelector(".tooltip-icon");
+        const text = tooltip.querySelector(".tooltip-text");
+        if (!icon || !text) return;
 
-            const isTouch = window.matchMedia("(hover: none)").matches;
+        function adjustTooltipPosition() {
+            // ПЕРЕСЧИТЫВАЕМ isMobile ПРИ КАЖДОМ ПОКАЗЕ
+            const isMobile = window.matchMedia("(max-width: 768px)").matches;
+            
+            if (isMobile) {
+                adjustMobileTooltipPosition(text, icon);
+            } else {
+                adjustDesktopTooltipPosition(text, icon);
+            }
+        }
 
-            function adjustTooltipPosition() {
-                // сбрасываем стили
-                text.classList.remove("tooltip-above", "tooltip-below");
-                text.style.left = "50%";
-                text.style.right = "auto";
-                text.style.top = "auto";
-                text.style.bottom = "auto";
-                text.style.transform = "translateX(-50%)";
+        function adjustMobileTooltipPosition(text, icon) {
+            console.log('=== DEBUG TOOLTIP POSITIONING ===');
+            
+            // Сбрасываем ВСЕ стили
+            text.removeAttribute('style');
+            text.classList.remove("tooltip-above", "tooltip-below", "adjust-left", "adjust-right");
+            
+            // Применяем только нужные стили
+            text.style.position = 'absolute';
+            text.style.zIndex = '10000';
+            text.style.width = '300px';
+            text.style.maxWidth = '300px';
+            text.style.boxSizing = 'border-box';
+            text.style.left = '50%';
+            text.style.transform = 'translateX(-50%)';
+            
+            void text.offsetWidth; // форсируем рефлоу
+            
+            const computedStyle = window.getComputedStyle(text);
+            console.log('CSS width:', computedStyle.width);
+            console.log('CSS max-width:', computedStyle.maxWidth);
+            console.log('Actual width:', text.offsetWidth);
+            
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            console.log('Viewport width:', viewportWidth);
+            console.log('Viewport height:', viewportHeight);
 
-                // форсируем рефлоу
-                void text.offsetWidth;
+            // ПОЛУЧАЕМ РАЗМЕРЫ ЭЛЕМЕНТОВ
+            const iconRect = icon.getBoundingClientRect();
+            const tooltipRect = text.getBoundingClientRect();
+            
+            console.log('Icon position - left:', iconRect.left, 'right:', iconRect.right);
+            console.log('Tooltip height:', tooltipRect.height);
 
-                const iconRect = icon.getBoundingClientRect();
-                const spaceAbove = iconRect.top;
-                const spaceBelow = window.innerHeight - iconRect.bottom;
-                const prefersAbove = spaceAbove > spaceBelow;
+            // Определяем доступное пространство
+            const spaceBelow = viewportHeight - iconRect.bottom;
+            const spaceAbove = iconRect.top;
+            const tooltipHeight = tooltipRect.height;
+            
+            console.log('Space above:', spaceAbove, 'Space below:', spaceBelow);
 
-                if (prefersAbove) {
-                    text.classList.add("tooltip-above");
-                    text.style.bottom = "calc(100% + 10px)";
-                } else {
-                    text.classList.add("tooltip-below");
-                    text.style.top = "calc(100% + 10px)";
-                }
-
-                // проверяем выход за края
-                const rect = text.getBoundingClientRect();
-                if (rect.left < 8) {
-                    text.style.left = "0";
-                    text.style.transform = "none";
-                } else if (rect.right > window.innerWidth - 8) {
-                    text.style.left = "auto";
-                    text.style.right = "0";
-                    text.style.transform = "none";
-                }
+            // Выбираем позицию (сверху или снизу)
+            if (spaceBelow >= tooltipHeight + 20 || spaceAbove < 100) {
+                // Показываем снизу
+                text.classList.add('tooltip-below');
+                text.style.top = 'calc(100% + 8px)';
+                console.log('Position: BELOW icon');
+            } else {
+                // Показываем сверху
+                text.classList.add('tooltip-above');
+                text.style.bottom = 'calc(100% + 8px)';
+                console.log('Position: ABOVE icon');
             }
 
-            // 🖱️ Hover (desktop)
-            if (!isTouch) {
-                tooltip.addEventListener("mouseenter", () => {
-                    text.classList.add("visible");
-                    requestAnimationFrame(() => adjustTooltipPosition());
-                });
-                tooltip.addEventListener("mouseleave", () => {
-                    text.classList.remove("visible");
-                });
+            // РАСЧЕТ ГОРИЗОНТАЛЬНОЙ ПОЗИЦИИ С УЧЕТОМ ГРАНИЦ ЭКРАНА
+            const iconCenterX = iconRect.left + (iconRect.width / 2);
+            const tooltipWidth = 300; // Фиксированная ширина
+            let desiredLeft = iconCenterX - (tooltipWidth / 2);
+            
+            console.log('Icon center X:', iconCenterX);
+            console.log('Desired left position:', desiredLeft);
+
+            // Корректируем позицию чтобы не выходить за экран
+            const safeMargin = 15;
+            
+            // Если тултип не помещается по ширине, уменьшаем его
+            if (tooltipWidth > viewportWidth - safeMargin * 2) {
+                const newWidth = viewportWidth - safeMargin * 2;
+                text.style.width = newWidth + 'px';
+                text.style.maxWidth = newWidth + 'px';
+                console.log('Tooltip too wide, adjusted to:', newWidth);
+            }
+            
+            if (desiredLeft < safeMargin) {
+                // Выравниваем по левому краю с отступом
+                text.classList.add('adjust-left');
+                text.style.left = safeMargin + 'px';
+                text.style.transform = 'none';
+                console.log('Adjusted: LEFT edge');
+            } else if (desiredLeft + tooltipWidth > viewportWidth - safeMargin) {
+                // Выравниваем по правому краю с отступом
+                text.classList.add('adjust-right');
+                text.style.left = 'auto';
+                text.style.right = safeMargin + 'px';
+                text.style.transform = 'none';
+                console.log('Adjusted: RIGHT edge');
+            } else {
+                // Центрируем относительно иконки
+                text.style.left = '50%';
+                text.style.transform = 'translateX(-50%)';
+                console.log('Position: CENTERED');
             }
 
-            // 📱 Touch (mobile)
-            else {
-                icon.addEventListener("click", e => {
-                    e.stopPropagation();
-                    const isVisible = text.classList.contains("visible");
-
-                    document
-                        .querySelectorAll(".tooltip-text.visible")
-                        .forEach(el => el.classList.remove("visible"));
-
-                    if (!isVisible) {
-                        text.classList.add("visible");
-                        requestAnimationFrame(() => adjustTooltipPosition());
+            // ФИНАЛЬНАЯ ПРОВЕРКА
+            requestAnimationFrame(() => {
+                const finalRect = text.getBoundingClientRect();
+                console.log('Final position - left:', finalRect.left, 'right:', finalRect.right);
+                
+                // Если все равно выходит за край, принудительно корректируем ширину
+                if (finalRect.right > viewportWidth - 5) {
+                    const overflow = finalRect.right - viewportWidth + 5;
+                    const newWidth = tooltipWidth - overflow;
+                    text.style.width = newWidth + 'px';
+                    console.log('Final correction - right overflow, new width:', newWidth);
+                }
+                
+                if (finalRect.left < 5) {
+                    const overflow = 5 - finalRect.left;
+                    const newWidth = tooltipWidth - overflow;
+                    text.style.width = newWidth + 'px';
+                    if (text.classList.contains('adjust-left')) {
+                        text.style.left = '5px';
                     }
-                });
+                    console.log('Final correction - left overflow, new width:', newWidth);
+                }
 
-                document.addEventListener("click", () => {
-                    document
-                        .querySelectorAll(".tooltip-text.visible")
-                        .forEach(el => el.classList.remove("visible"));
+                console.log('=== END TOOLTIP POSITIONING ===');
+            });
+        }
+
+        function adjustDesktopTooltipPosition(text, icon) {
+            text.classList.remove("tooltip-above", "tooltip-below");
+            text.style.left = "50%";
+            text.style.right = "auto";
+            text.style.top = "auto";
+            text.style.bottom = "auto";
+            text.style.transform = "translateX(-50%)";
+            text.style.position = "absolute";
+            text.style.width = "280px";
+            text.style.maxWidth = "280px";
+            text.style.zIndex = "1001";
+
+            void text.offsetWidth;
+
+            const iconRect = icon.getBoundingClientRect();
+            const spaceAbove = iconRect.top;
+            const spaceBelow = window.innerHeight - iconRect.bottom;
+            const prefersAbove = spaceAbove > spaceBelow;
+
+            if (prefersAbove) {
+                text.classList.add("tooltip-above");
+                text.style.bottom = "calc(100% + 10px)";
+            } else {
+                text.classList.add("tooltip-below");
+                text.style.top = "calc(100% + 10px)";
+            }
+
+            const rect = text.getBoundingClientRect();
+            if (rect.left < 8) {
+                text.style.left = "0";
+                text.style.transform = "none";
+            } else if (rect.right > window.innerWidth - 8) {
+                text.style.left = "auto";
+                text.style.right = "0";
+                text.style.transform = "none";
+            }
+        }
+
+        const isTouch = window.matchMedia("(hover: none)").matches;
+
+        // 🖱️ Hover (desktop)
+        if (!isTouch) {
+            tooltip.addEventListener("mouseenter", () => {
+                text.classList.add("visible");
+                requestAnimationFrame(() => adjustTooltipPosition());
+            });
+            tooltip.addEventListener("mouseleave", () => {
+                text.classList.remove("visible");
+                document.body.style.overflowX = '';
+            });
+        }
+
+        // 📱 Touch (mobile) - ПРОСТОЙ ВАРИАНТ
+else {
+    icon.addEventListener("click", e => {
+        e.stopPropagation();
+        const isVisible = text.classList.contains("visible");
+
+        document
+            .querySelectorAll(".tooltip-text.visible")
+            .forEach(el => {
+                el.classList.remove("visible");
+                document.body.classList.remove("tooltip-mobile-open");
+            });
+
+        if (!isVisible) {
+            text.classList.add("visible");
+            document.body.classList.add("tooltip-mobile-open");
+            requestAnimationFrame(() => adjustTooltipPosition());
+        } else {
+            document.body.classList.remove("tooltip-mobile-open");
+        }
+    });
+
+    // ЗАКРЫВАЕМ ТУЛТИПЫ ПРИ ЛЮБОМ ДВИЖЕНИИ ПАЛЬЦЕМ
+    document.addEventListener('touchmove', function() {
+        if (document.body.classList.contains('tooltip-mobile-open')) {
+            document
+                .querySelectorAll(".tooltip-text.visible")
+                .forEach(el => {
+                    el.classList.remove("visible");
+                    document.body.classList.remove("tooltip-mobile-open");
                 });
+        }
+    }, { passive: true });
+
+    document.addEventListener("click", () => {
+        document
+            .querySelectorAll(".tooltip-text.visible")
+            .forEach(el => {
+                el.classList.remove("visible");
+                document.body.classList.remove("tooltip-mobile-open");
+            });
+    });
+}
+
+        // Пересчитываем при изменении размера
+        window.addEventListener('resize', () => {
+            if (text.classList.contains('visible')) {
+                requestAnimationFrame(() => adjustTooltipPosition());
             }
         });
-    }
+
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                if (text.classList.contains('visible')) {
+                    requestAnimationFrame(() => adjustTooltipPosition());
+                }
+            }, 100);
+        });
+    });
+}
 
     // === Взаимоисключающие чекбоксы ===
     function initExclusiveCheckboxes() {
-        const options = document.querySelectorAll(".exclusive-option");
-        options.forEach(option => {
-            const checkbox = option.querySelector('input[type="checkbox"]');
-            if (!checkbox) return;
+    const options = document.querySelectorAll(".exclusive-option");
+    options.forEach(option => {
+        const checkbox = option.querySelector('input[type="checkbox"]');
+        if (!checkbox) return;
 
-            checkbox.addEventListener("change", function () {
-                if (this.checked) {
-                    option.classList.add("selected");
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                option.classList.add("selected");
 
-                    options.forEach(otherOption => {
-                        if (otherOption !== option) {
-                            const otherCheckbox = otherOption.querySelector(
-                                'input[type="checkbox"]'
-                            );
-                            if (otherCheckbox) {
-                                otherCheckbox.checked = false;
-                                otherOption.classList.remove("selected");
-                            }
+                options.forEach(otherOption => {
+                    if (otherOption !== option) {
+                        const otherCheckbox = otherOption.querySelector(
+                            'input[type="checkbox"]'
+                        );
+                        if (otherCheckbox) {
+                            otherCheckbox.checked = false;
+                            otherOption.classList.remove("selected");
                         }
-                    });
-                    showCheckboxHint(this);
+                    }
+                });
+            } else {
+                option.classList.remove("selected");
+            }
+        });
+    });
+}
+
+
+    // === Аккордеон ===
+    function initAccordion() {
+        const toggleBtn = document.querySelector(".additional-toggle");
+        const additionalBlock = document.getElementById("additional-params");
+
+        if (toggleBtn && additionalBlock) {
+            toggleBtn.addEventListener("click", () => {
+                const isOpen = additionalBlock.classList.toggle("open");
+                toggleBtn.classList.toggle("open");
+
+                if (isOpen) {
+                    additionalBlock.style.maxHeight = additionalBlock.scrollHeight + "px";
+                    toggleBtn.style.setProperty('--rotation', '180deg');
                 } else {
-                    option.classList.remove("selected");
-                    removeCheckboxHint();
+                    additionalBlock.style.maxHeight = null;
+                    toggleBtn.style.setProperty('--rotation', '0deg');
                 }
             });
-        });
-    }
-
-    function showCheckboxHint(checkedCheckbox) {
-        removeCheckboxHint();
-        const hint = document.createElement("div");
-        hint.className = "checkbox-hint";
-
-        if (checkedCheckbox.name === "hasTaxPrivilege") {
-            hint.textContent = "✓ Выбраны льготы для силовых структур";
-        } else if (checkedCheckbox.name === "isNotResident") {
-            hint.textContent = "✓ Выбран статус налогового нерезидента";
         }
-
-        const container = checkedCheckbox.closest(".exclusive-checkboxes");
-        if (container) container.appendChild(hint);
     }
 
-    function removeCheckboxHint() {
-        document.querySelectorAll(".checkbox-hint").forEach(hint => hint.remove());
-    }
-
+    // Инициализация всех компонентов
     initExclusiveCheckboxes();
     initTooltips();
+    initAccordion();
 });
