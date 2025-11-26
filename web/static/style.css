@@ -374,6 +374,7 @@ input::placeholder {
 /* === EXCLUSIVE CHECKBOXES === */
 .exclusive-checkboxes {
     gap: 4px;
+    position: relative;
 }
 
 .exclusive-option {
@@ -390,14 +391,6 @@ input::placeholder {
 .exclusive-option input[type="checkbox"]:checked + span {
     font-weight: 600;
     color: #2c3e50;
-}
-
-.checkbox-hint {
-    color: #3498db;
-    font-size: 0.8rem;
-    margin-top: 4px;
-    font-weight: 500;
-    animation: fadeIn 0.3s ease;
 }
 
 /* === UNDER-TITLE LINKS === */
@@ -601,9 +594,8 @@ footer {
         font-size: 2rem;
     }
 
-    /* УПРОЩЕННЫЕ СТИЛИ ТУЛТИПОВ - ДАЕМ JS ПОЛНЫЙ КОНТРОЛЬ */
+    /* УПРОЩЕННЫЕ СТИЛИ ТУЛТИПОВ */
     .field-tooltip .tooltip-text {
-        /* ТОЛЬКО базовые стили, без позиционирования */
         font-size: 0.9rem;
         z-index: 10000;
         padding: 12px 14px;
@@ -613,11 +605,9 @@ footer {
         border-radius: 8px;
         box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         line-height: 1.4;
-        /* Убираем все позиционирование - JS будет управлять */
         position: absolute;
         width: 300px;
         max-width: 300px;
-        /* Сбрасываем позиционирование */
         top: auto;
         bottom: auto;
         left: auto;
@@ -656,7 +646,6 @@ footer {
     /* Предотвращаем горизонтальный скролл при открытых тултипах */
     body.tooltip-mobile-open {
         overflow-x: hidden;
-        position: relative;
     }
 }
 
@@ -694,13 +683,20 @@ footer {
         font-size: 0.75rem;
     }
 
-    /* На маленьких экранах - JS сам откорректирует ширину */
     .field-tooltip .tooltip-text {
         padding: 10px 12px;
     }
 
     .field-tooltip {
         padding: 4px 0;
+    }
+    
+    .exclusive-option {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .checkbox-inline {
+        padding: 0.5rem 0.75rem;
     }
 }
 

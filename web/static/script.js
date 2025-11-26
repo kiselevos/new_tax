@@ -360,53 +360,33 @@ else {
 
     // === Взаимоисключающие чекбоксы ===
     function initExclusiveCheckboxes() {
-        const options = document.querySelectorAll(".exclusive-option");
-        options.forEach(option => {
-            const checkbox = option.querySelector('input[type="checkbox"]');
-            if (!checkbox) return;
+    const options = document.querySelectorAll(".exclusive-option");
+    options.forEach(option => {
+        const checkbox = option.querySelector('input[type="checkbox"]');
+        if (!checkbox) return;
 
-            checkbox.addEventListener("change", function () {
-                if (this.checked) {
-                    option.classList.add("selected");
+        checkbox.addEventListener("change", function () {
+            if (this.checked) {
+                option.classList.add("selected");
 
-                    options.forEach(otherOption => {
-                        if (otherOption !== option) {
-                            const otherCheckbox = otherOption.querySelector(
-                                'input[type="checkbox"]'
-                            );
-                            if (otherCheckbox) {
-                                otherCheckbox.checked = false;
-                                otherOption.classList.remove("selected");
-                            }
+                options.forEach(otherOption => {
+                    if (otherOption !== option) {
+                        const otherCheckbox = otherOption.querySelector(
+                            'input[type="checkbox"]'
+                        );
+                        if (otherCheckbox) {
+                            otherCheckbox.checked = false;
+                            otherOption.classList.remove("selected");
                         }
-                    });
-                    showCheckboxHint(this);
-                } else {
-                    option.classList.remove("selected");
-                    removeCheckboxHint();
-                }
-            });
+                    }
+                });
+            } else {
+                option.classList.remove("selected");
+            }
         });
-    }
+    });
+}
 
-    function showCheckboxHint(checkedCheckbox) {
-        removeCheckboxHint();
-        const hint = document.createElement("div");
-        hint.className = "checkbox-hint";
-
-        if (checkedCheckbox.name === "hasTaxPrivilege") {
-            hint.textContent = "✓ Выбраны льготы для силовых структур";
-        } else if (checkedCheckbox.name === "isNotResident") {
-            hint.textContent = "✓ Выбран статус налогового нерезидента";
-        }
-
-        const container = checkedCheckbox.closest(".exclusive-checkboxes");
-        if (container) container.appendChild(hint);
-    }
-
-    function removeCheckboxHint() {
-        document.querySelectorAll(".checkbox-hint").forEach(hint => hint.remove());
-    }
 
     // === Аккордеон ===
     function initAccordion() {
