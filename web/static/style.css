@@ -510,23 +510,24 @@ a.button.large {
 }
 
 .footer-links {
+    display: flex;
+    flex-wrap: wrap;           /* позволяет переносить строки */
+    justify-content: center;   /* центрует даже при переносе */
+    gap: 10px 16px;            /* вертикальный и горизонтальный отступ */
+    max-width: 100%;
     margin-bottom: 8px;
 }
 
 .footer-link {
-    color: #597ccf; /* более мягкий синий */
+    white-space: nowrap;       /* пункт всегда целиком, не делится по словам */
+    color: #597ccf;
     text-decoration: none;
-    font-weight: 400;
-    transition: opacity 0.2s ease;
+    font-size: 13px;
+    transition: opacity 0.2s;
 }
 
 .footer-link:hover {
-    opacity: 0.7;
-}
-
-.footer-separator {
-    color: #bcbcbc;
-    margin: 0 8px;
+    opacity: 0.75;
 }
 
 .footer-copy {
@@ -705,11 +706,6 @@ a.button.large {
         padding: 0.875rem;
         border-radius: 10px;
         width: 100%;
-    }
-
-    footer {
-        margin-top: 1rem;
-        font-size: 0.75rem;
     }
 
     .field-tooltip .tooltip-text {
