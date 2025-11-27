@@ -13,6 +13,7 @@ import (
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/handlers"
+	"github.com/kiselevos/new_tax/web/internal/client"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"github.com/kiselevos/new_tax/web/internal/server"
 )
@@ -36,7 +37,15 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	s := &handlers.Server{Tmpl: tmpls}
+	clientGRPC, conn, err := client.NewTaxClient()
+	if err != nil {
+		logger.Error("grpc_dial_failed", "err", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	s := handlers.NewServer(tmpls, clientGRPC)
+
 	s.Routes(mux)
 
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

@@ -10,18 +10,27 @@ import (
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
-	"github.com/kiselevos/new_tax/web/internal/client"
+	"github.com/kiselevos/new_tax/web/internal/api"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"google.golang.org/grpc/metadata"
 )
 
 // Server - основной HTTP-сервер, хранящий шаблоны.
 type Server struct {
-	Tmpl *template.Template
+	Tmpl      *template.Template
+	TaxClient pb.TaxServiceClient
+}
+
+func NewServer(tmpl *template.Template, client pb.TaxServiceClient) *Server {
+	return &Server{
+		Tmpl:      tmpl,
+		TaxClient: client,
+	}
 }
 
 // Routes - регистрация всех маршрутов приложения.
 func (s *Server) Routes(mux *http.ServeMux) {
+	// HTML
 	mux.HandleFunc("/", s.Index)
 	mux.HandleFunc("/calculate", s.Calculate)
 	mux.HandleFunc("/about", s.About)
@@ -29,6 +38,10 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
+
+	// API
+	publicAPI := api.NewPublicHandler(s.TaxClient)
+	mux.HandleFunc("/api/v1/calc", publicAPI.HandlePublicCalc)
 }
 
 // Index - главная страница
@@ -70,14 +83,6 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientGRPC, conn, err := client.NewTaxClient()
-	if err != nil {
-		log.Error("grpc_dial_failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	defer conn.Close()
-
 	rid := middleware.GetRID(ctx)
 
 	md := metadata.New(map[string]string{"x-request-id": rid})
@@ -85,7 +90,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 
 	defer cancel()
 
-	res, err := clientGRPC.CalculatePrivate(rpcCtx, req)
+	res, err := s.TaxClient.CalculatePrivate(rpcCtx, req)
 	if err != nil {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
