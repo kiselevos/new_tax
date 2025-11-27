@@ -500,12 +500,42 @@ a.button.large {
 }
 
 /* === FOOTER === */
-footer {
+.site-footer {
     text-align: center;
-    margin-top: 2rem;
-    color: rgba(255,255,255,0.8);
-    font-size: 0.875rem;
+    padding: 40px 20px 30px;
+    font-size: 13px;
+    color: #8a8a8a;
+    margin-top: 60px;
+    border-top: 1px solid rgba(255, 255, 255, 0.4); /* мягкий белый разделитель */
 }
+
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;           /* позволяет переносить строки */
+    justify-content: center;   /* центрует даже при переносе */
+    gap: 10px 16px;            /* вертикальный и горизонтальный отступ */
+    max-width: 100%;
+    margin-bottom: 8px;
+}
+
+.footer-link {
+    white-space: nowrap;       /* пункт всегда целиком, не делится по словам */
+    color: #597ccf;
+    text-decoration: none;
+    font-size: 13px;
+    transition: opacity 0.2s;
+}
+
+.footer-link:hover {
+    opacity: 0.75;
+}
+
+.footer-copy {
+    font-size: 12px;
+    color: #9c9c9c;
+    margin-top: 4px;
+}
+
 
 /* === ADDITIONAL PARAMETERS === */
 .additional-toggle {
@@ -676,11 +706,6 @@ footer {
         padding: 0.875rem;
         border-radius: 10px;
         width: 100%;
-    }
-
-    footer {
-        margin-top: 1rem;
-        font-size: 0.75rem;
     }
 
     .field-tooltip .tooltip-text {

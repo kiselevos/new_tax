@@ -8,7 +8,7 @@
   <meta name="yandex-verification" content="33f54f0aae655d5f" />
 
   <meta name="description"
-        content="Простой, понятный и бесплатный калькулятор НДФЛ {{.CurrentYear}}. Без лишнего текста. Расчёт по прогрессивной шкале от вашей месячной зарплаты, с детализацией.">
+        content="Простой, понятный и бесплатный калькулятор НДФЛ {{.CurrentYear}}: расчёт налога по прогрессивной шкале, региональным коэффициентам и вашей месячной зарплате с помесячной детализацией.">
   <meta name="keywords" content="калькулятор НДФЛ {{.CurrentYear}}, расчет НДФЛ, зарплата на руки, подоходный налог, НДФЛ прогрессивная шкала, налог 2025, расчет зарплаты">
   
 
@@ -213,14 +213,25 @@ window.APP_CONFIG = {
           Калькулятор предназначен исключительно <i>для справочных целей</i>, чтобы вы могли
           оценить свой чистый доход и размер НДФЛ, который будете уплачивать после 2025 года.
         </p>
-      <a href="/how-it-works" class="calculator-link">подробнее о работе калькулятора →</a>
+      <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
       </div>
     </form>
   </main>
 
-  <footer>
-    <small>© {{.CurrentYear}} Калькулятор НДФЛ</small>
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a class="footer-link" href="/about">О проекте</a>
+      <a class="footer-link" href="/api">API для разработчиков</a>
+      <a class="footer-link" href="mailto:{{.FeedbackEmail}}?subject=Калькулятор%20НДФЛ">
+        Написать разработчику
+      </a>
+    </div>
+
+    <div class="footer-copy">
+      © 2025 Калькулятор НДФЛ
+    </div>
   </footer>
+
 </body>
 </html>
 {{end}}

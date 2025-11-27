@@ -51,7 +51,7 @@ func main() {
 		}
 	}()
 
-	// 7) graceful shutdown
+	// graceful shutdown
 	ctx, stop := signal.NotifyContext(context.Background(),
 		os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
