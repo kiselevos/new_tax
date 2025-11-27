@@ -213,14 +213,25 @@ window.APP_CONFIG = {
           Калькулятор предназначен исключительно <i>для справочных целей</i>, чтобы вы могли
           оценить свой чистый доход и размер НДФЛ, который будете уплачивать после 2025 года.
         </p>
-      <a href="/how-it-works" class="calculator-link">подробнее о работе калькулятора →</a>
+      <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
       </div>
     </form>
   </main>
 
-  <footer>
-    <small>© {{.CurrentYear}} Калькулятор НДФЛ</small>
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a href="/api" class="footer-link">API для разработчиков</a>
+      <span class="footer-separator">·</span>
+      <a href="/about" class="footer-link">О проекте</a>
+      <span class="footer-separator">·</span>
+      <a href="mailto:your-email@example.com" class="footer-link">Обратная связь</a>
+    </div>
+
+    <div class="footer-copy">
+      © 2025 Калькулятор НДФЛ
+    </div>
   </footer>
+
 </body>
 </html>
 {{end}}

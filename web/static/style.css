@@ -500,12 +500,41 @@ a.button.large {
 }
 
 /* === FOOTER === */
-footer {
+.site-footer {
     text-align: center;
-    margin-top: 2rem;
-    color: rgba(255,255,255,0.8);
-    font-size: 0.875rem;
+    padding: 40px 20px 30px;
+    font-size: 13px;
+    color: #8a8a8a;
+    margin-top: 60px;
+    border-top: 1px solid rgba(255, 255, 255, 0.4); /* мягкий белый разделитель */
 }
+
+.footer-links {
+    margin-bottom: 8px;
+}
+
+.footer-link {
+    color: #597ccf; /* более мягкий синий */
+    text-decoration: none;
+    font-weight: 400;
+    transition: opacity 0.2s ease;
+}
+
+.footer-link:hover {
+    opacity: 0.7;
+}
+
+.footer-separator {
+    color: #bcbcbc;
+    margin: 0 8px;
+}
+
+.footer-copy {
+    font-size: 12px;
+    color: #9c9c9c;
+    margin-top: 4px;
+}
+
 
 /* === ADDITIONAL PARAMETERS === */
 .additional-toggle {

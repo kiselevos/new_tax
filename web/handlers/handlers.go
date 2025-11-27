@@ -24,7 +24,7 @@ type Server struct {
 func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.Index)
 	mux.HandleFunc("/calculate", s.Calculate)
-	mux.HandleFunc("/how-it-works", s.HowItWorks)
+	mux.HandleFunc("/about", s.About)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
@@ -138,12 +138,12 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// HowItWorks - страница с описанием расчёта
-func (s *Server) HowItWorks(w http.ResponseWriter, r *http.Request) {
+// About - страница с описанием проекта
+func (s *Server) About(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := logx.From(ctx).With("page", "how_it_works")
+	log := logx.From(ctx).With("page", "about")
 
-	if err := s.Tmpl.ExecuteTemplate(w, "how_it_works", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "about", nil); err != nil {
 		log.Error("template_render_failed", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
