@@ -50,7 +50,7 @@ func main() {
 
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	httpSrv := server.New(addr, middleware.Logger(mux))
+	httpSrv := server.New(addr, middleware.CORSMiddleware(middleware.Logger(mux)))
 
 	go func() {
 		logger.Info("listening", "addr", addr)
