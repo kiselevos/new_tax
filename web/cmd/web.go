@@ -13,6 +13,7 @@ import (
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/handlers"
+	"github.com/kiselevos/new_tax/web/internal/api"
 	"github.com/kiselevos/new_tax/web/internal/client"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"github.com/kiselevos/new_tax/web/internal/server"
@@ -35,7 +36,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	mux := http.NewServeMux()
+	htmlMux := http.NewServeMux()
+	apiMux := http.NewServeMux()
 
 	clientGRPC, conn, err := client.NewTaxClient()
 	if err != nil {
@@ -46,11 +48,28 @@ func main() {
 
 	s := handlers.NewServer(tmpls, clientGRPC)
 
-	s.Routes(mux)
+	s.Routes(htmlMux)
+	api.RegisterPublicRoutes(apiMux, clientGRPC)
 
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	httpSrv := server.New(addr, middleware.CORSMiddleware(middleware.Logger(mux)))
+	apiHandler := middleware.Chain(
+		apiMux,
+		middleware.CORSMiddleware,
+		middleware.RateLimiterMiddleware(5, 10),
+		middleware.Logger,
+	)
+
+	htmlHandler := middleware.Chain(
+		htmlMux,
+		middleware.Logger,
+	)
+
+	rootMux := http.NewServeMux()
+	rootMux.Handle("/api/", apiHandler)
+	rootMux.Handle("/", htmlHandler)
+
+	httpSrv := server.New(addr, rootMux)
 
 	go func() {
 		logger.Info("listening", "addr", addr)
