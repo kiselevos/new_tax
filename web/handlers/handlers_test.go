@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/kiselevos/new_tax/web"
+	"github.com/kiselevos/new_tax/web/testutils"
 )
 
 func TestTemplatesRender(t *testing.T) {
@@ -43,7 +44,7 @@ func loadTemplates(t *testing.T) *template.Template {
 }
 
 func TestHandlers_StatusOK(t *testing.T) {
-	s := &Server{Tmpl: loadTemplates(t)}
+	s := NewServer(loadTemplates(t), &testutils.FakeTaxClient{})
 
 	tests := []struct {
 		name string
