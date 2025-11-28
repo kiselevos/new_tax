@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/kiselevos/new_tax/pkg/logx"
 )
 
 func writeJSON(w http.ResponseWriter, status int, v interface{}) {
@@ -16,7 +18,12 @@ func writeJSON(w http.ResponseWriter, status int, v interface{}) {
 
 }
 
-func writeError(w http.ResponseWriter, msg string, status int) {
+func writeError(w http.ResponseWriter, r *http.Request, msg string, status int) {
+	logx.From(r.Context()).Warn(
+		"api_error",
+		"status", status,
+		"error", msg,
+	)
 	writeJSON(w, status, map[string]string{
 		"error": msg,
 	})

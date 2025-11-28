@@ -59,8 +59,10 @@ func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 
 // Calculate - обработка формы и запрос к gRPC-бэкенду
 func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
+
 	ctx := r.Context()
-	log := logx.From(ctx).With("path", r.URL.Path, "method", r.Method)
+
+	log := logx.From(ctx)
 
 	ct := r.Header.Get("Content-Type")
 	if !strings.Contains(ct, "application/x-www-form-urlencoded") &&
@@ -136,6 +138,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ---- Business success log ----
 	log.Info("calculation_completed",
 		"gross_salary", req.GrossSalary,
 		"annual_tax", res.AnnualTaxAmount,

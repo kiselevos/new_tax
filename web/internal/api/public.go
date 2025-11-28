@@ -24,7 +24,7 @@ func NewPublicHandler(client pb.TaxServiceClient) *PublicHandler {
 func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
-		writeError(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeError(w, r, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -36,12 +36,12 @@ func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request)
 	var dtoReq PublicCalcRequest
 	err := json.NewDecoder(r.Body).Decode(&dtoReq)
 	if err != nil {
-		writeError(w, "invalid json", http.StatusBadRequest)
+		writeError(w, r, "invalid json", http.StatusBadRequest)
 		return
 	}
 
 	if err := dtoReq.Validate(); err != nil {
-		writeError(w, err.Error(), http.StatusBadRequest)
+		writeError(w, r, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request)
 
 	grpcResp, err := h.TaxClient.CalculatePublic(ctx, grpcReq)
 	if err != nil {
-		writeError(w, "backend error", http.StatusInternalServerError)
+		writeError(w, r, "backend error", http.StatusInternalServerError)
 		return
 	}
 
