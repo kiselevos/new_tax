@@ -38,6 +38,22 @@ type IndexData struct {
 	Northern      []BonusOption
 }
 
+type ResultPayload struct {
+	AnnualTaxAmount   uint64
+	AnnualGrossIncome uint64
+	AnnualNetIncome   uint64
+	GrossSalary       uint64
+	TerritorialMult   uint64
+	NorthernCoeff     uint64
+	MonthlyDetails    []*pb.MonthlyPrivateTax
+	ShowWarning       bool
+	HasTaxPrivilege   bool
+	IsNotResident     bool
+	AnnualPFR         uint64
+	AnnualFOMS        uint64
+	AnnualFSS         uint64
+}
+
 func PrepareMonths() []Month {
 	return []Month{
 		{Value: "01", Label: "Январь"},

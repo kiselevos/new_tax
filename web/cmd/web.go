@@ -21,7 +21,6 @@ import (
 )
 
 func main() {
-
 	logger := logx.New()
 
 	if err := godotenv.Load(".env"); err != nil {
@@ -34,7 +33,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	tmpls, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
+	tmpl, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {
 		logger.Error("templates_parse_failed", "err", err)
 		os.Exit(1)
@@ -50,10 +49,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	htmlServer := handlers.NewServer(tmpls, clientGRPC)
+	htmlServer := handlers.NewServer(tmpl, clientGRPC)
 
 	htmlServer.Routes(htmlMux)
-	api.RegisterPublicRoutes(apiMux, clientGRPC, cfg.APIVersion)
+	api.RegisterPublicRoutes(apiMux, clientGRPC, cfg.APIVersion, tmpl)
 
 	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
