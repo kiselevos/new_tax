@@ -53,7 +53,7 @@ func main() {
 	htmlServer := handlers.NewServer(tmpls, clientGRPC)
 
 	htmlServer.Routes(htmlMux)
-	api.RegisterPublicRoutes(apiMux, clientGRPC)
+	api.RegisterPublicRoutes(apiMux, clientGRPC, cfg.APIVersion)
 
 	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 

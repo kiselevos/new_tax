@@ -8,10 +8,11 @@ import (
 )
 
 type Config struct {
-	WebPort  string
-	Backend  string
-	APIRPS   int
-	APIBurst int
+	WebPort    string
+	Backend    string
+	APIRPS     int
+	APIBurst   int
+	APIVersion string
 }
 
 func Load() (*Config, error) {
@@ -42,11 +43,17 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid API_BURST: %w", err)
 	}
 
+	apiVers := os.Getenv("API_VERSION")
+	if webPort == "" {
+		apiVers = "v1"
+	}
+
 	return &Config{
-		WebPort:  webPort,
-		Backend:  backAddr,
-		APIRPS:   rps,
-		APIBurst: burst,
+		WebPort:    webPort,
+		Backend:    backAddr,
+		APIRPS:     rps,
+		APIBurst:   burst,
+		APIVersion: apiVers,
 	}, nil
 }
 
