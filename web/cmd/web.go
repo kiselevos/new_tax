@@ -13,38 +13,69 @@ import (
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
 	"github.com/kiselevos/new_tax/web/handlers"
+	"github.com/kiselevos/new_tax/web/internal/api"
+	"github.com/kiselevos/new_tax/web/internal/client"
+	"github.com/kiselevos/new_tax/web/internal/config"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"github.com/kiselevos/new_tax/web/internal/server"
 )
 
 func main() {
-
 	logger := logx.New()
 
 	if err := godotenv.Load(".env"); err != nil {
-		logger.Error("file .env not read", "err", err)
+		logger.Warn("env_file_not_loaded", "err", err)
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		logger.Error("config_load_failed", "err", err)
 		os.Exit(1)
 	}
 
-	addr := os.Getenv("WEB_PORT")
-
-	tmpls, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
+	tmpl, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {
 		logger.Error("templates_parse_failed", "err", err)
 		os.Exit(1)
 	}
 
-	mux := http.NewServeMux()
+	htmlMux := http.NewServeMux()
+	apiMux := http.NewServeMux()
 
-	s := &handlers.Server{Tmpl: tmpls}
-	s.Routes(mux)
+	clientGRPC, conn, err := client.NewTaxClient(cfg.Backend)
+	if err != nil {
+		logger.Error("grpc_dial_failed", "err", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
 
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	htmlServer := handlers.NewServer(tmpl, clientGRPC)
 
-	httpSrv := server.New(addr, middleware.Logger(mux))
+	htmlServer.Routes(htmlMux)
+	api.RegisterPublicRoutes(apiMux, clientGRPC, cfg.APIVersion, tmpl)
+
+	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	apiHandler := middleware.Chain(
+		apiMux,
+		middleware.Logger,
+		middleware.RateLimiterMiddleware(cfg.APIRPS, cfg.APIBurst),
+		middleware.CORSMiddleware,
+	)
+
+	htmlHandler := middleware.Chain(
+		htmlMux,
+		middleware.Logger,
+	)
+
+	rootMux := http.NewServeMux()
+	rootMux.Handle("/api/", apiHandler)
+	rootMux.Handle("/", htmlHandler)
+
+	httpSrv := server.New(cfg.WebPort, rootMux)
 
 	go func() {
-		logger.Info("listening", "addr", addr)
+		logger.Info("listening", "addr", cfg.WebPort)
 		if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("http_serve_failed", "err", err)
 			os.Exit(1)

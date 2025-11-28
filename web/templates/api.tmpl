@@ -1,0 +1,130 @@
+{{define "api"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Open API калькулятор НДФЛ</title>
+  
+  <meta name="description" content="Документация API для расчёта НДФЛ: эндпоинты, параметры и примеры запросов.">
+  
+  <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/info-pages.css">
+    
+  <!-- favicon -->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+
+  </head>
+<body>
+<div class="info-page">
+<div class="api-page">
+    <h1 class="info-page-title">API — публичный интерфейс калькулятора НДФЛ</h1>
+
+    <p class="info-page-subtitle">
+        Здесь собрана документация по открытому API сервиса для расчёта НДФЛ 
+        по прогрессивной шкале. Данные не сохраняются, вычисления выполняются в реальном времени.
+    </p>
+
+    <!-- Текущая версия -->
+    <div class="info-card">
+        <div class="api-version">
+            <h2 class="info-card-title">
+                Текущая версия API
+                <span class="api-version-tag">{{ .APIVersion }}</span>
+    </h2>
+</div>
+    </div>
+
+    <!-- PUBLIC API -->
+    <div class="info-card">
+        <h2 class="info-card-title">Публичные методы</h2>
+
+        {{ range .Endpoints }}
+            {{ if eq .Group "public" }}
+
+            <div class="info-note" style="margin-top: 1rem;">
+                <strong>{{ .Method }}</strong>  
+                <code>{{ .Path }}</code>
+            </div>
+
+            <p class="info-card-text">{{ .Description }}</p>
+
+            <div class="info-example">
+    <strong>Полный запрос:</strong>
+    <pre><code>{{ .ExampleRequestFull }}</code></pre>
+</div>
+
+<div class="info-example">
+    <strong>Минимальный запрос:</strong>
+    <pre><code>{{ .ExampleRequestLite }}</code></pre>
+</div>
+
+            <div class="info-example">
+                <strong>Пример ответа:</strong>
+                <pre><code>{{ .ExampleResponse }}</code></pre>
+            </div>
+
+            {{ end }}
+        {{ end }}
+    </div>
+
+    <!-- PRIVATE API 
+    <div class="info-card">
+        <h2 class="info-card-title">Приватные методы</h2>
+
+        {{ range .Endpoints }}
+            {{ if eq .Group "private" }}
+
+            <div class="info-note" style="margin-top: 1rem;">
+                <strong>{{ .Method }}</strong>  
+                <code>{{ .Path }}</code>
+            </div>
+
+            <p class="info-card-text">{{ .Description }}</p>
+
+            <div class="info-example">
+                <strong>Пример запроса:</strong>
+                <pre><code>{{ .ExampleRequest }}</code></pre>
+            </div>
+
+            <div class="info-example">
+                <strong>Пример ответа:</strong>
+                <pre><code>{{ .ExampleResponse }}</code></pre>
+            </div>
+
+            {{ end }}
+        {{ end }}
+    </div> -->
+
+    <!-- Примеры вызова -->
+    <div class="info-card">
+        <h2 class="info-card-title">Примеры вызова API</h2>
+
+        <div class="info-example">
+            <strong>curl:</strong>
+<pre><code>curl -X POST https://calculator-ndfl.ru/api/{{ .APIVersion }}/calc \
+  -H "Content-Type: application/json" \
+  -d '{"gross_salary": 120000}'
+</code></pre>
+        </div>
+
+        <div class="info-example">
+            <strong>JavaScript:</strong>
+<pre><code>fetch("/api/{{ .APIVersion }}/calc", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ gross_salary: 120000 })
+})
+  .then(r => r.json())
+  .then(console.log);
+</code></pre>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>
+
+{{ end }}
