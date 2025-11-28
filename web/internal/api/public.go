@@ -1,8 +1,10 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 )
@@ -28,6 +30,9 @@ func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request)
 
 	defer r.Body.Close()
 
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	defer cancel()
+
 	var dtoReq PublicCalcRequest
 	err := json.NewDecoder(r.Body).Decode(&dtoReq)
 	if err != nil {
@@ -37,7 +42,7 @@ func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request)
 
 	grpcReq := dtoReq.ToProto()
 
-	grpcResp, err := h.TaxClient.CalculatePublic(r.Context(), grpcReq)
+	grpcResp, err := h.TaxClient.CalculatePublic(ctx, grpcReq)
 	if err != nil {
 		writeError(w, "backend error", http.StatusInternalServerError)
 		return
