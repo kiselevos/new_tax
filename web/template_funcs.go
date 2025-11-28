@@ -14,6 +14,7 @@ var Funcs = template.FuncMap{
 	"fmtMoney":         formatMoney,
 	"getMinSalary":     GetMinSalary,
 	"getMinLivingWage": GetMinLivingWage,
+	"getFeedbackEmail": GetFeedbackEmail,
 	"russianMonth":     formatRussianMonth,
 	"sub": func(a, b int) int {
 		return a - b
@@ -62,6 +63,14 @@ func GetMinLivingWage() uint64 {
 		minWage = 1
 	}
 	return uint64(minWage)
+}
+
+func GetFeedbackEmail() string {
+	feedbackEmail := os.Getenv("FEEDBACK_EMAIL")
+	if feedbackEmail == "" {
+		return "okiselev421@gmail.com"
+	}
+	return feedbackEmail
 }
 
 // Функция для форматирования месяца на русском из timestamp

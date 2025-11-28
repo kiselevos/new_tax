@@ -348,10 +348,10 @@ func calcEmployerContributions(income, gross uint64) (pfr, foms, fss uint64) {
 		pfr = gross * PfrRateHi / 1000
 	}
 
-	// Рассчет ФОМС
+	// Расчет ФОМС
 	foms = gross * FomsRate / 1000 // всегда 5.1%
 
-	// Рассчет ФСС
+	// Расчет ФСС
 	if income < FssLimit {
 		remaining := FssLimit - income
 		if gross <= remaining {

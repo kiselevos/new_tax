@@ -11,6 +11,7 @@ import (
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/pkg/logx"
+	"github.com/kiselevos/new_tax/web"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -30,10 +31,27 @@ type Month struct {
 }
 
 type IndexData struct {
-	CurrentYear int
-	Months      []Month
-	Territorial []CoefficientOption
-	Northern    []BonusOption
+	CurrentYear   int
+	FeedbackEmail string
+	Months        []Month
+	Territorial   []CoefficientOption
+	Northern      []BonusOption
+}
+
+type ResultPayload struct {
+	AnnualTaxAmount   uint64
+	AnnualGrossIncome uint64
+	AnnualNetIncome   uint64
+	GrossSalary       uint64
+	TerritorialMult   uint64
+	NorthernCoeff     uint64
+	MonthlyDetails    []*pb.MonthlyPrivateTax
+	ShowWarning       bool
+	HasTaxPrivilege   bool
+	IsNotResident     bool
+	AnnualPFR         uint64
+	AnnualFOMS        uint64
+	AnnualFSS         uint64
 }
 
 func PrepareMonths() []Month {
@@ -64,13 +82,15 @@ func PrepareIndexData() IndexData {
 		northern = append(northern, BonusOption{100 + i, fmt.Sprintf("%d%%", i)})
 	}
 
-	return IndexData{
-		CurrentYear: time.Now().Year(),
-		Months:      PrepareMonths(),
-		Territorial: territorial,
-		Northern:    northern,
-	}
+	feedbackEmail := web.GetFeedbackEmail()
 
+	return IndexData{
+		CurrentYear:   time.Now().Year(),
+		FeedbackEmail: feedbackEmail,
+		Months:        PrepareMonths(),
+		Territorial:   territorial,
+		Northern:      northern,
+	}
 }
 
 // ParseFormToRequest - парсит данные из формы в gRPC-запрос.
@@ -130,7 +150,7 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		}
 	}
 
-	// Финальный лог в том же стиле, что и на бэкенде
+	// Финальный лог
 	log.Info("http_request_parsed",
 		"rid", getRIDFromCtx(r.Context()),
 		"method", r.Method,

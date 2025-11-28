@@ -8,7 +8,7 @@
   <meta name="yandex-verification" content="33f54f0aae655d5f" />
 
   <meta name="description"
-        content="Простой, понятный и бесплатный калькулятор НДФЛ {{.CurrentYear}}. Без лишнего текста. Расчёт по прогрессивной шкале от вашей месячной зарплаты, с детализацией.">
+        content="Простой, понятный и бесплатный калькулятор НДФЛ {{.CurrentYear}}: расчёт налога по прогрессивной шкале, региональным коэффициентам и вашей месячной зарплате с помесячной детализацией.">
   <meta name="keywords" content="калькулятор НДФЛ {{.CurrentYear}}, расчет НДФЛ, зарплата на руки, подоходный налог, НДФЛ прогрессивная шкала, налог 2025, расчет зарплаты">
   
 
@@ -52,11 +52,14 @@ window.APP_CONFIG = {
 <script src="/static/script.js" defer></script>
 
 <body>
-  <header>
-    <h1>Калькулятор НДФЛ с прогрессивной шкалой</h1>
-  </header>
+  
 
   <main>
+  <header>
+    <h1>Калькулятор НДФЛ</h1>
+    <h4>Быстрый и точный расчет по прогрессивной шкале для физических лиц</h4>
+  </header>
+
     <form action="/calculate" method="post" class="form" 
       data-min-salary="{{getMinSalary}}" novalidate>
       <!-- оклад -->
@@ -88,6 +91,42 @@ window.APP_CONFIG = {
     </div>
 </div>
 
+<!-- дата начала расчёта -->
+      <div class="field-row">
+        <div class="field-left">
+          <div class="field-header">
+            <div class="field-tooltip">
+              <span class="tooltip-icon">?</span>
+              <div class="tooltip-text">На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.</div>
+            </div>
+            <label>Дата начала расчёта:</label>
+          </div>
+        </div>
+        <div class="field-right date-field">
+          <span>01</span>
+          <select name="startDate">
+            {{range .Months}}
+            <option value="{{.Value}}" {{if eq .Value "01"}}selected{{end}}>{{.Label}}</option>
+            {{end}}
+          </select>
+          <span>{{.CurrentYear}}</span>
+        </div>
+      </div>
+
+
+      <button type="button" class="additional-toggle">
+      <span class="icon-plus">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="#2980b9" stroke-width="2" opacity="0.55"/>
+        <path d="M12 7V17" stroke="#2980b9" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M7 12H17" stroke="#2980b9" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </span>
+        Дополнительные параметры (коэффициенты, льготы)
+      </button>
+
+
+<div id="additional-params" class="hidden">
   <!-- территориальный коэффициент -->
 <div class="field-row">
   <div class="field-left">
@@ -140,27 +179,6 @@ window.APP_CONFIG = {
   </div>
 </div>
 
-      <!-- дата начала расчёта -->
-      <div class="field-row">
-        <div class="field-left">
-          <div class="field-header">
-            <div class="field-tooltip">
-              <span class="tooltip-icon">?</span>
-              <div class="tooltip-text">На этом этапе расчёт выполняется с 1-го числа выбранного месяца текущего года.</div>
-            </div>
-            <label>Дата начала расчёта:</label>
-          </div>
-        </div>
-        <div class="field-right date-field">
-          <span>01</span>
-          <select name="startDate">
-            {{range .Months}}
-            <option value="{{.Value}}" {{if eq .Value "01"}}selected{{end}}>{{.Label}}</option>
-            {{end}}
-          </select>
-          <span>{{.CurrentYear}}</span>
-        </div>
-      </div>
 
       <!-- чекбоксы -->
       <div class="field-row">
@@ -185,8 +203,9 @@ window.APP_CONFIG = {
       </label>
       </div>
 </div>
+</div>
 
-      <button type="submit">Рассчитать</button>
+      <button type="submit" class="calculate-btn">Рассчитать</button>
 
       <div class="calculator-note">
         <p>
@@ -194,14 +213,25 @@ window.APP_CONFIG = {
           Калькулятор предназначен исключительно <i>для справочных целей</i>, чтобы вы могли
           оценить свой чистый доход и размер НДФЛ, который будете уплачивать после 2025 года.
         </p>
-      <a href="/how-it-works" class="calculator-link">подробнее о работе калькулятора →</a>
+      <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
       </div>
     </form>
   </main>
 
-  <footer>
-    <small>© {{.CurrentYear}} TaxCalc</small>
+  <footer class="site-footer">
+    <div class="footer-links">
+      <a class="footer-link" href="/about">О проекте</a>
+      <a class="footer-link" href="/api">API для разработчиков</a>
+      <a class="footer-link" href="mailto:{{.FeedbackEmail}}?subject=Калькулятор%20НДФЛ">
+        Написать разработчику
+      </a>
+    </div>
+
+    <div class="footer-copy">
+      © 2025 Калькулятор НДФЛ
+    </div>
   </footer>
+
 </body>
 </html>
 {{end}}

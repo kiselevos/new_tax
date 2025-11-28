@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"net/http"
+	"time"
 
 	"github.com/kiselevos/new_tax/pkg/logx"
 )
@@ -13,11 +14,24 @@ type ctxKeyRID struct{}
 
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		rid := getRequestID(r)
+
 		logger := logx.New().With("rid", rid, "path", r.URL.Path, "method", r.Method)
+
 		ctx := logx.Into(r.Context(), logger)
 		ctx = context.WithValue(ctx, ctxKeyRID{}, rid)
-		next.ServeHTTP(w, r.WithContext(ctx))
+
+		sr := &statusRecorder{ResponseWriter: w, status: 200}
+
+		start := time.Now()
+
+		next.ServeHTTP(sr, r.WithContext(ctx))
+
+		logger.Info("http_request_completed",
+			"status", sr.status,
+			"duration_ms", time.Since(start).Milliseconds(),
+		)
 	})
 }
 
@@ -37,4 +51,14 @@ func GetRID(ctx context.Context) string {
 		}
 	}
 	return ""
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (s *statusRecorder) WriteHeader(code int) {
+	s.status = code
+	s.ResponseWriter.WriteHeader(code)
 }

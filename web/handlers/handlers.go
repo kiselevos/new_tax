@@ -10,44 +10,45 @@ import (
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
-	"github.com/kiselevos/new_tax/web/internal/client"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"google.golang.org/grpc/metadata"
 )
 
-// Server - основной HTTP-сервер, хранящий шаблоны.
 type Server struct {
-	Tmpl *template.Template
+	Tmpl      *template.Template
+	TaxClient pb.TaxServiceClient
 }
 
-// Routes - регистрация всех маршрутов приложения.
+func NewServer(tmpl *template.Template, client pb.TaxServiceClient) *Server {
+	return &Server{
+		Tmpl:      tmpl,
+		TaxClient: client,
+	}
+}
+
 func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/", s.Index)
 	mux.HandleFunc("/calculate", s.Calculate)
-	mux.HandleFunc("/how-it-works", s.HowItWorks)
+	mux.HandleFunc("/about", s.About)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
 }
 
-// Index - главная страница
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	log := logx.From(ctx).With("page", "index")
+	data := PrepareIndexData()
 
-	if err := s.Tmpl.ExecuteTemplate(w, "index", PrepareIndexData()); err != nil {
-		log.Error("template_render_failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	if err := s.Tmpl.ExecuteTemplate(w, "index", data); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "index", "err", err)
+		http.Error(w, "internal server error", 500)
 		return
 	}
-	log.Info("page_rendered")
 }
 
-// Calculate - обработка формы и запрос к gRPC-бэкенду
 func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	log := logx.From(ctx).With("path", r.URL.Path, "method", r.Method)
+	log := logx.From(ctx)
 
 	ct := r.Header.Get("Content-Type")
 	if !strings.Contains(ct, "application/x-www-form-urlencoded") &&
@@ -70,22 +71,12 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientGRPC, conn, err := client.NewTaxClient()
-	if err != nil {
-		log.Error("grpc_dial_failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	defer conn.Close()
-
 	rid := middleware.GetRID(ctx)
-
 	md := metadata.New(map[string]string{"x-request-id": rid})
 	rpcCtx, cancel := context.WithTimeout(metadata.NewOutgoingContext(ctx, md), 3*time.Second)
-
 	defer cancel()
 
-	res, err := clientGRPC.CalculatePrivate(rpcCtx, req)
+	res, err := s.TaxClient.CalculatePrivate(rpcCtx, req)
 	if err != nil {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -138,46 +129,27 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// HowItWorks - страница с описанием расчёта
-func (s *Server) HowItWorks(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	log := logx.From(ctx).With("page", "how_it_works")
-
-	if err := s.Tmpl.ExecuteTemplate(w, "how_it_works", nil); err != nil {
-		log.Error("template_render_failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+func (s *Server) About(w http.ResponseWriter, r *http.Request) {
+	if err := s.Tmpl.ExecuteTemplate(w, "about", nil); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "about", "err", err)
+		http.Error(w, "internal server error", 500)
 	}
-	log.Info("page_rendered")
 }
 
-// RegionalInfo - страница с региональными коэффициентами
 func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	log := logx.From(ctx).With("page", "regional_info")
-
 	if err := s.Tmpl.ExecuteTemplate(w, "regional_info", nil); err != nil {
-		log.Error("template_render_failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		logx.From(r.Context()).Error("template_render_failed", "page", "regional_info", "err", err)
+		http.Error(w, "internal server error", 500)
 	}
-	log.Info("page_rendered")
 }
 
-// SpecialTaxModes - страница о льготах и нерезидентстве
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	log := logx.From(ctx).With("page", "special_tax_modes")
-
 	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", nil); err != nil {
-		log.Error("template_render_failed", "err", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
+		logx.From(r.Context()).Error("template_render_failed", "page", "special_tax_modes", "err", err)
+		http.Error(w, "internal server error", 500)
 	}
-	log.Info("page_rendered")
 }
 
-// ----- для SEO -----
 func (s *Server) GetRobots(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	http.ServeFile(w, r, "static/robots.txt")
@@ -187,8 +159,6 @@ func (s *Server) GetSitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	http.ServeFile(w, r, "static/sitemap.xml")
 }
-
-// ----- helpers -----
 
 func deref(p *uint64) uint64 {
 	if p == nil {

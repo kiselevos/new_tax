@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewTaxClient_DefaultAddr(t *testing.T) {
-	client, conn, err := NewTaxClient()
+	client, conn, err := NewTaxClient("localhost:50051")
 	if err == nil {
 		t.Log("as expected: connection refused (backend not running)")
 	}
