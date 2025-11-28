@@ -17,7 +17,9 @@ func RateLimiterMiddleware(rps int, burst int) func(http.Handler) http.Handler {
 			if !limiter.Allow() {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusTooManyRequests)
-				w.Write([]byte(`{"error":"too many requests"}`))
+				if _, err := w.Write([]byte(`{"error":"too many requests"}`)); err != nil {
+					return
+				}
 				return
 			}
 
