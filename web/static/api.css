@@ -1,13 +1,12 @@
-/* === Корневая область страницы === */
+/* Корневая область */
 .info-page {
     max-width: 900px;
     margin: 40px auto;
     padding: 0 20px;
     font-family: Arial, sans-serif;
-    overflow-x: hidden; /* Защита от горизонтального скролла страницы */
 }
 
-/* === Заголовки === */
+/* Заголовки */
 .info-page-title {
     font-size: 36px;
     font-weight: 700;
@@ -22,15 +21,14 @@
     margin-bottom: 30px;
 }
 
-/* === Карточки API === */
+/* Карточки API */
 .info-card {
     background: #ffffff;
     border-radius: 12px;
-    padding: 24px 28px;
+    padding: 25px 30px;
     margin: 20px 0;
     border: 1px solid #e6e6e6;
     box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    overflow: hidden; /* предотвращает разъезд */
 }
 
 .info-card-title {
@@ -45,14 +43,14 @@
     line-height: 1.5;
 }
 
-/* === Метод и URL === */
+/* Методы */
 .info-note {
     font-size: 16px;
     background: #f3f7ff;
     padding: 12px 16px;
     border-left: 4px solid #3a7afe;
     border-radius: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .info-note code {
@@ -61,95 +59,93 @@
     font-size: 16px;
 }
 
-/* === Блок с примерами === */
+/* Примеры */
 .info-example {
     background: #fafafa;
     border-radius: 8px;
     padding: 15px;
     margin: 15px 0;
     border: 1px solid #ececec;
-    overflow: hidden; /* фиксирует границы */
 }
 
 .info-example strong {
     display: block;
     margin-bottom: 6px;
+    color: #333;
 }
 
-/* === Код внутри pre — ГЛАВНОЕ! === */
-.info-example pre {
-    background: #1e1e1e;
-    color: #f8f8f2;
-    padding: 14px;
+/* Контейнер для кода с прокруткой */
+.code-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #fafafa; /* СЕРЫЙ фон вместо черного */
     border-radius: 6px;
+    margin: 0;
+    max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #fafafa; /* Светлый скроллбар для серого фона */
+}
 
+.code-container pre {
+    margin: 0;
+    padding: 15px;
+    background: transparent;
+    color: #333; /* Темный текст для серого фона */
     font-size: 14px;
     line-height: 1.4;
-
-    white-space: pre;        /* Не переносить строки */
-    word-wrap: normal;       /* Не ломать слова */
-
-    overflow-x: auto;        /* Горизонтальный скролл ТОЛЬКО внутри pre */
-    overflow-y: hidden;
-    max-width: 100%;
-
-    box-sizing: border-box;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Код внутри pre */
-.info-example code {
-    display: inline-block;  /* Важно: предотвращает раздувание ширины страницы */
+    min-width: min-content;
     white-space: pre;
+    font-family: 'Courier New', monospace;
 }
 
-/* === Скроллбар в WebKit === */
-.info-example pre::-webkit-scrollbar {
+/* Стилизация скроллбара для Webkit */
+.code-container::-webkit-scrollbar {
     height: 8px;
 }
 
-.info-example pre::-webkit-scrollbar-track {
-    background: #1e1e1e;
+.code-container::-webkit-scrollbar-track {
+    background: #fafafa; /* СЕРЫЙ трек */
+    border-radius: 0 0 6px 6px;
 }
 
-.info-example pre::-webkit-scrollbar-thumb {
-    background: #555;
+.code-container::-webkit-scrollbar-thumb {
+    background: #ccc; /* СЕРЫЙ ползунок */
     border-radius: 4px;
 }
 
-.info-example pre::-webkit-scrollbar-thumb:hover {
-    background: #777;
+.code-container::-webkit-scrollbar-thumb:hover {
+    background: #aaa; /* Темнее при наведении */
 }
 
-/* === Инлайн code === */
+/* Код вне блоков примеров */
 code {
     background: #f0f0f0;
     padding: 2px 5px;
     border-radius: 4px;
+    font-family: monospace;
 }
 
-/* === Mobile adaptation === */
+/* Адаптивность для мобильных */
 @media (max-width: 768px) {
-
     .info-page {
         margin: 20px auto;
         padding: 0 15px;
     }
-
+    
     .info-page-title {
         font-size: 28px;
     }
-
+    
     .info-card {
-        padding: 18px;
+        padding: 20px;
     }
-
-    .info-example pre {
-        font-size: 13px;
+    
+    .code-container pre {
         padding: 12px;
+        font-size: 13px;
     }
-
-    .info-example pre::-webkit-scrollbar {
-        height: 12px; /* удобнее пальцем */
+    
+    .code-container::-webkit-scrollbar {
+        height: 10px;
     }
 }
