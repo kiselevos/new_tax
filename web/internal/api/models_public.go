@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
@@ -36,6 +37,34 @@ type PublicCalcResponse struct {
 	GrossSalary           uint64  `json:"gross_salary"`
 	TerritorialMultiplier *uint64 `json:"territorial_multiplier,omitempty"`
 	NorthernCoefficient   *uint64 `json:"northern_coefficient,omitempty"`
+}
+
+// Validate DTO
+func (r *PublicCalcRequest) Validate() error {
+
+	if r.GrossSalary <= 0 {
+		return fmt.Errorf("salary must be > 0")
+	}
+
+	if r.GrossSalary > 1_000_000_000 {
+		return fmt.Errorf("salary must be < 1_000_000_000")
+	}
+
+	if r.TerritorialMultiplier != nil {
+		v := *r.TerritorialMultiplier
+		if v < 100 || v > 200 {
+			return fmt.Errorf("territorial multiplier must be between 100 and 200")
+		}
+	}
+
+	if r.NorthernCoefficient != nil {
+		v := *r.NorthernCoefficient
+		if v < 100 || v > 200 {
+			return fmt.Errorf("northern coefficient must be between 100 and 200")
+		}
+	}
+
+	return nil
 }
 
 // ToProto convert DTO -> gRPC

@@ -40,6 +40,11 @@ func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	if err := dtoReq.Validate(); err != nil {
+		writeError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	grpcReq := dtoReq.ToProto()
 
 	grpcResp, err := h.TaxClient.CalculatePublic(ctx, grpcReq)

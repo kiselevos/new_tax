@@ -89,7 +89,75 @@ func TestPublicCalc_BackendError(t *testing.T) {
 	}
 }
 
+func TestPublicCalcRequest_Validate(t *testing.T) {
+	tests := []struct {
+		name    string
+		req     PublicCalcRequest
+		wantErr bool
+	}{
+		{
+			name:    "valid minimal",
+			req:     PublicCalcRequest{GrossSalary: 1000},
+			wantErr: false,
+		},
+		{
+			name:    "valid with multipliers",
+			req:     PublicCalcRequest{GrossSalary: 50000, TerritorialMultiplier: uintPtr(150), NorthernCoefficient: uintPtr(120)},
+			wantErr: false,
+		},
+		{
+			name:    "salary = 0",
+			req:     PublicCalcRequest{GrossSalary: 0},
+			wantErr: true,
+		},
+		{
+			name:    "salary too large",
+			req:     PublicCalcRequest{GrossSalary: 2_000_000_000},
+			wantErr: true,
+		},
+		{
+			name:    "territorial multiplier too small",
+			req:     PublicCalcRequest{GrossSalary: 30000, TerritorialMultiplier: uintPtr(99)},
+			wantErr: true,
+		},
+		{
+			name:    "territorial multiplier too large",
+			req:     PublicCalcRequest{GrossSalary: 30000, TerritorialMultiplier: uintPtr(201)},
+			wantErr: true,
+		},
+		{
+			name:    "northern coefficient too small",
+			req:     PublicCalcRequest{GrossSalary: 30000, NorthernCoefficient: uintPtr(50)},
+			wantErr: true,
+		},
+		{
+			name:    "northern coefficient too large",
+			req:     PublicCalcRequest{GrossSalary: 30000, NorthernCoefficient: uintPtr(500)},
+			wantErr: true,
+		},
+		{
+			name:    "valid edge values",
+			req:     PublicCalcRequest{GrossSalary: 30000, TerritorialMultiplier: uintPtr(100), NorthernCoefficient: uintPtr(200)},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.req.Validate()
+			if tc.wantErr && err == nil {
+				t.Errorf("expected error but got nil")
+			}
+			if !tc.wantErr && err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
 // helper that returns a standard error
 func assertError() error {
 	return http.ErrHandlerTimeout
 }
+
+func uintPtr(v uint64) *uint64 { return &v }
