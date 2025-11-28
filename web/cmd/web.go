@@ -15,6 +15,7 @@ import (
 	"github.com/kiselevos/new_tax/web/handlers"
 	"github.com/kiselevos/new_tax/web/internal/api"
 	"github.com/kiselevos/new_tax/web/internal/client"
+	"github.com/kiselevos/new_tax/web/internal/config"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"github.com/kiselevos/new_tax/web/internal/server"
 )
@@ -24,11 +25,14 @@ func main() {
 	logger := logx.New()
 
 	if err := godotenv.Load(".env"); err != nil {
-		logger.Error("file .env not read", "err", err)
-		os.Exit(1)
+		logger.Warn("env_file_not_loaded", "err", err)
 	}
 
-	addr := os.Getenv("WEB_PORT")
+	cfg, err := config.Load()
+	if err != nil {
+		logger.Error("config_load_failed", "err", err)
+		os.Exit(1)
+	}
 
 	tmpls, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {
@@ -39,25 +43,25 @@ func main() {
 	htmlMux := http.NewServeMux()
 	apiMux := http.NewServeMux()
 
-	clientGRPC, conn, err := client.NewTaxClient()
+	clientGRPC, conn, err := client.NewTaxClient(cfg.Backend)
 	if err != nil {
 		logger.Error("grpc_dial_failed", "err", err)
 		os.Exit(1)
 	}
 	defer conn.Close()
 
-	s := handlers.NewServer(tmpls, clientGRPC)
+	htmlServer := handlers.NewServer(tmpls, clientGRPC)
 
-	s.Routes(htmlMux)
+	htmlServer.Routes(htmlMux)
 	api.RegisterPublicRoutes(apiMux, clientGRPC)
 
 	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	apiHandler := middleware.Chain(
 		apiMux,
-		middleware.CORSMiddleware,
-		middleware.RateLimiterMiddleware(5, 10),
 		middleware.Logger,
+		middleware.RateLimiterMiddleware(cfg.APIRPS, cfg.APIBurst),
+		middleware.CORSMiddleware,
 	)
 
 	htmlHandler := middleware.Chain(
@@ -69,10 +73,10 @@ func main() {
 	rootMux.Handle("/api/", apiHandler)
 	rootMux.Handle("/", htmlHandler)
 
-	httpSrv := server.New(addr, rootMux)
+	httpSrv := server.New(cfg.WebPort, rootMux)
 
 	go func() {
-		logger.Info("listening", "addr", addr)
+		logger.Info("listening", "addr", cfg.WebPort)
 		if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("http_serve_failed", "err", err)
 			os.Exit(1)
