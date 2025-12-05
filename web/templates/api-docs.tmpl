@@ -127,13 +127,14 @@
         <div class="info-example">
             <strong>JavaScript:</strong>
             <div class="code-container">
-                <pre>fetch("/api/{{ .ApiVers }}/calc", {
+                <pre>fetch("/api/{{ .Ap }}/calc", {
   method: "POST",
-  headers: { "Content-Type: "application/json" },
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ gross_salary: 120000 })
 })
   .then(r => r.json())
-  .then(console.log);</pre>
+  .then(console.log)
+  .catch(console.error);</pre>
             </div>
         </div>
     </div>
