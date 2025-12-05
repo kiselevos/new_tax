@@ -67,7 +67,7 @@
         <div class="api-version">
             <h2 class="info-card-title">
                 Текущая версия API
-                <span class="api-version-tag">{{ .APIVersion }}</span>
+                <span class="api-version-tag">{{ .ApiVers }}</span>
             </h2>
         </div>
     </div>
@@ -118,7 +118,7 @@
         <div class="info-example">
             <strong>curl:</strong>
             <div class="code-container">
-                <pre>curl -X POST https://calculator-ndfl.ru/api/{{ .APIVersion }}/calc \
+                <pre>curl -X POST https://calculator-ndfl.ru/api/{{ .ApiVers }}/calc \
   -H "Content-Type: application/json" \
   -d '{"gross_salary": 120000}'</pre>
             </div>
@@ -127,7 +127,7 @@
         <div class="info-example">
             <strong>JavaScript:</strong>
             <div class="code-container">
-                <pre>fetch("/api/{{ .APIVersion }}/calc", {
+                <pre>fetch("/api/{{ .ApiVers }}/calc", {
   method: "POST",
   headers: { "Content-Type: "application/json" },
   body: JSON.stringify({ gross_salary: 120000 })
