@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -177,9 +176,8 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 
 func PrepareApiData() (*ApiDocsData, error) {
 
-	raw, err := os.ReadFile("../web/api_docs/swagger.json")
+	raw, err := web.ApiDocsFS.ReadFile("api_docs/swagger.json")
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
