@@ -32,6 +32,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/about", s.About)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
+	mux.HandleFunc("/api-docs", s.HandleApiDocs)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
 }
@@ -146,6 +147,20 @@ func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
 	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", nil); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "special_tax_modes", "err", err)
+		http.Error(w, "internal server error", 500)
+	}
+}
+
+func (s *Server) HandleApiDocs(w http.ResponseWriter, r *http.Request) {
+
+	data, err := PrepareApiData()
+	if err != nil {
+		http.Error(w, "cannot load api docs", 500)
+		return
+	}
+
+	if err := s.Tmpl.ExecuteTemplate(w, "api-docs", data); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }

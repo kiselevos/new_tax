@@ -1,0 +1,13 @@
+{
+  "endpoints": [
+    {
+      "group": "public",
+      "method": "POST",
+      "path": "/api/{version}/calc",
+      "description": "Открытый расчёт НДФЛ",
+      "example_request_lite": "{\"gross_salary\": 120000}",
+      "example_request_full": "{\n  \"gross_salary\": 120000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150\n}",
+      "example_response": "{\n  \"gross_salary\": 120000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150,\n\n  \"annual_tax_amount\": 17160,\n  \"annual_gross_income\": 180000,\n  \"annual_net_income\": 162840,\n\n  \"monthly_details\": [\n    {\n      \"month\": \"2024-01-01T00:00:00Z\",\n      \"monthly_gross_income\": 180000,\n      \"monthly_net_income\": 162840,\n      \"monthly_tax_amount\": 17160,\n\n      \"annual_gross_income\": 180000,\n      \"annual_net_income\": 162840,\n      \"annual_tax_amount\": 17160\n    }\n  ]\n}"
+    }
+  ]
+}

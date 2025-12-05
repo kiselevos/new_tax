@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -171,6 +173,29 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		HasTaxPrivilege:       boolPtr(hasTaxPrivilege),
 		IsNotResident:         boolPtr(isNotResident),
 	}, nil
+}
+
+func PrepareApiData() (*ApiDocsData, error) {
+
+	raw, err := os.ReadFile("../web/api_docs/swagger.json")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	var d ApiDocsData
+	if err := json.Unmarshal(raw, &d); err != nil {
+		return nil, err
+	}
+
+	v := web.GetApiVersion()
+	d.ApiVers = v
+
+	for i := range d.Endpoints {
+		d.Endpoints[i].Path = strings.ReplaceAll(d.Endpoints[i].Path, "{version}", v)
+	}
+
+	return &d, nil
 }
 
 // Вспомогательные функции:
