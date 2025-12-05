@@ -40,7 +40,7 @@ func (h *DocsHandler) HandleApiDocs(w http.ResponseWriter, r *http.Request) {
 		Endpoints:  h.Endpoints,
 	}
 
-	if err := h.Template.ExecuteTemplate(w, "api", data); err != nil {
+	if err := h.Template.ExecuteTemplate(w, "api-docs", data); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "err", err)
 		http.Error(w, "internal server error", 500)
 	}

@@ -48,7 +48,7 @@ func RegisterPublicRoutes(mux *http.ServeMux, client pb.TaxServiceClient, apiVer
 }`,
 		Group: "public",
 	})
-	mux.HandleFunc("/api/", handlerDocs.HandleApiDocs)
+	mux.HandleFunc("/api/docs", handlerDocs.HandleApiDocs)
 
 	mux.HandleFunc(route, handlerPublic.HandlePublicCalc)
 }
