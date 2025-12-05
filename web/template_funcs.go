@@ -73,6 +73,14 @@ func GetFeedbackEmail() string {
 	return feedbackEmail
 }
 
+func GetApiVersion() string {
+	apiVersion := os.Getenv("API_VERSION")
+	if apiVersion == "" {
+		return "v1"
+	}
+	return apiVersion
+}
+
 // Функция для форматирования месяца на русском из timestamp
 func formatRussianMonth(ts *timestamppb.Timestamp) string {
 	if ts == nil {
