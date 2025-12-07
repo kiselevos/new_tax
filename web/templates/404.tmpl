@@ -1,0 +1,45 @@
+{{define "404"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Страница не найдена — Калькулятор НДФЛ</title>
+
+    
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/info-pages.css">
+  
+</head>
+<body>
+<div class="info-page">
+
+    <h1 class="info-page-title">404 — Страница не найдена</h1>
+
+    <p class="info-page-subtitle">
+        Похоже, вы перешли по адресу, которого не существует.<br>
+        Ссылка могла устареть, быть удалена или введена с ошибкой.
+    </p>
+
+    <div class="info-card">
+        <h2 class="info-card-title">Что можно сделать?</h2>
+
+        <div class="info-card-text">
+            Вот несколько вариантов, которые могут помочь:
+        </div>
+
+        <ul class="info-bullet-list">
+            <li>Проверьте, нет ли ошибки в адресной строке.</li>
+            <li>Вернитесь на главную страницу калькулятора.</li>
+            <li>Попробуйте воспользоваться меню навигации.</li>
+        </ul>
+    </div>
+
+    <div class="info-button-container">
+        <a class="info-button" href="/">На главную</a>
+    </div>
+
+</div>
+</body>
+</html>
+{{end}}

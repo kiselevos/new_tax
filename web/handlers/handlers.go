@@ -27,7 +27,13 @@ func NewServer(tmpl *template.Template, client pb.TaxServiceClient) *Server {
 }
 
 func (s *Server) Routes(mux *http.ServeMux) {
-	mux.HandleFunc("/", s.Index)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			s.NotFound(w, r)
+			return
+		}
+		s.Index(w, r)
+	})
 	mux.HandleFunc("/calculate", s.Calculate)
 	mux.HandleFunc("/about", s.About)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
@@ -35,6 +41,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/api-docs", s.HandleApiDocs)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
+
 }
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +180,14 @@ func (s *Server) GetRobots(w http.ResponseWriter, r *http.Request) {
 func (s *Server) GetSitemap(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	http.ServeFile(w, r, "static/sitemap.xml")
+}
+
+func (s *Server) NotFound(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotFound)
+	if err := s.Tmpl.ExecuteTemplate(w, "404", nil); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "404", "err", err)
+		w.Write([]byte("404 page not found"))
+	}
 }
 
 func deref(p *uint64) uint64 {
