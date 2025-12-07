@@ -42,6 +42,9 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
 
+	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "static/favicon.ico")
+	})
 }
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
