@@ -189,7 +189,7 @@ func (s *Server) NotFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	if err := s.Tmpl.ExecuteTemplate(w, "404", nil); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "404", "err", err)
-		w.Write([]byte("404 page not found"))
+		_, _ = w.Write([]byte("404 page not found"))
 	}
 }
 
