@@ -32,7 +32,7 @@ func waitForReady(ctx context.Context, conn *grpc.ClientConn) error {
 func Test_Server_Healthz(t *testing.T) {
 	t.Helper()
 
-	logger := logx.New()
+	logger := logx.NewTest()
 
 	addr := "127.0.0.1:0"
 	srv, err := server.New(addr, logger)

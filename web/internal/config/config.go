@@ -13,6 +13,8 @@ type Config struct {
 	APIRPS     int
 	APIBurst   int
 	APIVersion string
+	LogMode    string
+	LogLevel   string
 }
 
 func Load() (*Config, error) {
@@ -48,12 +50,24 @@ func Load() (*Config, error) {
 		apiVers = "v1"
 	}
 
+	logMode := os.Getenv("LOG_MODE")
+	if logMode == "" {
+		logMode = "json"
+	}
+
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
 	return &Config{
 		WebPort:    webPort,
 		Backend:    backAddr,
 		APIRPS:     rps,
 		APIBurst:   burst,
 		APIVersion: apiVers,
+		LogMode:    logMode,
+		LogLevel:   logLevel,
 	}, nil
 }
 
