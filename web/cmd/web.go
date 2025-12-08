@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"html/template"
+	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,17 +23,19 @@ import (
 )
 
 func main() {
-	logger := logx.New()
 
 	if err := godotenv.Load(".env"); err != nil {
-		logger.Warn("env_file_not_loaded", "err", err)
+		log.Fatal("env_file_not_loaded", "err", err)
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		logger.Error("config_load_failed", "err", err)
+		log.Fatal("config_load_failed", err)
 		os.Exit(1)
 	}
+
+	logger := logx.New(cfg.LogMode, cfg.LogLevel)
+	slog.SetDefault(logger)
 
 	tmpl, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {

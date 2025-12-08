@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -17,7 +18,11 @@ func Logger(next http.Handler) http.Handler {
 
 		rid := getRequestID(r)
 
-		logger := logx.New().With("rid", rid, "path", r.URL.Path, "method", r.Method)
+		logger := slog.Default().With(
+			"rid", rid,
+			"path", r.URL.Path,
+			"method", r.Method,
+		)
 
 		ctx := logx.Into(r.Context(), logger)
 		ctx = context.WithValue(ctx, ctxKeyRID{}, rid)

@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/server"
 	"github.com/kiselevos/new_tax/pkg/helpers"
 	"github.com/kiselevos/new_tax/pkg/logx"
@@ -17,8 +21,19 @@ import (
 
 func main() {
 
-	logger := logx.New()
-	addr := helpers.AddrChecker(os.Getenv("BACKEND_PORT"))
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("env_file_not_loaded", "err", err)
+	}
+
+	conf, err := config.Load()
+	if err != nil {
+		log.Fatal("can't load config:", err)
+	}
+
+	logger := logx.New(conf.LogMode, conf.LogLevel)
+	slog.SetDefault(logger)
+
+	addr := helpers.AddrChecker(conf.BackPort)
 
 	srv, err := server.New(addr, logger)
 	if err != nil {

@@ -2,6 +2,7 @@ package logx
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"os"
 )
@@ -22,25 +23,20 @@ func From(ctx context.Context) *slog.Logger {
 	return slog.Default()
 }
 
-func New() *slog.Logger {
-
-	mode := os.Getenv("LOG_MODE")
-	level := os.Getenv("LOG_LEVEL")
-
-	var h slog.Handler
-	if mode == "text" {
-		h = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: parseLevel(level),
-		})
-	} else {
-		h = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-			Level: parseLevel(level),
-		})
+func New(mode, level string) *slog.Logger {
+	opts := &slog.HandlerOptions{
+		Level: parseLevel(level),
 	}
 
-	l := slog.New(h)
-	slog.SetDefault(l)
-	return l
+	var handler slog.Handler
+	switch mode {
+	case "text":
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	default:
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	}
+
+	return slog.New(handler)
 }
 
 func parseLevel(lvl string) slog.Level {
@@ -54,4 +50,11 @@ func parseLevel(lvl string) slog.Level {
 	default:
 		return slog.LevelInfo
 	}
+}
+
+func NewTest() *slog.Logger {
+	handler := slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	})
+	return slog.New(handler)
 }
