@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: tax-backend
+    env_file:
+      - .env
     ports:
       - "${BACKEND_PORT:-50051}:50051"
     networks:
