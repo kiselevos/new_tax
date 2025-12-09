@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"errors"
+	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/server"
-	"github.com/kiselevos/new_tax/pkg/helpers"
 	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc"
@@ -17,16 +20,25 @@ import (
 
 func main() {
 
-	logger := logx.New()
-	addr := helpers.AddrChecker(os.Getenv("BACKEND_PORT"))
+	if _, err := os.Stat(".env"); err == nil {
+		_ = godotenv.Load(".env")
+	}
 
-	srv, err := server.New(addr, logger)
+	conf, err := config.Load()
+	if err != nil {
+		log.Fatal("can't load config:", err)
+	}
+
+	logger := logx.New(conf.LogMode, conf.LogLevel)
+	slog.SetDefault(logger)
+
+	srv, err := server.New(conf.BackPort, logger)
 	if err != nil {
 		logger.Error("init", "err", err)
 		os.Exit(1)
 	}
 
-	logger.Info("listening", "addr", addr)
+	logger.Info("listening", "addr", conf.BackPort)
 
 	grpcErrCh := make(chan error, 1)
 	go func() {
