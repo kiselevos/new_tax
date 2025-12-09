@@ -7,6 +7,9 @@ import (
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 type PrivateHandler struct {
@@ -28,6 +31,8 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	apiKey := r.Header.Get("x-api-key")
+
 	defer r.Body.Close()
 
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
@@ -47,13 +52,38 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 
 	grpcReq := dtoReq.ToPrivateProto()
 
+	md := metadata.Pairs("x-api-key", apiKey)
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
 	grpcResp, err := h.TaxClient.CalculatePrivate(ctx, grpcReq)
 	if err != nil {
-		writeError(w, r, "backend error", http.StatusInternalServerError)
+		writeError(w, r, err.Error(), grpcToHTTP(err))
 		return
 	}
 
 	dtoResp := NewPrivateResponseToJSON(grpcResp)
 
 	writeJSON(w, http.StatusOK, dtoResp)
+}
+
+func grpcToHTTP(err error) int {
+	st, ok := status.FromError(err)
+	if !ok {
+		return http.StatusInternalServerError
+	}
+
+	switch st.Code() {
+	case codes.InvalidArgument:
+		return http.StatusBadRequest
+	case codes.NotFound:
+		return http.StatusNotFound
+	case codes.Unauthenticated:
+		return http.StatusUnauthorized
+	case codes.PermissionDenied:
+		return http.StatusForbidden
+	case codes.Unavailable:
+		return http.StatusServiceUnavailable
+	default:
+		return http.StatusInternalServerError
+	}
 }

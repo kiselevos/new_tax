@@ -32,7 +32,7 @@ func main() {
 	logger := logx.New(conf.LogMode, conf.LogLevel)
 	slog.SetDefault(logger)
 
-	srv, err := server.New(conf.BackPort, logger)
+	srv, err := server.New(conf, logger)
 	if err != nil {
 		logger.Error("init", "err", err)
 		os.Exit(1)

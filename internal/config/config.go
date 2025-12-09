@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	BackPort string
+	ApiKey   string
 	LogMode  string
 	LogLevel string
 }
@@ -19,6 +20,11 @@ func Load() (*Config, error) {
 	}
 	if strings.Contains(backPort, ":") {
 		return nil, fmt.Errorf("BACKEND_PORT must contain only port (example: 50051)")
+	}
+
+	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("API_KEY is required")
 	}
 
 	logMode := os.Getenv("LOG_MODE")
@@ -33,6 +39,7 @@ func Load() (*Config, error) {
 
 	conf := &Config{
 		BackPort: ":" + backPort,
+		ApiKey:   apiKey,
 		LogMode:  logMode,
 		LogLevel: logLevel,
 	}

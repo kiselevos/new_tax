@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net"
 
+	"github.com/kiselevos/new_tax/internal/config"
+	"github.com/kiselevos/new_tax/internal/middleware"
 	"github.com/kiselevos/new_tax/pkg/logx"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
@@ -18,17 +20,18 @@ type Server struct {
 	Lis  net.Listener
 }
 
-func New(addr string, logger *slog.Logger) (*Server, error) {
+func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 
-	lis, err := net.Listen("tcp", addr)
+	lis, err := net.Listen("tcp", cfg.BackPort)
 	if err != nil {
 		return nil, err
 	}
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			UnaryRecovery(logger),
-			UnaryLogger(logger),
+			middleware.UnaryRecovery(logger),
+			middleware.UnaryLogger(logger),
+			middleware.Auth(cfg.ApiKey),
 		),
 	)
 
