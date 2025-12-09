@@ -13,7 +13,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/server"
-	"github.com/kiselevos/new_tax/pkg/helpers"
 	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc"
@@ -21,8 +20,8 @@ import (
 
 func main() {
 
-	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("env_file_not_loaded", "err", err)
+	if _, err := os.Stat(".env"); err == nil {
+		_ = godotenv.Load(".env")
 	}
 
 	conf, err := config.Load()
@@ -33,15 +32,13 @@ func main() {
 	logger := logx.New(conf.LogMode, conf.LogLevel)
 	slog.SetDefault(logger)
 
-	addr := helpers.AddrChecker(conf.BackPort)
-
-	srv, err := server.New(addr, logger)
+	srv, err := server.New(conf.BackPort, logger)
 	if err != nil {
 		logger.Error("init", "err", err)
 		os.Exit(1)
 	}
 
-	logger.Info("listening", "addr", addr)
+	logger.Info("listening", "addr", conf.BackPort)
 
 	grpcErrCh := make(chan error, 1)
 	go func() {
