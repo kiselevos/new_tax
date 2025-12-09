@@ -1,0 +1,46 @@
+services:
+  loki:
+    image: grafana/loki:2.9.1
+    container_name: loki
+    restart: always
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki:/etc/loki
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - taxnet
+
+  promtail:
+    image: grafana/promtail:2.9.1
+    container_name: promtail
+    restart: always
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/promtail.yaml:ro
+    command: -config.file=/etc/promtail/promtail.yaml
+    depends_on:
+      - loki
+    networks:
+      - taxnet
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+    networks:
+      - taxnet
+
+networks:
+  taxnet:
+    name: new_tax_taxnet
+    external: true
+
+volumes:
+  loki-data:

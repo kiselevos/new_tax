@@ -138,6 +138,14 @@ docker-down: ## Stop and remove docker containers
 docker-prune: ## Cleane docker cash
 	@docker builder prune -f
 
+.PHONY: docker-grafana
+docker-grafana: ## Cleane docker cash
+	@docker compose -f docker-compose.monitoring.yaml up -d
+
+.PHONY: docker-grafana-down
+docker-grafana: ## Cleane docker cash
+	@docker compose -f docker-compose.monitoring.yaml down
+
 # ============================================================
 # 🔬 CI & Local Utilities
 # ============================================================

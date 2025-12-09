@@ -63,6 +63,10 @@ _Опционально:_
    make docker-build
    ```
 
+5. **Локальный запуск метрик**
+  ```
+  make docker-grafana
+  ```
 ---
 
 ## 🧰 Основные команды Make
@@ -113,4 +117,6 @@ _Опционально:_
 ├── tools.go               # CLI-инструменты (protoc, lint и т.д.)
 ├── Makefile, Dockerfile   # Сборка и автоматизация
 └── docs/grpc/             # Протоколы и описание API
+└── loki                   # Конфигурация Loki 
+└── docker-compose.monitoring.yaml, promtail-config.yaml # Конфигурация и локальная сборка grafana, loki
 ```
