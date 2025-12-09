@@ -32,7 +32,7 @@ func Load() (*Config, error) {
 	}
 
 	conf := &Config{
-		BackPort: backPort,
+		BackPort: ":" + backPort,
 		LogMode:  logMode,
 		LogLevel: logLevel,
 	}
