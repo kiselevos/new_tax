@@ -10,6 +10,26 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type authInfo struct {
+	Type      string
+	KeyPrefix string
+	KeyValid  bool
+}
+
+type authKey struct{}
+
+func WithAuthInfo(ctx context.Context, info authInfo) context.Context {
+	return context.WithValue(ctx, authKey{}, info)
+}
+
+func GetAuthInfo(ctx context.Context) (authInfo, bool) {
+	v := ctx.Value(authKey{})
+	if v == nil {
+		return authInfo{}, false
+	}
+	return v.(authInfo), true
+}
+
 // Аутентификация для private рассчета
 //
 // Правила:
@@ -25,31 +45,61 @@ func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
 
-		// Ограничиваем только приватный метод
-		if strings.HasSuffix(info.FullMethod, "/CalculatePrivate") {
+		// Пропускаем Public метод без apiKey
+		if strings.HasSuffix(info.FullMethod, "/CalculatePublic") {
+			ctx = WithAuthInfo(ctx, authInfo{
+				Type:     "public",
+				KeyValid: true,
+			})
+			return handler(ctx, req)
+		}
 
-			md, ok := metadata.FromIncomingContext(ctx)
-			if !ok {
-				return nil, status.Error(codes.Unauthenticated, "metadata missing")
-			}
+		md, _ := metadata.FromIncomingContext(ctx)
 
-			// 1) Internal UI call
-			if vals := md.Get("x-internal"); len(vals) > 0 && vals[0] == "true" {
+		if vals := md.Get("x-internal"); len(vals) > 0 && vals[0] == "true" {
+			ctx = WithAuthInfo(ctx, authInfo{
+				Type:     "internal",
+				KeyValid: true,
+			})
+			return handler(ctx, req)
+		}
+
+		if vals := md.Get("x-api-key"); len(vals) > 0 {
+			key := vals[0]
+			prefix := maskKeyPrefix(key)
+
+			if key == privateAPIKey {
+				ctx = WithAuthInfo(ctx, authInfo{
+					Type:      "api_key",
+					KeyPrefix: prefix,
+					KeyValid:  true,
+				})
 				return handler(ctx, req)
 			}
 
-			// 2) External API call — requires API-key
-			if vals := md.Get("x-api-key"); len(vals) > 0 {
-				apiKey := vals[0]
-				if apiKey == privateAPIKey {
-					return handler(ctx, req)
-				}
-				return nil, status.Error(codes.PermissionDenied, "invalid api key")
-			}
+			ctx = WithAuthInfo(ctx, authInfo{
+				Type:      "api_key",
+				KeyPrefix: prefix,
+				KeyValid:  false,
+			})
 
-			return nil, status.Error(codes.PermissionDenied, "private api requires a valid api key")
+			return nil, status.Error(codes.PermissionDenied, "invalid api key")
 		}
 
-		return handler(ctx, req)
+		// No key → forbidden for private
+		ctx = WithAuthInfo(ctx, authInfo{
+			Type:     "none",
+			KeyValid: false,
+		})
+
+		return nil, status.Error(codes.PermissionDenied, "missing api key")
 	}
+}
+
+func maskKeyPrefix(key string) string {
+	if len(key) < 8 {
+		return "****"
+	}
+
+	return key[:8] + "..."
 }
