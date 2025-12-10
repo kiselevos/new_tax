@@ -77,20 +77,8 @@ func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
 				return handler(ctx, req)
 			}
 
-			ctx = WithAuthInfo(ctx, authInfo{
-				Type:      "api_key",
-				KeyPrefix: prefix,
-				KeyValid:  false,
-			})
-
 			return nil, status.Error(codes.PermissionDenied, "invalid api key")
 		}
-
-		// No key → forbidden for private
-		ctx = WithAuthInfo(ctx, authInfo{
-			Type:     "none",
-			KeyValid: false,
-		})
 
 		return nil, status.Error(codes.PermissionDenied, "missing api key")
 	}
