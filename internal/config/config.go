@@ -3,14 +3,23 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
 type Config struct {
-	BackPort string
-	ApiKey   string
-	LogMode  string
-	LogLevel string
+	BackPort     string
+	ApiKey       string
+	LogMode      string
+	LogLevel     string
+	RateLimitCfg *RateLimitConfig
+}
+
+type RateLimitConfig struct {
+	PublicRPS    float64
+	PublicBurst  int
+	PrivateRPS   float64
+	PrivateBurst int
 }
 
 func Load() (*Config, error) {
@@ -38,11 +47,42 @@ func Load() (*Config, error) {
 	}
 
 	conf := &Config{
-		BackPort: ":" + backPort,
-		ApiKey:   apiKey,
-		LogMode:  logMode,
-		LogLevel: logLevel,
+		BackPort:     ":" + backPort,
+		ApiKey:       apiKey,
+		LogMode:      logMode,
+		LogLevel:     logLevel,
+		RateLimitCfg: LoadRateLimitConf(),
 	}
 
 	return conf, nil
+}
+
+func LoadRateLimitConf() *RateLimitConfig {
+
+	publicRPS, err := strconv.ParseFloat(os.Getenv("RATE_LIMIT_PUBLIC_RPS"), 64)
+	if err != nil {
+		publicRPS = 1
+	}
+
+	publicBurst, err := strconv.Atoi(os.Getenv("RATE_LIMIT_PUBLIC_BURST"))
+	if err != nil {
+		publicBurst = 10
+	}
+
+	privateRPS, err := strconv.ParseFloat(os.Getenv("RATE_LIMIT_PRIVATE_RPS"), 64)
+	if err != nil {
+		privateRPS = 2
+	}
+
+	privateBurst, err := strconv.Atoi(os.Getenv("RATE_LIMIT_PRIVATE_BURST"))
+	if err != nil {
+		privateBurst = 20
+	}
+
+	return &RateLimitConfig{
+		PublicRPS:    publicRPS,
+		PublicBurst:  publicBurst,
+		PrivateRPS:   privateRPS,
+		PrivateBurst: privateBurst,
+	}
 }
