@@ -132,12 +132,6 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
-	log.Info("calculation_completed",
-		"gross_salary", req.GrossSalary,
-		"annual_tax", res.AnnualTaxAmount,
-		"warning", showWarning,
-	)
 }
 
 func (s *Server) About(w http.ResponseWriter, r *http.Request) {

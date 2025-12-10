@@ -7,6 +7,7 @@ import (
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/pkg/logx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -26,6 +27,8 @@ func NewPrivateHandler(client pb.TaxServiceClient) *PrivateHandler {
 // HandlePrivateCalc - приватный API
 func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Request) {
 
+	log := logx.From(r.Context())
+
 	if r.Method != http.MethodPost {
 		writeError(w, r, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -41,11 +44,13 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 	var dtoReq PrivateCalcRequest
 	err := json.NewDecoder(r.Body).Decode(&dtoReq)
 	if err != nil {
+		log.Warn("api_invalid_json", "err", err)
 		writeError(w, r, "invalid json", http.StatusBadRequest)
 		return
 	}
 
 	if err := dtoReq.Validate(); err != nil {
+		log.Warn("api_validation_failed", "err", err)
 		writeError(w, r, err.Error(), http.StatusBadRequest)
 		return
 	}
