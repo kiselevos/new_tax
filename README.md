@@ -109,17 +109,38 @@ BACKEND_PORT=50051
 # Уровень и формат логов
 LOG_LEVEL=info
 LOG_MODE=json
+
+# Секретный ключ для работы с private API 
+API_KEY=api_7f28c3a4b1ef49d9a6c1d742e91f35c2
+
+# === API limit rate ===
+RATE_LIMIT_PUBLIC_RPS=1        # 60/min
+RATE_LIMIT_PUBLIC_BURST=10
+
+RATE_LIMIT_PRIVATE_RPS=2       # 120/min
+RATE_LIMIT_PRIVATE_BURST=20
 ```
 - Файл /web/.env:
 ```bash
+# === API Version ===
+API_VERSION=v1
+
 # === Frontend ===
-WEB_PORT=:8080
-# === Conditions salary ===
-MIN_ALLOWED_SALARY=3000 # Минимальный оклад.
-MIN_LIVING_WAGE=2440000 # МРОТ в копейках.
+WEB_PORT=8080
+
+# === Backend ===
+BACKEND_ADDR=localhost:50051
+
+# Ограничения для калькулятора
+MIN_ALLOWED_SALARY=3000 # Минимальная сумма ввода в поле оклад в рублях
+MIN_LIVING_WAGE=2440000 # МРОТ в копейках
+
 # === Logger ===
 LOG_LEVEL=info
 LOG_MODE=json
+
+# === Feedback mail ===
+FEEDBACK_EMAIL=olegsergeevichkiselev@gmail.com
 ```
 
 ## Запуск

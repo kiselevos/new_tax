@@ -30,8 +30,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			middleware.UnaryRecovery(logger),
-			middleware.Auth(cfg.ApiKey),
 			middleware.UnaryLogger(logger),
+			middleware.Auth(cfg.ApiKey),
+			middleware.RateLimitInterceptor(cfg.RateLimitCfg),
 		),
 	)
 

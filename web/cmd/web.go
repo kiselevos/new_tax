@@ -63,7 +63,6 @@ func main() {
 	apiHandler := middleware.Chain(
 		apiMux,
 		middleware.Logger,
-		middleware.RateLimiterMiddleware(cfg.APIRPS, cfg.APIBurst),
 		middleware.CORSMiddleware,
 	)
 
