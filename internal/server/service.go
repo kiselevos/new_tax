@@ -26,18 +26,26 @@ func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb
 }
 
 func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePrivateRequest) (*pb.CalculatePrivateResponse, error) {
-
 	l := logx.From(ctx).With("calc_type", "private")
+
 	start := time.Now()
-	l.Info("calc_start")
 
 	input := calculate.FromPrivateRequest(req)
 
+	// --- validation ---
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		l.Warn("calc_invalid_arguments", "reason", err.Error())
+		l.Warn("calc_invalid_arguments",
+			"reason", err.Error(),
+			"gross_salary", input.GrossSalary,
+			"territorial_multiplier", input.TerritorialMultiplier,
+			"northern_coefficient", input.NorthernCoefficient,
+			"is_not_resident", input.IsNotResident,
+			"has_tax_privilege", input.HasTaxPrivilege,
+		)
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
 
+	// --- calculation ---
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
 		l.Error("calc_no_months_produced")
@@ -59,46 +67,63 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
 
+	// --- business success log ---
 	l.Info("calc_done",
-		"months_count", len(months),
-		"duration", time.Since(start).String(),
+		"months", len(months),
+		"duration_ms", time.Since(start).Milliseconds(),
+		"gross_salary", input.GrossSalary,
+		"is_not_resident", input.IsNotResident,
+		"has_privilege", input.HasTaxPrivilege,
 	)
 
 	return resp, nil
 }
 
 func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePublicRequest) (*pb.CalculatePublicResponse, error) {
-
 	l := logx.From(ctx).With("calc_type", "public")
 	start := time.Now()
-	l.Info("calc_start")
 
 	input := calculate.FromPublicRequest(req)
 
+	// --- validation ---
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		l.Warn("calc_invalid_arguments", "reason", err.Error())
+		l.Warn("calc_invalid_arguments",
+			"reason", err.Error(),
+			"gross_salary", input.GrossSalary,
+			"territorial_multiplier", input.TerritorialMultiplier,
+			"northern_coefficient", input.NorthernCoefficient,
+		)
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
 
+	// --- business calculation ---
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
 		l.Error("calc_no_months_produced")
 		return nil, status.Error(codes.Internal, "no data produced")
 	}
 
+	last := months[len(months)-1]
+
 	resp := &pb.CalculatePublicResponse{
 		MonthlyDetails:        calculate.ToGRPCPublicResponse(months),
-		AnnualTaxAmount:       months[len(months)-1].AnnualTaxAmount,
-		AnnualGrossIncome:     months[len(months)-1].AnnualGrossIncome,
-		AnnualNetIncome:       months[len(months)-1].AnnualNetIncome,
+		AnnualTaxAmount:       last.AnnualTaxAmount,
+		AnnualGrossIncome:     last.AnnualGrossIncome,
+		AnnualNetIncome:       last.AnnualNetIncome,
 		GrossSalary:           input.GrossSalary,
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
 
+	// --- business success log (INFO) ---
 	l.Info("calc_done",
-		"months_count", len(months),
-		"duration", time.Since(start).String(),
+		"months", len(months),
+		"gross_salary", input.GrossSalary,
+	)
+
+	// --- internal performance metric (DEBUG) ---
+	l.Debug("calc_duration_ms",
+		"duration_ms", time.Since(start).Milliseconds(),
 	)
 
 	return resp, nil

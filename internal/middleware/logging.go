@@ -1,4 +1,4 @@
-package server
+package middleware
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"log/slog"
 	"net"
-	"runtime/debug"
 	"time"
 
 	"github.com/kiselevos/new_tax/pkg/logx"
@@ -69,24 +68,6 @@ func UnaryLogger(base *slog.Logger) grpc.UnaryServerInterceptor {
 
 		logger.Log(ctx, level, "grpc_request_done", attrs...)
 		return resp, err
-	}
-}
-
-func UnaryRecovery(base *slog.Logger) grpc.UnaryServerInterceptor {
-
-	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
-		defer func() {
-			if r := recover(); r != nil {
-				stack := string(debug.Stack())
-				logx.From(ctx).Error("panic_recovered",
-					"method", info.FullMethod,
-					"recover", r,
-					"stack", stack,
-				)
-				err = status.Error(codes.Internal, "internal error")
-			}
-		}()
-		return handler(ctx, req)
 	}
 }
 
