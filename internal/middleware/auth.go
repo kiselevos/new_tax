@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -11,7 +10,7 @@ import (
 )
 
 type authInfo struct {
-	Type      string
+	Type      string // public | private | internal | health
 	KeyPrefix string
 	KeyValid  bool
 }
@@ -30,6 +29,14 @@ func GetAuthInfo(ctx context.Context) (authInfo, bool) {
 	return v.(authInfo), true
 }
 
+func maskKeyPrefix(key string) string {
+	if len(key) < 8 {
+		return "****"
+	}
+
+	return key[:8] + "..."
+}
+
 // Аутентификация для private рассчета
 //
 // Правила:
@@ -38,6 +45,11 @@ func GetAuthInfo(ctx context.Context) (authInfo, bool) {
 //   - Внутренний трафик (запрос с UI): x-internal: true
 //   - У запроса имеется: x-api-key: <PRIVATE_API_KEY>
 func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
+
+	privateMethods := map[string]bool{
+		"/tax.TaxService/CalculatePrivate": true,
+	}
+
 	return func(
 		ctx context.Context,
 		req interface{},
@@ -45,8 +57,9 @@ func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
 		handler grpc.UnaryHandler,
 	) (interface{}, error) {
 
-		// Пропускаем Public метод без apiKey
-		if strings.HasSuffix(info.FullMethod, "/CalculatePublic") {
+		method := info.FullMethod
+
+		if !privateMethods[method] {
 			ctx = WithAuthInfo(ctx, authInfo{
 				Type:     "public",
 				KeyValid: true,
@@ -55,7 +68,6 @@ func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
 		}
 
 		md, _ := metadata.FromIncomingContext(ctx)
-
 		if vals := md.Get("x-internal"); len(vals) > 0 && vals[0] == "true" {
 			ctx = WithAuthInfo(ctx, authInfo{
 				Type:     "internal",
@@ -66,12 +78,11 @@ func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
 
 		if vals := md.Get("x-api-key"); len(vals) > 0 {
 			key := vals[0]
-			prefix := maskKeyPrefix(key)
 
 			if key == privateAPIKey {
 				ctx = WithAuthInfo(ctx, authInfo{
-					Type:      "api_key",
-					KeyPrefix: prefix,
+					Type:      "private",
+					KeyPrefix: maskKeyPrefix(key),
 					KeyValid:  true,
 				})
 				return handler(ctx, req)
@@ -82,12 +93,4 @@ func Auth(privateAPIKey string) grpc.UnaryServerInterceptor {
 
 		return nil, status.Error(codes.PermissionDenied, "missing api key")
 	}
-}
-
-func maskKeyPrefix(key string) string {
-	if len(key) < 8 {
-		return "****"
-	}
-
-	return key[:8] + "..."
 }

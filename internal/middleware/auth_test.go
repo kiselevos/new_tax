@@ -81,5 +81,5 @@ func TestAuth_PrivateWithoutAnyAuth(t *testing.T) {
 	require.Error(t, err)
 	st, _ := status.FromError(err)
 
-	require.Equal(t, codes.Unauthenticated, st.Code())
+	require.Equal(t, codes.PermissionDenied, st.Code())
 }
