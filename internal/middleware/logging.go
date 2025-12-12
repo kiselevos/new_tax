@@ -19,13 +19,13 @@ import (
 
 const requestIDKey = "x-request-id"
 
-func UnaryLogger(base *slog.Logger) grpc.UnaryServerInterceptor {
+func UnaryLogger() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		// request id
 		rid := newRID(ctx)
 
 		// базовый логгер
-		logger := base.With("method", info.FullMethod, "rid", rid)
+		logger := slog.Default().With("method", info.FullMethod, "rid", rid)
 
 		// peer ip (без порта)
 		if p, ok := peer.FromContext(ctx); ok && p != nil && p.Addr != nil {
