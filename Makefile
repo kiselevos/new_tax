@@ -143,7 +143,7 @@ docker-grafana: ## Cleane docker cash
 	@docker compose -f docker-compose.monitoring.yaml up -d
 
 .PHONY: docker-grafana-down
-docker-grafana: ## Cleane docker cash
+docker-grafana-down: ## Cleane docker cash
 	@docker compose -f docker-compose.monitoring.yaml down
 
 # ============================================================
