@@ -78,19 +78,19 @@
 .code-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    background: #fafafa; /* СЕРЫЙ фон вместо черного */
+    background: #fafafa;
     border-radius: 6px;
     margin: 0;
     max-width: 100%;
     scrollbar-width: thin;
-    scrollbar-color: #ccc #fafafa; /* Светлый скроллбар для серого фона */
+    scrollbar-color: #ccc #fafafa;
 }
 
 .code-container pre {
     margin: 0;
     padding: 15px;
     background: transparent;
-    color: #333; /* Темный текст для серого фона */
+    color: #333;
     font-size: 14px;
     line-height: 1.4;
     min-width: min-content;
@@ -104,17 +104,17 @@
 }
 
 .code-container::-webkit-scrollbar-track {
-    background: #fafafa; /* СЕРЫЙ трек */
+    background: #fafafa;
     border-radius: 0 0 6px 6px;
 }
 
 .code-container::-webkit-scrollbar-thumb {
-    background: #ccc; /* СЕРЫЙ ползунок */
+    background: #ccc;
     border-radius: 4px;
 }
 
 .code-container::-webkit-scrollbar-thumb:hover {
-    background: #aaa; /* Темнее при наведении */
+    background: #aaa;
 }
 
 /* Код вне блоков примеров */
@@ -123,6 +123,130 @@ code {
     padding: 2px 5px;
     border-radius: 4px;
     font-family: monospace;
+}
+
+/* Стили для аккордеона */
+.accordion {
+    margin: 20px 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.accordion-item {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-header {
+    padding: 18px 20px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.accordion-header:hover {
+    background-color: #f0f2f5;
+}
+
+.accordion-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.accordion-icon {
+    font-size: 20px;
+    color: #3498db;
+    transition: transform 0.3s;
+}
+
+.accordion-icon.open {
+    transform: rotate(45deg);
+}
+
+.accordion-content {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    background-color: white;
+}
+
+.accordion-content.open {
+    padding: 20px;
+    max-height: 5000px;
+}
+
+.endpoint-group {
+    margin-bottom: 30px;
+}
+
+.endpoint-group:last-child {
+    margin-bottom: 0;
+}
+
+.endpoint-item {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.endpoint-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.endpoint-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.method-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.method-post {
+    background-color: #e7f6e7;
+    color: #2e7d32;
+}
+
+.method-get {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.api-version-tag {
+    background-color: #3498db;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.tag-private {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Адаптивность для мобильных */

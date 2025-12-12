@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"log/slog"
 	"runtime/debug"
 
 	"github.com/kiselevos/new_tax/pkg/logx"
@@ -11,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func UnaryRecovery(base *slog.Logger) grpc.UnaryServerInterceptor {
+func UnaryRecovery() grpc.UnaryServerInterceptor {
 
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		defer func() {

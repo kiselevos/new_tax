@@ -191,6 +191,12 @@ func PrepareApiData() (*ApiDocsData, error) {
 
 	for i := range d.Endpoints {
 		d.Endpoints[i].Path = strings.ReplaceAll(d.Endpoints[i].Path, "{version}", v)
+
+		if obj, ok := d.Endpoints[i].ExampleResponse.(map[string]interface{}); ok {
+			pretty, _ := json.MarshalIndent(obj, "", "  ")
+			d.Endpoints[i].ExampleResponse = string(pretty)
+		}
+
 	}
 
 	return &d, nil
