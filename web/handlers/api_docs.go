@@ -6,11 +6,10 @@ type ApiDocsData struct {
 }
 
 type EndpointInfo struct {
-	Group              string `json:"group"`
-	Method             string `json:"method"`
-	Path               string `json:"path"`
-	Description        string `json:"description"`
-	ExampleRequestLite string `json:"example_request_lite"`
-	ExampleRequestFull string `json:"example_request_full"`
-	ExampleResponse    string `json:"example_response"`
+	Group           string      `json:"group"`
+	Method          string      `json:"method"`
+	Path            string      `json:"path"`
+	Description     string      `json:"description"`
+	ExampleRequest  string      `json:"example_request"`
+	ExampleResponse interface{} `json:"example_response"`
 }

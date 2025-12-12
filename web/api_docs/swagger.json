@@ -5,9 +5,79 @@
       "method": "POST",
       "path": "/api/{version}/calc",
       "description": "Открытый расчёт НДФЛ",
-      "example_request_lite": "{\"gross_salary\": 120000}",
-      "example_request_full": "{\n  \"gross_salary\": 120000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150\n}",
-      "example_response": "{\n  \"gross_salary\": 120000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150,\n\n  \"annual_tax_amount\": 17160,\n  \"annual_gross_income\": 180000,\n  \"annual_net_income\": 162840,\n\n  \"monthly_details\": [\n    {\n      \"month\": \"2024-01-01T00:00:00Z\",\n      \"monthly_gross_income\": 180000,\n      \"monthly_net_income\": 162840,\n      \"monthly_tax_amount\": 17160,\n\n      \"annual_gross_income\": 180000,\n      \"annual_net_income\": 162840,\n      \"annual_tax_amount\": 17160\n    }\n  ]\n}"
+      "example_request": "{\"gross_salary\": 120000}",
+      "example_response": {
+        "gross_salary": 120000,
+        "annual_gross_income": 1440000,
+        "annual_net_income": 1252800,
+        "annual_tax_amount": 187200,
+        "territorial_multiplier": 100,
+        "northern_coefficient": 100,
+        "monthly_details": [
+          {
+            "month": "2025-01-01T00:00:00Z",
+            "monthly_gross_income": 120000,
+            "monthly_net_income": 104400,
+            "monthly_tax_amount": 15600
+          },
+          {
+            "month": "2025-02-01T00:00:00Z",
+            "monthly_gross_income": 120000,
+            "monthly_net_income": 104400,
+            "monthly_tax_amount": 15600
+          },
+          "... 10 more months ..."
+        ]
+      }
+    },
+    {
+      "group": "private",
+      "method": "POST",
+      "path": "/api/{version}/private-calc",
+      "description": "Закрытый расчёт НДФЛ (требуется x-api-key)",
+      "example_request": "{\n  \"gross_salary\": 120000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150,\n  \"start_date\": \"2025-01-01\",\n  \"has_tax_privilege\": false\n}",
+      "example_response": {
+        "gross_salary": 120000,
+        "territorial_multiplier": 120,
+        "northern_coefficient": 150,
+        "annual_gross_income": 2592000,
+        "annual_net_income": 2254800,
+        "annual_tax_amount": 337200,
+        "annualPFR": 570240,
+        "annualFOMS": 132192,
+        "annualFSS": 75168,
+        "monthly_details": [
+          {
+            "month": "2025-01-01T00:00:00Z",
+            "monthly_gross_income": 216000,
+            "monthly_net_income": 187900,
+            "monthly_tax_amount": 28100,
+            "tax_rate": 13,
+            "monthly_north_gross_income": 72000,
+            "monthly_base_gross_income": 144000,
+            "monthly_north_tax_amount": 9400,
+            "monthly_base_tax_amount": 18700,
+            "monthlyPFR": 47520,
+            "monthlyFOMS": 11016,
+            "monthlyFSS": 6264
+          },
+          {
+            "month": "2025-02-01T00:00:00Z",
+            "monthly_gross_income": 216000,
+            "monthly_net_income": 187900,
+            "monthly_tax_amount": 28100,
+            "tax_rate": 13,
+            "monthly_north_gross_income": 72000,
+            "monthly_base_gross_income": 144000,
+            "monthly_north_tax_amount": 9400,
+            "monthly_base_tax_amount": 18700,
+            "monthlyPFR": 47520,
+            "monthlyFOMS": 11016,
+            "monthlyFSS": 6264
+          },
+          "... 10 more months ..."
+        ]
+      }
     }
   ]
 }
