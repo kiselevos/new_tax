@@ -1,0 +1,13 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - new_tax_taxnet
+
+networks:
+  new_tax_taxnet:
+    external: true

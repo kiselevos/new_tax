@@ -56,26 +56,27 @@ func main() {
 	htmlServer := handlers.NewServer(tmpl, clientGRPC)
 
 	htmlServer.Routes(htmlMux)
-	api.RegisterPublicRoutes(apiMux, clientGRPC, cfg.APIVersion, tmpl)
+	api.RegisterApiRoutes(apiMux, clientGRPC, cfg.APIVersion, tmpl)
 
 	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	apiHandler := middleware.Chain(
 		apiMux,
-		middleware.Logger,
 		middleware.CORSMiddleware,
-	)
-
-	htmlHandler := middleware.Chain(
-		htmlMux,
-		middleware.Logger,
 	)
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/", apiHandler)
-	rootMux.Handle("/", htmlHandler)
+	rootMux.Handle("/", htmlMux)
 
-	httpSrv := server.New(cfg.WebPort, rootMux)
+	// подключаем метрики
+	rootHandler := middleware.Chain(
+		rootMux,
+		middleware.MetricsMiddleware,
+		middleware.Logger,
+	)
+
+	httpSrv := server.New(cfg.WebPort, rootHandler)
 
 	go func() {
 		logger.Info("listening", "addr", cfg.WebPort)
