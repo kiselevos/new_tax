@@ -89,6 +89,12 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 
 	dtoResp := NewPrivateResponseToJSON(grpcResp)
 
+	gross := float64(dtoReq.GrossSalary) / 100.0
+
+	metrics.M.Calculator.GrossSalary.
+		WithLabelValues(client, region).
+		Observe(gross)
+
 	writeJSON(w, http.StatusOK, dtoResp)
 
 	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()

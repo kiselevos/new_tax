@@ -167,6 +167,12 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	gross := float64(data.GrossSalary) / 100.0
+
+	metrics.M.Calculator.GrossSalary.
+		WithLabelValues(client, region).
+		Observe(gross)
+
 	// UI completed successfully
 	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()
 }

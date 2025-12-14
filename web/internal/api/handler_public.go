@@ -87,7 +87,13 @@ func (h *PublicHandler) HandlePublicCalc(w http.ResponseWriter, r *http.Request)
 
 	dtoResp := NewPublicResponseToJSON(grpcResp)
 
-	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()
+	gross := float64(dtoReq.GrossSalary) / 100.0
+
+	metrics.M.Calculator.GrossSalary.
+		WithLabelValues(client, region).
+		Observe(gross)
 
 	writeJSON(w, http.StatusOK, dtoResp)
+
+	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()
 }

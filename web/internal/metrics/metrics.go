@@ -6,10 +6,11 @@ import (
 )
 
 type CalculatorMetrics struct {
-	Attempts *prometheus.CounterVec
-	Success  *prometheus.CounterVec
-	Failed   *prometheus.CounterVec
-	Duration *prometheus.HistogramVec
+	Attempts    *prometheus.CounterVec
+	Success     *prometheus.CounterVec
+	Failed      *prometheus.CounterVec
+	Duration    *prometheus.HistogramVec
+	GrossSalary *prometheus.HistogramVec
 }
 
 type Metrics struct {
@@ -80,6 +81,26 @@ func New() *Metrics {
 			Buckets: prometheus.DefBuckets,
 		},
 		labels,
+	)
+
+	m.Calculator.GrossSalary = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name: "tax_web_calc_gross_salary_rub",
+			Help: "Gross salary distribution in RUB",
+			Buckets: []float64{
+				20_000,
+				30_000,
+				50_000,
+				70_000,
+				100_000,
+				150_000,
+				200_000,
+				300_000,
+				500_000,
+				1_000_000,
+			},
+		},
+		[]string{"client", "region"},
 	)
 
 	return m
