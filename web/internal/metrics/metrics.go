@@ -6,10 +6,10 @@ import (
 )
 
 type CalculatorMetrics struct {
-	Attempts prometheus.Counter
-	Success  prometheus.Counter
-	Failed   prometheus.Counter
-	Duration prometheus.Histogram
+	Attempts *prometheus.CounterVec
+	Success  *prometheus.CounterVec
+	Failed   *prometheus.CounterVec
+	Duration *prometheus.HistogramVec
 }
 
 type Metrics struct {
@@ -18,10 +18,7 @@ type Metrics struct {
 	}
 
 	ErrorTypes *prometheus.CounterVec
-
-	UI         CalculatorMetrics
-	PublicAPI  CalculatorMetrics
-	PrivateAPI CalculatorMetrics
+	Calculator *CalculatorMetrics
 }
 
 var M = New()
@@ -29,7 +26,9 @@ var M = New()
 func New() *Metrics {
 	m := &Metrics{}
 
-	// System metrics
+	m.Calculator = &CalculatorMetrics{}
+
+	// System
 	m.System.HTTPRequests = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "tax_web_http_requests_total",
 		Help: "Total number of HTTP requests",
@@ -44,71 +43,44 @@ func New() *Metrics {
 		[]string{"endpoint", "type"},
 	)
 
-	// UI metrics
-	m.UI.Attempts = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_ui_calc_attempts_total",
-		Help: "UI calculation attempts",
-	})
+	labels := []string{"client", "region"}
 
-	m.UI.Success = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_ui_calc_success_total",
-		Help: "UI calculation success",
-	})
+	// Attempts
+	m.Calculator.Attempts = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tax_web_calc_attempts_total",
+			Help: "Calculation attempts",
+		},
+		labels,
+	)
 
-	m.UI.Failed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_ui_calc_failed_total",
-		Help: "UI calculation failed",
-	})
+	// Failed
+	m.Calculator.Failed = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tax_web_calc_failed_total",
+			Help: "Calculation failed",
+		},
+		labels,
+	)
 
-	m.UI.Duration = promauto.NewHistogram(prometheus.HistogramOpts{
-		Name:    "tax_web_ui_calc_duration_seconds",
-		Help:    "Duration of UI calculation processing",
-		Buckets: prometheus.DefBuckets,
-	})
+	// Success
+	m.Calculator.Success = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "tax_web_calc_success_total",
+			Help: "Calculation success",
+		},
+		labels,
+	)
 
-	// Public API metrics
-	m.PublicAPI.Attempts = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_public_calc_attempts_total",
-		Help: "Public API calculation attempts",
-	})
-
-	m.PublicAPI.Success = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_public_calc_success_total",
-		Help: "Public API calculation success",
-	})
-
-	m.PublicAPI.Failed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_public_calc_failed_total",
-		Help: "Public API calculation failed",
-	})
-
-	m.PublicAPI.Duration = promauto.NewHistogram(prometheus.HistogramOpts{
-		Name:    "tax_web_public_calc_duration_seconds",
-		Help:    "Duration of public API calculation",
-		Buckets: prometheus.DefBuckets,
-	})
-
-	// Private API metrics
-	m.PrivateAPI.Attempts = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_private_calc_attempts_total",
-		Help: "Private API calculation attempts",
-	})
-
-	m.PrivateAPI.Success = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_private_calc_success_total",
-		Help: "Private API calculation success",
-	})
-
-	m.PrivateAPI.Failed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "tax_web_private_calc_failed_total",
-		Help: "Private API calculation failed",
-	})
-
-	m.PrivateAPI.Duration = promauto.NewHistogram(prometheus.HistogramOpts{
-		Name:    "tax_web_private_calc_duration_seconds",
-		Help:    "Duration of private API calculation",
-		Buckets: prometheus.DefBuckets,
-	})
+	// Duration
+	m.Calculator.Duration = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "tax_web_calc_duration_seconds",
+			Help:    "Calculation duration",
+			Buckets: prometheus.DefBuckets,
+		},
+		labels,
+	)
 
 	return m
 }

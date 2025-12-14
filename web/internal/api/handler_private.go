@@ -9,6 +9,7 @@ import (
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web/internal/metrics"
+	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
@@ -27,18 +28,26 @@ func NewPrivateHandler(client pb.TaxServiceClient) *PrivateHandler {
 
 func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Request) {
 
-	log := logx.From(r.Context())
-	start := time.Now()
+	ctx := r.Context()
+	log := logx.From(ctx)
 
-	metrics.M.PrivateAPI.Attempts.Inc()
+	start := time.Now()
+	region := middleware.GetRegion(ctx).Label
+	client := "private"
+
+	metrics.M.Calculator.Attempts.
+		WithLabelValues(client, region).
+		Inc()
 	defer func() {
-		metrics.M.PrivateAPI.Duration.Observe(time.Since(start).Seconds())
+		metrics.M.Calculator.Duration.
+			WithLabelValues(client, region).
+			Observe(time.Since(start).Seconds())
 	}()
 
 	// Validate method
 	if r.Method != http.MethodPost {
-		metrics.M.ErrorTypes.WithLabelValues("private", "method").Inc()
-		metrics.M.PrivateAPI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "method").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		writeError(w, r, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -51,16 +60,16 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 	var dtoReq PrivateCalcRequest
 	if err := json.NewDecoder(r.Body).Decode(&dtoReq); err != nil {
 		log.Warn("api_invalid_json", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("private", "json").Inc()
-		metrics.M.PrivateAPI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "json").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		writeError(w, r, "invalid json", http.StatusBadRequest)
 		return
 	}
 
 	if err := dtoReq.Validate(); err != nil {
 		log.Warn("api_validation_failed", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("private", "validation").Inc()
-		metrics.M.PrivateAPI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "validation").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		writeError(w, r, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -72,8 +81,8 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 	grpcResp, err := h.TaxClient.CalculatePrivate(ctx, grpcReq)
 	if err != nil {
 		log.Warn("grpc_error", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("private", "grpc").Inc()
-		metrics.M.PrivateAPI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		writeError(w, r, err.Error(), grpcToHTTP(err))
 		return
 	}
@@ -82,7 +91,7 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 
 	writeJSON(w, http.StatusOK, dtoResp)
 
-	metrics.M.PrivateAPI.Success.Inc()
+	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()
 }
 
 func grpcToHTTP(err error) int {

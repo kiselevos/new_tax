@@ -66,10 +66,17 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	log := logx.From(ctx)
 
 	start := time.Now()
+	region := middleware.GetRegion(ctx).Label
+	client := "ui"
 
-	metrics.M.UI.Attempts.Inc()
+	metrics.M.Calculator.Attempts.
+		WithLabelValues(client, region).
+		Inc()
+
 	defer func() {
-		metrics.M.UI.Duration.Observe(time.Since(start).Seconds())
+		metrics.M.Calculator.Duration.
+			WithLabelValues(client, region).
+			Observe(time.Since(start).Seconds())
 	}()
 
 	// Validate content type
@@ -77,8 +84,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	if !strings.Contains(ct, "application/x-www-form-urlencoded") &&
 		!strings.Contains(ct, "multipart/form-data") {
 		log.Warn("unsupported_content_type", "content_type", ct)
-		metrics.M.ErrorTypes.WithLabelValues("ui", "content_type").Inc()
-		metrics.M.UI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "content_type").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		http.Error(w, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
@@ -86,8 +93,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	// Parse form
 	if err := r.ParseForm(); err != nil {
 		log.Warn("form_parse_failed", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("ui", "parse_form").Inc()
-		metrics.M.UI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "parse_form").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		http.Error(w, "invalid form data", http.StatusBadRequest)
 		return
 	}
@@ -96,8 +103,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	req, err := ParseFormToRequest(r)
 	if err != nil {
 		log.Warn("form_validation_failed", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("ui", "validate").Inc()
-		metrics.M.UI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "validate").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -111,8 +118,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	res, err := s.TaxClient.CalculatePrivate(rpcCtx, req)
 	if err != nil {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("ui", "grpc").Inc()
-		metrics.M.UI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -154,14 +161,14 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	// render template
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {
 		log.Error("template_render_failed", "page", "result", "err", err)
-		metrics.M.ErrorTypes.WithLabelValues("ui", "template").Inc()
-		metrics.M.UI.Failed.Inc()
+		metrics.M.ErrorTypes.WithLabelValues(client, "template").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	// UI completed successfully
-	metrics.M.UI.Success.Inc()
+	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()
 }
 
 func (s *Server) About(w http.ResponseWriter, r *http.Request) {

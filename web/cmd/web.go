@@ -18,6 +18,7 @@ import (
 	"github.com/kiselevos/new_tax/web/internal/api"
 	"github.com/kiselevos/new_tax/web/internal/client"
 	"github.com/kiselevos/new_tax/web/internal/config"
+	"github.com/kiselevos/new_tax/web/internal/geoip"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"github.com/kiselevos/new_tax/web/internal/server"
 )
@@ -69,9 +70,17 @@ func main() {
 	rootMux.Handle("/api/", apiHandler)
 	rootMux.Handle("/", htmlMux)
 
+	// Подключаем GeoDataIP
+	geoDB, err := geoip.LoadFromCSV(cfg.GeoIPPath)
+	if err != nil {
+		logger.Warn("geoip_disabled", "err", err)
+		geoDB = geoip.NewEmpty()
+	}
+
 	// подключаем метрики
 	rootHandler := middleware.Chain(
 		rootMux,
+		middleware.RegionMiddleware(geoDB),
 		middleware.MetricsMiddleware,
 		middleware.Logger,
 	)
