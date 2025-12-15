@@ -52,7 +52,11 @@ func main() {
 		logger.Error("grpc_dial_failed", "err", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("failed to close connection", "err", err)
+		}
+	}()
 
 	htmlServer := handlers.NewServer(tmpl, clientGRPC)
 

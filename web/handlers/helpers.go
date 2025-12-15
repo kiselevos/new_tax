@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -204,12 +203,3 @@ func PrepareApiData() (*ApiDocsData, error) {
 // Вспомогательные функции:
 func uint64Ptr(v uint64) *uint64 { return &v }
 func boolPtr(v bool) *bool       { return &v }
-
-func getRIDFromCtx(ctx context.Context) string {
-	if v := ctx.Value("rid"); v != nil {
-		if s, ok := v.(string); ok {
-			return s
-		}
-	}
-	return ""
-}
