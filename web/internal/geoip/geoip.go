@@ -3,6 +3,7 @@ package geoip
 import (
 	"encoding/csv"
 	"io"
+	"log/slog"
 	"net"
 	"os"
 	"sort"
@@ -31,7 +32,12 @@ func LoadFromCSV(path string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+
+	defer func() {
+		if err := f.Close(); err != nil {
+			slog.Error("failed to close file", "err", err)
+		}
+	}()
 
 	r := csv.NewReader(f)
 	r.FieldsPerRecord = -1

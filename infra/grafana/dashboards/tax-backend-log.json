@@ -1,0 +1,51 @@
+{
+  "uid": "tax-backend-logs",
+  "title": "Tax · Backend · Logs (Loki)",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["tax", "backend", "logs", "loki"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "All logs · tax-backend",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "expr": "{container=\"tax-backend\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true
+      },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 }
+    },
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Warnings & Errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "expr": "{container=\"tax-backend\"} |~ \"WARN|ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true
+      },
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 6 }
+    }
+  ]
+}

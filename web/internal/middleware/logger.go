@@ -16,6 +16,11 @@ type ctxKeyRID struct{}
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		if r.URL.Path == "/metrics" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		rid := getRequestID(r)
 
 		logger := slog.Default().With(
@@ -27,8 +32,6 @@ func Logger(next http.Handler) http.Handler {
 		ctx := logx.Into(r.Context(), logger)
 		ctx = context.WithValue(ctx, ctxKeyRID{}, rid)
 
-		region := GetRegion(ctx)
-
 		sr := &statusRecorder{ResponseWriter: w, status: 200}
 
 		start := time.Now()
@@ -38,8 +41,8 @@ func Logger(next http.Handler) http.Handler {
 		logger.Info("http_request_completed",
 			"status", sr.status,
 			"duration_ms", time.Since(start).Milliseconds(),
-			"region", region.Name,
 		)
+
 	})
 }
 

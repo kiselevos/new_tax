@@ -39,6 +39,24 @@
         </div>
       </div>
 
+      <div class="info-note">
+      <h2 class="info-card-title">Формат денежных значений</h2>
+      <p class="info-card-text">
+      <strong>Все денежные значения в API передаются и возвращаются в копейках.</strong>
+      </p>
+    <p class="info-card-text">
+        Это означает, что:
+    </p>
+  <ul class="info-card-list">
+    <li>10000 = 100 рублей</li>
+    <li>8000056 = 80 000 рублей 56 копеек</li>
+    <li>Дробные значения и числа с плавающей точкой (<code>float</code>) не поддерживаются</li>
+  </ul>
+  <p class="info-card-text">
+    Такой формат используется для точных финансовых расчётов и исключения ошибок округления.
+  </p>
+</div>
+
       <!-- Аккордеон: Public API -->
       <div class="accordion">
         <div class="accordion-item">
@@ -155,7 +173,7 @@
                   <div class="code-container">
                     <pre>curl -X POST https://calculator-ndfl.ru/api/{{ .ApiVers }}/calc \
   -H "Content-Type: application/json" \
-  -d '{"gross_salary": 120000}'</pre>
+  -d '{"gross_salary": 12000000}'</pre>
                   </div>
                 </div>
               </div>
@@ -167,7 +185,7 @@
                     <pre>fetch("/api/{{ .ApiVers }}/calc", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ gross_salary: 120000 })
+  body: JSON.stringify({ gross_salary: 12000000 })
 })
   .then(r => r.json())
   .then(console.log)
@@ -184,7 +202,7 @@
   -H "Content-Type: application/json" \
   -H "x-api-key: &lt;ваш_private_api_key&gt;" \
   -d '{ 
-        "gross_salary": 120000,
+        "gross_salary": 12000000,
         "territorial_multiplier": 120,
         "northern_coefficient": 150,
         "start_date": "2025-01-01",
@@ -205,7 +223,7 @@
     "x-api-key": "&lt;ваш_private_api_key&gt;"
   },
   body: JSON.stringify({
-    gross_salary: 120000,
+    gross_salary: 12000000,
     territorial_multiplier: 120,
     northern_coefficient: 150,
     start_date: "2025-01-01",

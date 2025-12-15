@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -26,7 +25,8 @@ func main() {
 
 	conf, err := config.Load()
 	if err != nil {
-		log.Fatal("can't load config:", err)
+		slog.Error("config_load_failed", "err", err)
+		os.Exit(1)
 	}
 
 	logger := logx.New(conf.LogMode, conf.LogLevel)
@@ -34,7 +34,7 @@ func main() {
 
 	srv, err := server.New(conf, logger)
 	if err != nil {
-		logger.Error("init", "err", err)
+		logger.Error("server_init_failed", "err", err)
 		os.Exit(1)
 	}
 
@@ -54,7 +54,7 @@ func main() {
 		logger.Info("signal received, shutting down", "signal", sig.String())
 	case err := <-grpcErrCh:
 		if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-			logger.Error("gRPC serve failed", "error", err)
+			logger.Error("grpc_serve_failed", "err", err)
 		} else {
 			logger.Info("gRPC server stopped")
 		}

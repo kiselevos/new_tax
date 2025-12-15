@@ -5,26 +5,26 @@
       "method": "POST",
       "path": "/api/{version}/calc",
       "description": "Открытый расчёт НДФЛ",
-      "example_request": "{\"gross_salary\": 120000}",
+      "example_request": "{\"gross_salary\": 12000000}",
       "example_response": {
-        "gross_salary": 120000,
-        "annual_gross_income": 1440000,
-        "annual_net_income": 1252800,
-        "annual_tax_amount": 187200,
+        "gross_salary": 12000000,
+        "annual_gross_income": 144000000,
+        "annual_net_income": 125280000,
+        "annual_tax_amount": 18720000,
         "territorial_multiplier": 100,
         "northern_coefficient": 100,
         "monthly_details": [
           {
             "month": "2025-01-01T00:00:00Z",
-            "monthly_gross_income": 120000,
-            "monthly_net_income": 104400,
-            "monthly_tax_amount": 15600
+            "monthly_gross_income": 12000000,
+            "monthly_net_income": 10440000,
+            "monthly_tax_amount": 1560000
           },
           {
             "month": "2025-02-01T00:00:00Z",
-            "monthly_gross_income": 120000,
-            "monthly_net_income": 104400,
-            "monthly_tax_amount": 15600
+            "monthly_gross_income": 12000000,
+            "monthly_net_income": 10440000,
+            "monthly_tax_amount": 1560000
           },
           "... 10 more months ..."
         ]
@@ -35,45 +35,45 @@
       "method": "POST",
       "path": "/api/{version}/private-calc",
       "description": "Закрытый расчёт НДФЛ (требуется x-api-key)",
-      "example_request": "{\n  \"gross_salary\": 120000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150,\n  \"start_date\": \"2025-01-01\",\n  \"has_tax_privilege\": false\n}",
+      "example_request": "{\n  \"gross_salary\": 12000000,\n  \"territorial_multiplier\": 120,\n  \"northern_coefficient\": 150,\n  \"start_date\": \"2025-01-01\",\n  \"has_tax_privilege\": false\n}",
       "example_response": {
-        "gross_salary": 120000,
+        "gross_salary": 12000000,
         "territorial_multiplier": 120,
         "northern_coefficient": 150,
-        "annual_gross_income": 2592000,
-        "annual_net_income": 2254800,
-        "annual_tax_amount": 337200,
-        "annualPFR": 570240,
-        "annualFOMS": 132192,
-        "annualFSS": 75168,
+        "annual_gross_income": 259200000,
+        "annual_net_income": 225480000,
+        "annual_tax_amount": 33720000,
+        "annualPFR": 57024000,
+        "annualFOMS": 13219200,
+        "annualFSS": 7516800,
         "monthly_details": [
           {
             "month": "2025-01-01T00:00:00Z",
-            "monthly_gross_income": 216000,
-            "monthly_net_income": 187900,
-            "monthly_tax_amount": 28100,
+            "monthly_gross_income": 21600000,
+            "monthly_net_income": 18790000,
+            "monthly_tax_amount": 2810000,
             "tax_rate": 13,
-            "monthly_north_gross_income": 72000,
-            "monthly_base_gross_income": 144000,
-            "monthly_north_tax_amount": 9400,
-            "monthly_base_tax_amount": 18700,
-            "monthlyPFR": 47520,
-            "monthlyFOMS": 11016,
-            "monthlyFSS": 6264
+            "monthly_north_gross_income": 7200000,
+            "monthly_base_gross_income": 14400000,
+            "monthly_north_tax_amount": 940000,
+            "monthly_base_tax_amount": 1870000,
+            "monthlyPFR": 4752000,
+            "monthlyFOMS": 1101600,
+            "monthlyFSS": 626400
           },
           {
             "month": "2025-02-01T00:00:00Z",
-            "monthly_gross_income": 216000,
-            "monthly_net_income": 187900,
-            "monthly_tax_amount": 28100,
+            "monthly_gross_income": 21600000,
+            "monthly_net_income": 18790000,
+            "monthly_tax_amount": 2810000,
             "tax_rate": 13,
-            "monthly_north_gross_income": 72000,
-            "monthly_base_gross_income": 144000,
-            "monthly_north_tax_amount": 9400,
-            "monthly_base_tax_amount": 18700,
-            "monthlyPFR": 47520,
-            "monthlyFOMS": 11016,
-            "monthlyFSS": 6264
+            "monthly_north_gross_income": 7200000,
+            "monthly_base_gross_income": 14400000,
+            "monthly_north_tax_amount": 940000,
+            "monthly_base_tax_amount": 1870000,
+            "monthlyPFR": 4752000,
+            "monthlyFOMS": 1101600,
+            "monthlyFSS": 626400
           },
           "... 10 more months ..."
         ]

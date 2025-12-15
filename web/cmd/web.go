@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"html/template"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -26,12 +25,13 @@ import (
 func main() {
 
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatal("env_file_not_loaded", "err", err)
+		slog.Error("env_file_not_loaded", "err", err)
+		os.Exit(1)
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatal("config_load_failed", err)
+		slog.Error("config_load_failed", "err", err)
 		os.Exit(1)
 	}
 
@@ -52,7 +52,11 @@ func main() {
 		logger.Error("grpc_dial_failed", "err", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("failed to close connection", "err", err)
+		}
+	}()
 
 	htmlServer := handlers.NewServer(tmpl, clientGRPC)
 
@@ -73,7 +77,10 @@ func main() {
 	// Подключаем GeoDataIP
 	geoDB, err := geoip.LoadFromCSV(cfg.GeoIPPath)
 	if err != nil {
-		logger.Warn("geoip_disabled", "err", err)
+		logger.Warn("geoip_disabled",
+			"path", cfg.GeoIPPath,
+			"err", err,
+		)
 		geoDB = geoip.NewEmpty()
 	}
 

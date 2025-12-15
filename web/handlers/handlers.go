@@ -66,16 +66,16 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	log := logx.From(ctx)
 
 	start := time.Now()
-	region := middleware.GetRegion(ctx).Label
+	region := middleware.GetRegion(ctx)
 	client := "ui"
 
 	metrics.M.Calculator.Attempts.
-		WithLabelValues(client, region).
+		WithLabelValues(client, region.Label).
 		Inc()
 
 	defer func() {
 		metrics.M.Calculator.Duration.
-			WithLabelValues(client, region).
+			WithLabelValues(client, region.Label).
 			Observe(time.Since(start).Seconds())
 	}()
 
@@ -85,7 +85,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		!strings.Contains(ct, "multipart/form-data") {
 		log.Warn("unsupported_content_type", "content_type", ct)
 		metrics.M.ErrorTypes.WithLabelValues(client, "content_type").Inc()
-		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
@@ -94,7 +94,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Warn("form_parse_failed", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "parse_form").Inc()
-		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, "invalid form data", http.StatusBadRequest)
 		return
 	}
@@ -104,7 +104,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Warn("form_validation_failed", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "validate").Inc()
-		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -119,7 +119,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
-		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -162,19 +162,33 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {
 		log.Error("template_render_failed", "page", "result", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "template").Inc()
-		metrics.M.Calculator.Failed.WithLabelValues(client, region).Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
 	gross := float64(data.GrossSalary) / 100.0
 
+	log.Info("business_calc",
+		"client", client,
+		"region", region.Name,
+		"rid", middleware.GetRID(ctx),
+
+		"gross_salary_rub", gross,
+		"territorial_multiplier", data.TerritorialMult,
+		"northern_coefficient", data.NorthernCoeff,
+		"has_tax_privilege", data.HasTaxPrivilege,
+		"is_not_resident", data.IsNotResident,
+
+		"annual_tax", data.AnnualTaxAmount,
+	)
+
 	metrics.M.Calculator.GrossSalary.
-		WithLabelValues(client, region).
+		WithLabelValues(client, region.Label).
 		Observe(gross)
 
 	// UI completed successfully
-	metrics.M.Calculator.Success.WithLabelValues(client, region).Inc()
+	metrics.M.Calculator.Success.WithLabelValues(client, region.Label).Inc()
 }
 
 func (s *Server) About(w http.ResponseWriter, r *http.Request) {
