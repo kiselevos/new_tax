@@ -10,6 +10,6 @@ type EndpointInfo struct {
 	Method          string      `json:"method"`
 	Path            string      `json:"path"`
 	Description     string      `json:"description"`
-	ExampleRequest  string      `json:"example_request"`
+	ExampleRequest  interface{} `json:"example_request"`
 	ExampleResponse interface{} `json:"example_response"`
 }

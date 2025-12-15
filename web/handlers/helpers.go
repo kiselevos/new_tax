@@ -151,19 +151,6 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		}
 	}
 
-	// Финальный лог
-	log.Info("http_request_parsed",
-		"rid", getRIDFromCtx(r.Context()),
-		"method", r.Method,
-		"path", r.URL.Path,
-		"gross_salary", grossSalary,
-		"territorial", territorial,
-		"northern", northern,
-		"has_tax_privilege", hasTaxPrivilege,
-		"is_not_resident", isNotResident,
-		"start_date", startDate.Format("2006-01-02"),
-	)
-
 	return &pb.CalculatePrivateRequest{
 		GrossSalary:           grossSalary,
 		StartDate:             startTS,
@@ -190,13 +177,25 @@ func PrepareApiData() (*ApiDocsData, error) {
 	d.ApiVers = v
 
 	for i := range d.Endpoints {
-		d.Endpoints[i].Path = strings.ReplaceAll(d.Endpoints[i].Path, "{version}", v)
+		d.Endpoints[i].Path = strings.ReplaceAll(
+			d.Endpoints[i].Path,
+			"{version}",
+			v,
+		)
 
-		if obj, ok := d.Endpoints[i].ExampleResponse.(map[string]interface{}); ok {
-			pretty, _ := json.MarshalIndent(obj, "", "  ")
-			d.Endpoints[i].ExampleResponse = string(pretty)
+		if obj, ok := d.Endpoints[i].ExampleRequest.(map[string]interface{}); ok {
+			pretty, err := json.MarshalIndent(obj, "", "  ")
+			if err == nil {
+				d.Endpoints[i].ExampleRequest = string(pretty)
+			}
 		}
 
+		if obj, ok := d.Endpoints[i].ExampleResponse.(map[string]interface{}); ok {
+			pretty, err := json.MarshalIndent(obj, "", "  ")
+			if err == nil {
+				d.Endpoints[i].ExampleResponse = string(pretty)
+			}
+		}
 	}
 
 	return &d, nil

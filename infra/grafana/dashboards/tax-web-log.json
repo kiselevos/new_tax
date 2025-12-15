@@ -1,0 +1,102 @@
+{
+  "uid": "tax-web-logs",
+  "title": "Tax · Web · Logs (Loki)",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["tax", "web", "logs", "loki"],
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "All logs · tax-web",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{container=\"tax-web\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true
+      },
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 }
+    },
+
+    {
+      "id": 2,
+      "type": "logs",
+      "title": "Errors only",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{container=\"tax-web\"} |= \"ERROR\"",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 6 }
+    },
+
+    {
+      "id": 3,
+      "type": "logs",
+      "title": "HTTP completed",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{container=\"tax-web\"} |= \"http_request_completed\"",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 14, "w": 24, "h": 6 }
+    },
+
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Error rate (logs)",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(rate({container=\"tax-web\"} |= \"ERROR\" [5m]))",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 6 }
+    },
+
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "HTTP requests per minute",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "count_over_time({container=\"tax-web\"} |= \"http_request_completed\" [1m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 6 }
+    },
+
+    {
+      "id": 6,
+      "type": "logs",
+      "title": "Business calculations (UI)",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{container=\"tax-web\"} |= \"business_calc\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true
+      },
+      "gridPos": { "x": 0, "y": 26, "w": 24, "h": 8 }
+    }
+  ]
+}

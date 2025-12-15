@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/internal/calculate"
@@ -26,21 +25,14 @@ func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb
 }
 
 func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePrivateRequest) (*pb.CalculatePrivateResponse, error) {
-	l := logx.From(ctx).With("calc_type", "private")
-
-	start := time.Now()
+	log := logx.From(ctx).With("calc_type", "private")
 
 	input := calculate.FromPrivateRequest(req)
 
 	// --- validation ---
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		l.Warn("calc_invalid_arguments",
+		log.Warn("calc_invalid_arguments",
 			"reason", err.Error(),
-			"gross_salary", input.GrossSalary,
-			"territorial_multiplier", input.TerritorialMultiplier,
-			"northern_coefficient", input.NorthernCoefficient,
-			"is_not_resident", input.IsNotResident,
-			"has_tax_privilege", input.HasTaxPrivilege,
 		)
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
@@ -48,7 +40,7 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 	// --- calculation ---
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
-		l.Error("calc_no_months_produced")
+		log.Error("calc_no_months_produced")
 		return nil, status.Error(codes.Internal, "no data produced")
 	}
 
@@ -67,31 +59,18 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
 
-	// --- business success log ---
-	l.Info("calc_done",
-		"months", len(months),
-		"duration_ms", time.Since(start).Milliseconds(),
-		"gross_salary", input.GrossSalary,
-		"is_not_resident", input.IsNotResident,
-		"has_privilege", input.HasTaxPrivilege,
-	)
-
 	return resp, nil
 }
 
 func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePublicRequest) (*pb.CalculatePublicResponse, error) {
-	l := logx.From(ctx).With("calc_type", "public")
-	start := time.Now()
+	log := logx.From(ctx).With("calc_type", "public")
 
 	input := calculate.FromPublicRequest(req)
 
 	// --- validation ---
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		l.Warn("calc_invalid_arguments",
+		log.Warn("calc_invalid_arguments",
 			"reason", err.Error(),
-			"gross_salary", input.GrossSalary,
-			"territorial_multiplier", input.TerritorialMultiplier,
-			"northern_coefficient", input.NorthernCoefficient,
 		)
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
@@ -99,7 +78,7 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 	// --- business calculation ---
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
-		l.Error("calc_no_months_produced")
+		log.Error("calc_no_months_produced")
 		return nil, status.Error(codes.Internal, "no data produced")
 	}
 
@@ -114,17 +93,6 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
-
-	// --- business success log (INFO) ---
-	l.Info("calc_done",
-		"months", len(months),
-		"gross_salary", input.GrossSalary,
-	)
-
-	// --- internal performance metric (DEBUG) ---
-	l.Debug("calc_duration_ms",
-		"duration_ms", time.Since(start).Milliseconds(),
-	)
 
 	return resp, nil
 }
