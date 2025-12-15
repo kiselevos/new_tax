@@ -12,6 +12,7 @@ type Config struct {
 	APIVersion string
 	LogMode    string
 	LogLevel   string
+	GeoIPPath  string
 }
 
 func Load() (*Config, error) {
@@ -47,11 +48,17 @@ func Load() (*Config, error) {
 		logLevel = "info"
 	}
 
+	geoPath := os.Getenv("GEOIP_CSV_PATH")
+	if geoPath == "" {
+		return nil, fmt.Errorf("GEOIP_CSV_PATH is not set")
+	}
+
 	return &Config{
 		WebPort:    webPort,
 		Backend:    backAddr,
 		APIVersion: apiVers,
 		LogMode:    logMode,
 		LogLevel:   logLevel,
+		GeoIPPath:  geoPath,
 	}, nil
 }

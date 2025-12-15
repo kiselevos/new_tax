@@ -8,6 +8,7 @@ COPY web/ web/
 COPY pkg/ pkg/
 COPY gen/ gen/
 
+
 # Сборка веб-модуля
 RUN cd web && go mod tidy && go build -o web ./cmd/web.go
 
@@ -18,6 +19,8 @@ WORKDIR /app/web
 COPY --from=builder /app/web/web .
 COPY --from=builder /app/web/templates ./templates
 COPY --from=builder /app/web/static ./static
+
+COPY web/data ./data
 COPY web/.env .env
 
 EXPOSE 8080

@@ -1,0 +1,9 @@
+apiVersion: 1
+
+providers:
+  - name: tax
+    folder: Tax
+    type: file
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
