@@ -1,62 +1,32 @@
-/* Корневая область */
-.info-page {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 0 20px;
-    font-family: Arial, sans-serif;
-}
-
-/* Заголовки */
-.info-page-title {
-    font-size: 36px;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 10px;
-}
-
-.info-page-subtitle {
-    font-size: 18px;
-    line-height: 1.6;
-    color: #555;
-    margin-bottom: 30px;
-}
-
-/* Карточки API */
-.info-card {
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 25px 30px;
-    margin: 20px 0;
-    border: 1px solid #e6e6e6;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-
-.info-card-title {
-    font-size: 24px;
-    margin-bottom: 15px;
-    color: #333;
-}
-
-.info-card-text {
-    font-size: 16px;
-    color: #444;
-    line-height: 1.5;
-}
-
-/* Методы */
-.info-note {
-    font-size: 16px;
-    background: #f3f7ff;
-    padding: 12px 16px;
-    border-left: 4px solid #3a7afe;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.info-note code {
-    background: none;
+.info-card-list {
+    list-style-type: none;
     padding: 0;
-    font-size: 16px;
+    margin: 0;
+}
+
+.info-card-list li {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #4dabf7;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.info-card-list li:hover {
+    background-color: #e7f5ff;
+    transform: translateX(4px);
+}
+
+.info-card-list li code {
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    color: #d63384;
 }
 
 /* Примеры */
@@ -78,19 +48,19 @@
 .code-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    background: #fafafa; /* СЕРЫЙ фон вместо черного */
+    background: #fafafa;
     border-radius: 6px;
     margin: 0;
     max-width: 100%;
     scrollbar-width: thin;
-    scrollbar-color: #ccc #fafafa; /* Светлый скроллбар для серого фона */
+    scrollbar-color: #ccc #fafafa;
 }
 
 .code-container pre {
     margin: 0;
     padding: 15px;
     background: transparent;
-    color: #333; /* Темный текст для серого фона */
+    color: #333;
     font-size: 14px;
     line-height: 1.4;
     min-width: min-content;
@@ -104,17 +74,17 @@
 }
 
 .code-container::-webkit-scrollbar-track {
-    background: #fafafa; /* СЕРЫЙ трек */
+    background: #fafafa;
     border-radius: 0 0 6px 6px;
 }
 
 .code-container::-webkit-scrollbar-thumb {
-    background: #ccc; /* СЕРЫЙ ползунок */
+    background: #ccc;
     border-radius: 4px;
 }
 
 .code-container::-webkit-scrollbar-thumb:hover {
-    background: #aaa; /* Темнее при наведении */
+    background: #aaa;
 }
 
 /* Код вне блоков примеров */
@@ -123,6 +93,130 @@ code {
     padding: 2px 5px;
     border-radius: 4px;
     font-family: monospace;
+}
+
+/* Стили для аккордеона */
+.accordion {
+    margin: 20px 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.accordion-item {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-header {
+    padding: 18px 20px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.accordion-header:hover {
+    background-color: #f0f2f5;
+}
+
+.accordion-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.accordion-icon {
+    font-size: 20px;
+    color: #3498db;
+    transition: transform 0.3s;
+}
+
+.accordion-icon.open {
+    transform: rotate(45deg);
+}
+
+.accordion-content {
+    padding: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    background-color: white;
+}
+
+.accordion-content.open {
+    padding: 20px;
+    max-height: 5000px;
+}
+
+.endpoint-group {
+    margin-bottom: 30px;
+}
+
+.endpoint-group:last-child {
+    margin-bottom: 0;
+}
+
+.endpoint-item {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.endpoint-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.endpoint-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.method-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.method-post {
+    background-color: #e7f6e7;
+    color: #2e7d32;
+}
+
+.method-get {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.api-version-tag {
+    background-color: #3498db;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.tag-private {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Адаптивность для мобильных */

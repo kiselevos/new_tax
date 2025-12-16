@@ -3,16 +3,16 @@ package config
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
 type Config struct {
 	WebPort    string
 	Backend    string
-	APIRPS     int
-	APIBurst   int
 	APIVersion string
+	LogMode    string
+	LogLevel   string
+	GeoIPPath  string
 }
 
 func Load() (*Config, error) {
@@ -33,40 +33,32 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("BACKEND_ADDR must contain port (example: tax-backend:50051)")
 	}
 
-	rps, err := envInt("API_RPS")
-	if err != nil {
-		return nil, fmt.Errorf("invalid API_RPS: %w", err)
-	}
-
-	burst, err := envInt("API_BURST")
-	if err != nil {
-		return nil, fmt.Errorf("invalid API_BURST: %w", err)
-	}
-
 	apiVers := os.Getenv("API_VERSION")
 	if webPort == "" {
 		apiVers = "v1"
 	}
 
+	logMode := os.Getenv("LOG_MODE")
+	if logMode == "" {
+		logMode = "json"
+	}
+
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
+	geoPath := os.Getenv("GEOIP_CSV_PATH")
+	if geoPath == "" {
+		return nil, fmt.Errorf("GEOIP_CSV_PATH is not set")
+	}
+
 	return &Config{
 		WebPort:    webPort,
 		Backend:    backAddr,
-		APIRPS:     rps,
-		APIBurst:   burst,
 		APIVersion: apiVers,
+		LogMode:    logMode,
+		LogLevel:   logLevel,
+		GeoIPPath:  geoPath,
 	}, nil
-}
-
-func envInt(key string) (int, error) {
-	val := os.Getenv(key)
-	if val == "" {
-		return 0, fmt.Errorf("%s is not set", key)
-	}
-
-	n, err := strconv.Atoi(val)
-	if err != nil || n <= 0 {
-		return 0, fmt.Errorf("env %s must be > 0, got `%s`", key, val)
-	}
-
-	return n, nil
 }

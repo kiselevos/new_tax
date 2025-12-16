@@ -8,6 +8,7 @@ import (
 	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/server"
 	"github.com/kiselevos/new_tax/pkg/logx"
 
@@ -32,10 +33,13 @@ func waitForReady(ctx context.Context, conn *grpc.ClientConn) error {
 func Test_Server_Healthz(t *testing.T) {
 	t.Helper()
 
-	logger := logx.New()
+	logger := logx.NewTest()
+	cfg := config.Config{
+		ApiKey:   "1",
+		BackPort: "127.0.0.1:0",
+	}
 
-	addr := "127.0.0.1:0"
-	srv, err := server.New(addr, logger)
+	srv, err := server.New(&cfg, logger)
 	if err != nil {
 		t.Fatalf("server.New: %v", err)
 	}

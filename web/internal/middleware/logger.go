@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -15,9 +16,18 @@ type ctxKeyRID struct{}
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		if r.URL.Path == "/metrics" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		rid := getRequestID(r)
 
-		logger := logx.New().With("rid", rid, "path", r.URL.Path, "method", r.Method)
+		logger := slog.Default().With(
+			"rid", rid,
+			"path", r.URL.Path,
+			"method", r.Method,
+		)
 
 		ctx := logx.Into(r.Context(), logger)
 		ctx = context.WithValue(ctx, ctxKeyRID{}, rid)
@@ -32,6 +42,7 @@ func Logger(next http.Handler) http.Handler {
 			"status", sr.status,
 			"duration_ms", time.Since(start).Milliseconds(),
 		)
+
 	})
 }
 

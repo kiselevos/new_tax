@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"html/template"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,22 +17,26 @@ import (
 	"github.com/kiselevos/new_tax/web/internal/api"
 	"github.com/kiselevos/new_tax/web/internal/client"
 	"github.com/kiselevos/new_tax/web/internal/config"
+	"github.com/kiselevos/new_tax/web/internal/geoip"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"github.com/kiselevos/new_tax/web/internal/server"
 )
 
 func main() {
-	logger := logx.New()
 
 	if err := godotenv.Load(".env"); err != nil {
-		logger.Warn("env_file_not_loaded", "err", err)
+		slog.Error("env_file_not_loaded", "err", err)
+		os.Exit(1)
 	}
 
 	cfg, err := config.Load()
 	if err != nil {
-		logger.Error("config_load_failed", "err", err)
+		slog.Error("config_load_failed", "err", err)
 		os.Exit(1)
 	}
+
+	logger := logx.New(cfg.LogMode, cfg.LogLevel)
+	slog.SetDefault(logger)
 
 	tmpl, err := template.New("").Funcs(web.Funcs).ParseGlob("templates/*.tmpl")
 	if err != nil {
@@ -47,32 +52,47 @@ func main() {
 		logger.Error("grpc_dial_failed", "err", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("failed to close connection", "err", err)
+		}
+	}()
 
 	htmlServer := handlers.NewServer(tmpl, clientGRPC)
 
 	htmlServer.Routes(htmlMux)
-	api.RegisterPublicRoutes(apiMux, clientGRPC, cfg.APIVersion, tmpl)
+	api.RegisterApiRoutes(apiMux, clientGRPC, cfg.APIVersion, tmpl)
 
 	htmlMux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	apiHandler := middleware.Chain(
 		apiMux,
-		middleware.Logger,
-		middleware.RateLimiterMiddleware(cfg.APIRPS, cfg.APIBurst),
 		middleware.CORSMiddleware,
-	)
-
-	htmlHandler := middleware.Chain(
-		htmlMux,
-		middleware.Logger,
 	)
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/api/", apiHandler)
-	rootMux.Handle("/", htmlHandler)
+	rootMux.Handle("/", htmlMux)
 
-	httpSrv := server.New(cfg.WebPort, rootMux)
+	// Подключаем GeoDataIP
+	geoDB, err := geoip.LoadFromCSV(cfg.GeoIPPath)
+	if err != nil {
+		logger.Warn("geoip_disabled",
+			"path", cfg.GeoIPPath,
+			"err", err,
+		)
+		geoDB = geoip.NewEmpty()
+	}
+
+	// подключаем метрики
+	rootHandler := middleware.Chain(
+		rootMux,
+		middleware.RegionMiddleware(geoDB),
+		middleware.MetricsMiddleware,
+		middleware.Logger,
+	)
+
+	httpSrv := server.New(cfg.WebPort, rootHandler)
 
 	go func() {
 		logger.Info("listening", "addr", cfg.WebPort)

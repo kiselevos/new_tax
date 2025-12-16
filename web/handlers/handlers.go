@@ -10,6 +10,7 @@ import (
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/kiselevos/new_tax/web"
+	"github.com/kiselevos/new_tax/web/internal/metrics"
 	"github.com/kiselevos/new_tax/web/internal/middleware"
 	"google.golang.org/grpc/metadata"
 )
@@ -42,6 +43,9 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
 
+	// Метрики
+	metrics.Mount(mux)
+
 	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/favicon.ico")
 	})
@@ -61,35 +65,61 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	log := logx.From(ctx)
 
+	start := time.Now()
+	region := middleware.GetRegion(ctx)
+	client := "ui"
+
+	metrics.M.Calculator.Attempts.
+		WithLabelValues(client, region.Label).
+		Inc()
+
+	defer func() {
+		metrics.M.Calculator.Duration.
+			WithLabelValues(client, region.Label).
+			Observe(time.Since(start).Seconds())
+	}()
+
+	// Validate content type
 	ct := r.Header.Get("Content-Type")
 	if !strings.Contains(ct, "application/x-www-form-urlencoded") &&
 		!strings.Contains(ct, "multipart/form-data") {
 		log.Warn("unsupported_content_type", "content_type", ct)
+		metrics.M.ErrorTypes.WithLabelValues(client, "content_type").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
 
+	// Parse form
 	if err := r.ParseForm(); err != nil {
 		log.Warn("form_parse_failed", "err", err)
+		metrics.M.ErrorTypes.WithLabelValues(client, "parse_form").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, "invalid form data", http.StatusBadRequest)
 		return
 	}
 
+	// Validate business input
 	req, err := ParseFormToRequest(r)
 	if err != nil {
 		log.Warn("form_validation_failed", "err", err)
+		metrics.M.ErrorTypes.WithLabelValues(client, "validate").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// gRPC request
 	rid := middleware.GetRID(ctx)
-	md := metadata.New(map[string]string{"x-request-id": rid})
+	md := metadata.New(map[string]string{"x-request-id": rid, "x-internal": "true"})
 	rpcCtx, cancel := context.WithTimeout(metadata.NewOutgoingContext(ctx, md), 3*time.Second)
 	defer cancel()
 
 	res, err := s.TaxClient.CalculatePrivate(rpcCtx, req)
 	if err != nil {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
+		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -97,6 +127,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	minWage := web.GetMinLivingWage()
 	showWarning := req.GrossSalary < minWage
 
+	// Prepare data
 	data := struct {
 		AnnualTaxAmount   uint64
 		AnnualGrossIncome uint64
@@ -127,17 +158,37 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		AnnualFSS:         res.AnnualFSS,
 	}
 
+	// render template
 	if err := s.Tmpl.ExecuteTemplate(w, "result", data); err != nil {
 		log.Error("template_render_failed", "page", "result", "err", err)
+		metrics.M.ErrorTypes.WithLabelValues(client, "template").Inc()
+		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
-	log.Info("calculation_completed",
-		"gross_salary", req.GrossSalary,
-		"annual_tax", res.AnnualTaxAmount,
-		"warning", showWarning,
+	gross := float64(data.GrossSalary) / 100.0
+
+	log.Info("business_calc",
+		"client", client,
+		"region", region.Name,
+		"rid", middleware.GetRID(ctx),
+
+		"gross_salary_rub", gross,
+		"territorial_multiplier", data.TerritorialMult,
+		"northern_coefficient", data.NorthernCoeff,
+		"has_tax_privilege", data.HasTaxPrivilege,
+		"is_not_resident", data.IsNotResident,
+
+		"annual_tax", data.AnnualTaxAmount,
 	)
+
+	metrics.M.Calculator.GrossSalary.
+		WithLabelValues(client, region.Label).
+		Observe(gross)
+
+	// UI completed successfully
+	metrics.M.Calculator.Success.WithLabelValues(client, region.Label).Inc()
 }
 
 func (s *Server) About(w http.ResponseWriter, r *http.Request) {

@@ -53,12 +53,13 @@ tidy: ## Check go.mod/go.sum
 	
 
 .PHONY: lint
-lint: ## Run linter
+lint-all: ## Run linter
+	@go vet ./...
 	@golangci-lint run ./...
 	@echo "✅ Linters check"
 
 .PHONY: test
-test: ## Run tests
+test-all: ## Run tests
 	@go test -v ./...
 
 .PHONY: fmt

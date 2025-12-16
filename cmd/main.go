@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/server"
-	"github.com/kiselevos/new_tax/pkg/helpers"
 	"github.com/kiselevos/new_tax/pkg/logx"
 
 	"google.golang.org/grpc"
@@ -17,16 +19,26 @@ import (
 
 func main() {
 
-	logger := logx.New()
-	addr := helpers.AddrChecker(os.Getenv("BACKEND_PORT"))
+	if _, err := os.Stat(".env"); err == nil {
+		_ = godotenv.Load(".env")
+	}
 
-	srv, err := server.New(addr, logger)
+	conf, err := config.Load()
 	if err != nil {
-		logger.Error("init", "err", err)
+		slog.Error("config_load_failed", "err", err)
 		os.Exit(1)
 	}
 
-	logger.Info("listening", "addr", addr)
+	logger := logx.New(conf.LogMode, conf.LogLevel)
+	slog.SetDefault(logger)
+
+	srv, err := server.New(conf, logger)
+	if err != nil {
+		logger.Error("server_init_failed", "err", err)
+		os.Exit(1)
+	}
+
+	logger.Info("listening", "addr", conf.BackPort)
 
 	grpcErrCh := make(chan error, 1)
 	go func() {
@@ -42,7 +54,7 @@ func main() {
 		logger.Info("signal received, shutting down", "signal", sig.String())
 	case err := <-grpcErrCh:
 		if err != nil && !errors.Is(err, grpc.ErrServerStopped) {
-			logger.Error("gRPC serve failed", "error", err)
+			logger.Error("grpc_serve_failed", "err", err)
 		} else {
 			logger.Info("gRPC server stopped")
 		}

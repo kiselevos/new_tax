@@ -1,0 +1,162 @@
+{
+  "id": null,
+  "uid": "tax-web",
+  "title": "Tax Web — Calculator",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["tax", "web", "business"],
+  "templating": {
+    "list": [
+      {
+        "name": "client",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "Prometheus"
+        },
+        "query": {
+          "query": "label_values(tax_web_calc_attempts_total, client)"
+        },
+        "includeAll": true,
+        "refresh": 1
+      },
+      {
+        "name": "region",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "Prometheus"
+        },
+        "query": {
+          "query": "label_values(tax_web_calc_attempts_total, region)"
+        },
+        "includeAll": true,
+        "refresh": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP requests (RPS)",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "rate(tax_web_http_requests_total[1m])",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Calculator attempts (RPS)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(tax_web_calc_attempts_total{client=\"$client\",region=\"$region\"}[1m])) by (client)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Success vs Failed",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(tax_web_calc_success_total{client=\"$client\",region=\"$region\"}[5m]))",
+          "refId": "A",
+          "legendFormat": "success"
+        },
+        {
+          "expr": "sum(rate(tax_web_calc_failed_total{client=\"$client\",region=\"$region\"}[5m]))",
+          "refId": "B",
+          "legendFormat": "failed"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Error rate (%)",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "(sum(rate(tax_web_calc_failed_total{client=\"$client\",region=\"$region\"}[5m])) / sum(rate(tax_web_calc_attempts_total{client=\"$client\",region=\"$region\"}[5m]))) * 100",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "unit": "percent",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "values": false
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Calculation latency (p50 / p90 / p99)",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.5, sum(rate(tax_web_calc_duration_seconds_bucket{client=\"$client\",region=\"$region\"}[5m])) by (le))",
+          "refId": "A",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.9, sum(rate(tax_web_calc_duration_seconds_bucket{client=\"$client\",region=\"$region\"}[5m])) by (le))",
+          "refId": "B",
+          "legendFormat": "p90"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(tax_web_calc_duration_seconds_bucket{client=\"$client\",region=\"$region\"}[5m])) by (le))",
+          "refId": "C",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Average calculation time",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(tax_web_calc_duration_seconds_sum{client=\"$client\",region=\"$region\"}[5m])) / sum(rate(tax_web_calc_duration_seconds_count{client=\"$client\",region=\"$region\"}[5m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "heatmap",
+      "title": "Gross salary distribution (RUB)",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(tax_web_calc_gross_salary_rub_bucket{client=\"$client\",region=\"$region\"}[10m])) by (le)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "barchart",
+      "title": "Errors by type",
+      "gridPos": { "x": 0, "y": 32, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "Prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(tax_web_errors_total[5m])) by (type)",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}
