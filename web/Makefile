@@ -52,13 +52,14 @@ tidy: ## Check go.mod/go.sum
 	@git diff --exit-code || (echo "::error::go.mod or go.sum is out of sync" && exit 1)
 	
 
-.PHONY: lint
-lint: ## Run linter
+.PHONY: lint-all
+lint-all: ## Run linter
+	@go vet ./...
 	@golangci-lint run ./...
 	@echo "✅ Linters check"
 
-.PHONY: test
-test: ## Run tests
+.PHONY: test-all
+test-all: ## Run tests
 	@go test -v ./...
 
 .PHONY: fmt

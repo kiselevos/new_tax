@@ -91,9 +91,22 @@ build: ## Compile Go binary
 # ============================================================
 # 🧪 Tests & Checks
 # ============================================================
+.PHONY: ci
+ci: #Check before pushing
+	@echo "Running CI checks for backend..."
+	@make lint-all
+	@make test-all
+
+	@echo "Running CI checks for frontend..."
+	@cd web && make lint-all
+	@cd web && make test-all
+
+	@echo "✅ CI checks passed successfully"
+
 .PHONY: test-all
 test-all: ## Run all tests
 	@go test -v ./...
+	
 
 .PHONY: tidy
 tidy: ## Check go.mod/go.sum
@@ -105,6 +118,7 @@ tidy: ## Check go.mod/go.sum
 lint-all: ## Run all linters
 	@go vet ./...
 	@golangci-lint run ./...
+	@echo "✅ Linters check"
 
 .PHONY: gofmt
 gofmt: ## Format code
