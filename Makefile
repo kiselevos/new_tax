@@ -138,6 +138,15 @@ docker-down: ## Stop and remove docker containers
 docker-prune: ## Cleane docker cash
 	@docker builder prune -f
 
+.PHONY: docker-infra-up
+docker-infra-up: ## 
+	@docker compose -f infra/docker-compose.yaml up -d
+
+.PHONY: docker-infra-down
+docker-infra-down: ## 
+	@docker compose -f infra/docker-compose.yaml down
+
+
 # ============================================================
 # 🔬 CI & Local Utilities
 # ============================================================
