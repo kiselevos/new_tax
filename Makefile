@@ -98,8 +98,8 @@ ci: #Check before pushing
 	@make test-all
 
 	@echo "Running CI checks for frontend..."
-	@cd web && make lint-all
-	@cd web && make test-all
+	@cd web && make lint
+	@cd web && make test
 
 	@echo "✅ CI checks passed successfully"
 
