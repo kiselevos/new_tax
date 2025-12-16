@@ -348,4 +348,5 @@ make codegen        # генерация gRPC/Connect-кода
 make run-all        # запуск backend + frontend локально
 make docker-build   # сборка и запуск контейнеров
 make test-all       # запуск всех тестов
+make ci             # запуск проверки перед push
 ```
