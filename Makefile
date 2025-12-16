@@ -91,9 +91,22 @@ build: ## Compile Go binary
 # ============================================================
 # 🧪 Tests & Checks
 # ============================================================
+.PHONY: ci
+ci: #Check before pushing
+	@echo "Running CI checks for backend..."
+	@make lint-all
+	@make test-all
+
+	@echo "Running CI checks for frontend..."
+	@cd web && make lint
+	@cd web && make test
+
+	@echo "✅ CI checks passed successfully"
+
 .PHONY: test-all
 test-all: ## Run all tests
 	@go test -v ./...
+	
 
 .PHONY: tidy
 tidy: ## Check go.mod/go.sum
@@ -105,6 +118,7 @@ tidy: ## Check go.mod/go.sum
 lint-all: ## Run all linters
 	@go vet ./...
 	@golangci-lint run ./...
+	@echo "✅ Linters check"
 
 .PHONY: gofmt
 gofmt: ## Format code
@@ -137,6 +151,15 @@ docker-down: ## Stop and remove docker containers
 .PHONY: docker-prune
 docker-prune: ## Cleane docker cash
 	@docker builder prune -f
+
+.PHONY: docker-infra-up
+docker-infra-up: ## 
+	@docker compose -f infra/docker-compose.yaml up -d
+
+.PHONY: docker-infra-down
+docker-infra-down: ## 
+	@docker compose -f infra/docker-compose.yaml down
+
 
 # ============================================================
 # 🔬 CI & Local Utilities
