@@ -49,7 +49,7 @@ func Test_Server_Healthz(t *testing.T) {
 	t.Cleanup(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 		defer cancel()
-		server.ShutdownGRPCServer(ctx, srv.Grpc)
+		server.ShutdownGRPCServer(ctx, srv)
 	})
 
 	laddr := srv.Lis.Addr()

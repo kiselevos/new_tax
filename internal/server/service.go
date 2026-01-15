@@ -2,10 +2,12 @@ package server
 
 import (
 	"context"
+	"log/slog"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/internal/calculate"
 	"github.com/kiselevos/new_tax/pkg/logx"
+	"github.com/redis/go-redis/v9"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,10 +15,16 @@ import (
 
 type serverStruct struct {
 	pb.UnimplementedTaxServiceServer
+
+	redis  *redis.Client
+	logger *slog.Logger
 }
 
-func NewGRPCServer() *serverStruct {
-	return &serverStruct{}
+func NewGRPCServer(rdb *redis.Client, logger *slog.Logger) *serverStruct {
+	return &serverStruct{
+		redis:  rdb,
+		logger: logger,
+	}
 }
 
 func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb.HealthzResponse, error) {
@@ -26,6 +34,12 @@ func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb
 
 func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePrivateRequest) (*pb.CalculatePrivateResponse, error) {
 	log := logx.From(ctx).With("calc_type", "private")
+
+	if s.redis == nil {
+		log.Debug("redis_disabled")
+	} else {
+		log.Debug("redis_enabled")
+	}
 
 	input := calculate.FromPrivateRequest(req)
 
@@ -64,6 +78,12 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 
 func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePublicRequest) (*pb.CalculatePublicResponse, error) {
 	log := logx.From(ctx).With("calc_type", "public")
+
+	if s.redis == nil {
+		log.Info("redis_disabled")
+	} else {
+		log.Info("redis_enabled")
+	}
 
 	input := calculate.FromPublicRequest(req)
 

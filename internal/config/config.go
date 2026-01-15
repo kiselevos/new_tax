@@ -8,11 +8,14 @@ import (
 )
 
 type Config struct {
-	BackPort     string
-	ApiKey       string
-	LogMode      string
-	LogLevel     string
+	BackPort string
+	ApiKey   string
+	LogMode  string
+	LogLevel string
+
 	RateLimitCfg *RateLimitConfig
+
+	RedisCfg *RedisConfig
 }
 
 type RateLimitConfig struct {
@@ -20,6 +23,11 @@ type RateLimitConfig struct {
 	PublicBurst  int
 	PrivateRPS   float64
 	PrivateBurst int
+}
+
+type RedisConfig struct {
+	Enabled bool
+	Addr    string
 }
 
 func Load() (*Config, error) {
@@ -52,6 +60,7 @@ func Load() (*Config, error) {
 		LogMode:      logMode,
 		LogLevel:     logLevel,
 		RateLimitCfg: LoadRateLimitConf(),
+		RedisCfg:     LoadRedisConfig(),
 	}
 
 	return conf, nil
@@ -84,5 +93,20 @@ func LoadRateLimitConf() *RateLimitConfig {
 		PublicBurst:  publicBurst,
 		PrivateRPS:   privateRPS,
 		PrivateBurst: privateBurst,
+	}
+}
+
+func LoadRedisConfig() *RedisConfig {
+	enabledStr := strings.TrimSpace(strings.ToLower(os.Getenv("REDIS_ENABLED")))
+	enabled := enabledStr == "1" || enabledStr == "true" || enabledStr == "yes"
+
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		addr = "redis:6379"
+	}
+
+	return &RedisConfig{
+		Enabled: enabled,
+		Addr:    addr,
 	}
 }
