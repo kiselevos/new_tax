@@ -1,4 +1,17 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: tax-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - taxnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 2s
+      timeout: 1s
+      retries: 10
+
   backend:
     build:
       context: .
@@ -8,6 +21,9 @@ services:
       - .env
     ports:
       - "${BACKEND_PORT:-50051}:50051"
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - taxnet
 
@@ -24,14 +40,6 @@ services:
       - BACKEND_ADDR=backend:50051
     depends_on:
       - backend
-    networks:
-      - taxnet
-
-  redis:
-    image: redis:7-alpine
-    container_name: tax-redis
-    ports:
-      - "6379:6379"
     networks:
       - taxnet
 
