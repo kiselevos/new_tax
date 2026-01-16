@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -28,6 +29,7 @@ type RateLimitConfig struct {
 type RedisConfig struct {
 	Enabled bool
 	Addr    string
+	Ttl     time.Duration
 }
 
 func Load() (*Config, error) {
@@ -105,8 +107,18 @@ func LoadRedisConfig() *RedisConfig {
 		addr = "redis:6379"
 	}
 
+	ttl := os.Getenv("TTL")
+	cacheTTL := 10 * time.Minute
+
+	if ttl != "" {
+		if parse, err := time.ParseDuration(ttl); err == nil {
+			cacheTTL = parse
+		}
+	}
+
 	return &RedisConfig{
 		Enabled: enabled,
 		Addr:    addr,
+		Ttl:     cacheTTL,
 	}
 }
