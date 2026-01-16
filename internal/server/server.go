@@ -44,7 +44,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		rdb = nil
 	}
 
-	pb.RegisterTaxServiceServer(s, NewGRPCServer(rdb, logger))
+	pb.RegisterTaxServiceServer(s, NewGRPCServer(rdb, logger, cfg.RedisCfg.Ttl))
 	reflection.Register(s)
 
 	return &Server{Grpc: s, Lis: lis, Redis: rdb}, nil

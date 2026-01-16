@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/internal/calculate"
@@ -16,14 +17,16 @@ import (
 type serverStruct struct {
 	pb.UnimplementedTaxServiceServer
 
-	redis  *redis.Client
-	logger *slog.Logger
+	redis    *redis.Client
+	logger   *slog.Logger
+	cacheTTL time.Duration
 }
 
-func NewGRPCServer(rdb *redis.Client, logger *slog.Logger) *serverStruct {
+func NewGRPCServer(rdb *redis.Client, logger *slog.Logger, ttl time.Duration) *serverStruct {
 	return &serverStruct{
-		redis:  rdb,
-		logger: logger,
+		redis:    rdb,
+		logger:   logger,
+		cacheTTL: ttl,
 	}
 }
 
@@ -35,12 +38,6 @@ func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb
 func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePrivateRequest) (*pb.CalculatePrivateResponse, error) {
 	log := logx.From(ctx).With("calc_type", "private")
 
-	if s.redis == nil {
-		log.Debug("redis_disabled")
-	} else {
-		log.Debug("redis_enabled")
-	}
-
 	input := calculate.FromPrivateRequest(req)
 
 	// --- validation ---
@@ -49,6 +46,20 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 			"reason", err.Error(),
 		)
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
+	}
+
+	//--- redis ---
+	key := buildPrivateKey(input)
+
+	cached := &pb.CalculatePrivateResponse{}
+
+	ok, err := s.cacheGet(ctx, key, cached)
+	if err != nil {
+		log.Warn("cache_get_failed", "err", err)
+	}
+	if ok {
+		log.Info("cache_hit")
+		return cached, nil
 	}
 
 	// --- calculation ---
@@ -73,17 +84,16 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		NorthernCoefficient:   &input.NorthernCoefficient,
 	}
 
+	err = s.cacheSet(ctx, key, resp, s.cacheTTL)
+	if err != nil {
+		log.Warn("cache_set_failed", "err", err)
+	}
+
 	return resp, nil
 }
 
 func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePublicRequest) (*pb.CalculatePublicResponse, error) {
 	log := logx.From(ctx).With("calc_type", "public")
-
-	if s.redis == nil {
-		log.Info("redis_disabled")
-	} else {
-		log.Info("redis_enabled")
-	}
 
 	input := calculate.FromPublicRequest(req)
 
@@ -93,6 +103,20 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 			"reason", err.Error(),
 		)
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
+	}
+
+	// --- redis ---
+	key := buildPublicKey(input)
+
+	cached := &pb.CalculatePublicResponse{}
+
+	ok, err := s.cacheGet(ctx, key, cached)
+	if err != nil {
+		log.Warn("cache_get_failed", "err", err)
+	}
+	if ok {
+		log.Info("cache_hit")
+		return cached, nil
 	}
 
 	// --- business calculation ---
@@ -112,6 +136,11 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 		GrossSalary:           input.GrossSalary,
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
+	}
+
+	err = s.cacheSet(ctx, key, resp, s.cacheTTL)
+	if err != nil {
+		log.Warn("cache_set_failed", "err", err)
 	}
 
 	return resp, nil
