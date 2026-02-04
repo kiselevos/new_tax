@@ -1,4 +1,4 @@
-package middleware
+package ratelimit
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/kiselevos/new_tax/internal/config"
+	"github.com/kiselevos/new_tax/internal/middleware"
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
@@ -17,6 +18,10 @@ import (
 
 var mu sync.Mutex
 var limiters = make(map[string]*rate.Limiter)
+
+type Limiter interface {
+	Allow(ctx context.Context, key string, rps float64, burst int) (bool, error)
+}
 
 func getLimiter(key string, r rate.Limit, burst int) *rate.Limiter {
 	mu.Lock()
@@ -31,7 +36,7 @@ func getLimiter(key string, r rate.Limit, burst int) *rate.Limiter {
 	return l
 }
 
-func RateLimitInterceptor(cfg *config.RateLimitConfig) grpc.UnaryServerInterceptor {
+func RateLimitInterceptor(limiter Limiter, cfg *config.RateLimitConfig) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context,
 		req interface{},
 		info *grpc.UnaryServerInfo,
@@ -45,7 +50,7 @@ func RateLimitInterceptor(cfg *config.RateLimitConfig) grpc.UnaryServerIntercept
 		}
 
 		// Не тротлим UI
-		if ai, ok := GetAuthInfo(ctx); ok && ai.Type == "internal" {
+		if ai, ok := middleware.GetAuthInfo(ctx); ok && ai.Type == "internal" {
 			return handler(ctx, req)
 		}
 
