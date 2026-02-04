@@ -37,6 +37,7 @@ func Test_Server_Healthz(t *testing.T) {
 	cfg := config.Config{
 		ApiKey:   "1",
 		BackPort: "127.0.0.1:0",
+		RedisCfg: &config.RedisConfig{Enabled: false},
 	}
 
 	srv, err := server.New(&cfg, logger)
