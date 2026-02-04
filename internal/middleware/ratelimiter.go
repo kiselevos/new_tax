@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"net"
 	"strings"
 	"sync"
 
@@ -71,6 +72,9 @@ func RateLimitInterceptor(cfg *config.RateLimitConfig) grpc.UnaryServerIntercept
 
 func getClientIP(ctx context.Context) string {
 	if p, ok := peer.FromContext(ctx); ok && p.Addr != nil {
+		if ta, ok := p.Addr.(*net.TCPAddr); ok {
+			return ta.IP.String()
+		}
 		return p.Addr.String()
 	}
 	return "unknown"
