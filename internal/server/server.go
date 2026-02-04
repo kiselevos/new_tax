@@ -7,6 +7,7 @@ import (
 
 	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/middleware"
+	"github.com/kiselevos/new_tax/internal/middleware/ratelimit"
 	"github.com/kiselevos/new_tax/internal/redisconn"
 	"github.com/kiselevos/new_tax/pkg/logx"
 	"github.com/redis/go-redis/v9"
@@ -30,12 +31,14 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		return nil, err
 	}
 
+	limiter := ratelimit.NewMemoryLimiter()
+
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			middleware.UnaryRecovery(),
 			middleware.UnaryLogger(),
 			middleware.Auth(cfg.ApiKey),
-			middleware.RateLimitInterceptor(cfg.RateLimitCfg),
+			ratelimit.RateLimitInterceptor(limiter, cfg.RateLimitCfg),
 		),
 	)
 
