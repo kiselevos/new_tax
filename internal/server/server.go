@@ -31,7 +31,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		return nil, err
 	}
 
-	limiter := ratelimit.NewMemoryLimiter()
+	limiter := ratelimit.NewMemoryLimiter(cfg.RateLimitCfg.TTL, cfg.RateLimitCfg.Cleanup_Every)
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(

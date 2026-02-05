@@ -20,10 +20,12 @@ type Config struct {
 }
 
 type RateLimitConfig struct {
-	PublicRPS    float64
-	PublicBurst  int
-	PrivateRPS   float64
-	PrivateBurst int
+	PublicRPS     float64
+	PublicBurst   int
+	PrivateRPS    float64
+	PrivateBurst  int
+	TTL           time.Duration
+	Cleanup_Every int
 }
 
 type RedisConfig struct {
@@ -90,11 +92,27 @@ func LoadRateLimitConf() *RateLimitConfig {
 		privateBurst = 20
 	}
 
+	ttl := os.Getenv("TTL")
+	rlTTL := 10 * time.Minute
+
+	if ttl != "" {
+		if parse, err := time.ParseDuration(ttl); err == nil {
+			rlTTL = parse
+		}
+	}
+
+	cleanup, err := strconv.Atoi(os.Getenv("CLEANUP_EVERY"))
+	if err != nil {
+		cleanup = 1000
+	}
+
 	return &RateLimitConfig{
-		PublicRPS:    publicRPS,
-		PublicBurst:  publicBurst,
-		PrivateRPS:   privateRPS,
-		PrivateBurst: privateBurst,
+		PublicRPS:     publicRPS,
+		PublicBurst:   publicBurst,
+		PrivateRPS:    privateRPS,
+		PrivateBurst:  privateBurst,
+		Cleanup_Every: cleanup,
+		TTL:           rlTTL,
 	}
 }
 

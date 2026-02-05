@@ -3,31 +3,76 @@ package ratelimit
 import (
 	"context"
 	"sync"
+	"time"
 
 	"golang.org/x/time/rate"
 )
 
 type memoryLimiter struct {
-	mu       sync.Mutex
-	limiters map[string]*rate.Limiter
+	mu    sync.Mutex
+	items map[string]*memoryItem
+
+	ttl          time.Duration
+	cleanupEvery int64
+	calls        int64
 }
 
-func NewMemoryLimiter() *memoryLimiter {
+type memoryItem struct {
+	limiter  *rate.Limiter
+	lastSeen time.Time
+}
+
+func NewMemoryLimiter(ttl time.Duration, cleanupEvery int64) *memoryLimiter {
+
 	return &memoryLimiter{
-		limiters: make(map[string]*rate.Limiter),
+		items:        make(map[string]*memoryItem),
+		ttl:          ttl,
+		cleanupEvery: cleanupEvery,
 	}
 }
 
 func (m *memoryLimiter) Allow(ctx context.Context, key string, rps float64, burst int) (bool, error) {
 
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	now := time.Now()
 
-	limiter, ok := m.limiters[key]
-	if !ok {
-		limiter = rate.NewLimiter(rate.Limit(rps), burst)
-		m.limiters[key] = limiter
+	m.mu.Lock()
+
+	it := m.items[key]
+	if it == nil {
+		it = &memoryItem{
+			limiter:  rate.NewLimiter(rate.Limit(rps), burst),
+			lastSeen: now,
+		}
+		m.items[key] = it
+	} else {
+		it.lastSeen = now
 	}
 
-	return limiter.Allow(), nil
+	m.calls++
+	doCleanup := m.calls%m.cleanupEvery == 0
+
+	lim := it.limiter
+
+	m.mu.Unlock()
+
+	allowed := lim.Allow()
+
+	if doCleanup {
+		m.cleanup(now)
+	}
+
+	return allowed, nil
+}
+
+func (m *memoryLimiter) cleanup(now time.Time) {
+
+	cutoff := now.Add(-m.ttl)
+
+	m.mu.Lock()
+	for k, it := range m.items {
+		if it.lastSeen.Before(cutoff) {
+			delete(m.items, k)
+		}
+	}
+	m.mu.Unlock()
 }
