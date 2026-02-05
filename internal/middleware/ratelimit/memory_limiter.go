@@ -13,8 +13,8 @@ type memoryLimiter struct {
 	items map[string]*memoryItem
 
 	ttl          time.Duration
-	cleanupEvery int64
-	calls        int64
+	cleanupEvery int
+	calls        int
 }
 
 type memoryItem struct {
@@ -22,7 +22,7 @@ type memoryItem struct {
 	lastSeen time.Time
 }
 
-func NewMemoryLimiter(ttl time.Duration, cleanupEvery int64) *memoryLimiter {
+func NewMemoryLimiter(ttl time.Duration, cleanupEvery int) *memoryLimiter {
 
 	return &memoryLimiter{
 		items:        make(map[string]*memoryItem),

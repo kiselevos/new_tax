@@ -20,12 +20,12 @@ type Config struct {
 }
 
 type RateLimitConfig struct {
-	PublicRPS     float64
-	PublicBurst   int
-	PrivateRPS    float64
-	PrivateBurst  int
-	TTL           time.Duration
-	Cleanup_Every int
+	PublicRPS    float64
+	PublicBurst  int
+	PrivateRPS   float64
+	PrivateBurst int
+	TTL          time.Duration
+	CleanupEvery int
 }
 
 type RedisConfig struct {
@@ -92,7 +92,7 @@ func LoadRateLimitConf() *RateLimitConfig {
 		privateBurst = 20
 	}
 
-	ttl := os.Getenv("TTL")
+	ttl := os.Getenv("RATE_LIMIT_TTL")
 	rlTTL := 10 * time.Minute
 
 	if ttl != "" {
@@ -101,18 +101,20 @@ func LoadRateLimitConf() *RateLimitConfig {
 		}
 	}
 
-	cleanup, err := strconv.Atoi(os.Getenv("CLEANUP_EVERY"))
-	if err != nil {
-		cleanup = 1000
+	cleanup := 1000
+	if s := os.Getenv("CLEANUP_EVERY"); s != "" {
+		if v, err := strconv.ParseInt(s, 10, 64); err == nil && v > 0 {
+			cleanup = int(v)
+		}
 	}
 
 	return &RateLimitConfig{
-		PublicRPS:     publicRPS,
-		PublicBurst:   publicBurst,
-		PrivateRPS:    privateRPS,
-		PrivateBurst:  privateBurst,
-		Cleanup_Every: cleanup,
-		TTL:           rlTTL,
+		PublicRPS:    publicRPS,
+		PublicBurst:  publicBurst,
+		PrivateRPS:   privateRPS,
+		PrivateBurst: privateBurst,
+		CleanupEvery: cleanup,
+		TTL:          rlTTL,
 	}
 }
 
@@ -125,7 +127,7 @@ func LoadRedisConfig() *RedisConfig {
 		addr = "redis:6379"
 	}
 
-	ttl := os.Getenv("TTL")
+	ttl := os.Getenv("REDIS_CASH_TTL")
 	cacheTTL := 10 * time.Minute
 
 	if ttl != "" {

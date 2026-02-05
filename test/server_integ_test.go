@@ -38,6 +38,15 @@ func Test_Server_Healthz(t *testing.T) {
 		ApiKey:   "1",
 		BackPort: "127.0.0.1:0",
 		RedisCfg: &config.RedisConfig{Enabled: false},
+
+		RateLimitCfg: &config.RateLimitConfig{
+			PublicRPS:    1000,
+			PublicBurst:  1000,
+			PrivateRPS:   1000,
+			PrivateBurst: 1000,
+			TTL:          time.Minute,
+			CleanupEvery: 100,
+		},
 	}
 
 	srv, err := server.New(&cfg, logger)
