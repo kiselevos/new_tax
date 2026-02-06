@@ -31,7 +31,20 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		return nil, err
 	}
 
-	limiter := ratelimit.NewMemoryLimiter(cfg.RateLimitCfg.TTL, cfg.RateLimitCfg.CleanupEvery)
+	rdb, err := redisconn.Connect(cfg.RedisCfg, logger)
+	if err != nil {
+		rdb = nil
+	}
+
+	memoryLimiter := ratelimit.NewMemoryLimiter(cfg.RateLimitCfg.TTL, cfg.RateLimitCfg.CleanupEvery)
+
+	var limiter ratelimit.Limiter
+	if rdb != nil {
+		redisLimiter := ratelimit.NewRedisLimiter(rdb, cfg.RateLimitCfg.TTL)
+		limiter = ratelimit.NewHybridLimiter(redisLimiter, memoryLimiter)
+	} else {
+		limiter = memoryLimiter
+	}
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
@@ -41,11 +54,6 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 			ratelimit.RateLimitInterceptor(limiter, cfg.RateLimitCfg),
 		),
 	)
-
-	rdb, err := redisconn.Connect(cfg.RedisCfg, logger)
-	if err != nil {
-		rdb = nil
-	}
 
 	pb.RegisterTaxServiceServer(s, NewGRPCServer(rdb, logger, cfg.RedisCfg.Ttl))
 	reflection.Register(s)
