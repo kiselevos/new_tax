@@ -38,6 +38,12 @@ func (m *memoryLimiter) Allow(ctx context.Context, key string, rps float64, burs
 	m.mu.Lock()
 
 	it := m.items[key]
+
+	if it != nil && m.ttl > 0 && now.Sub(it.lastSeen) > m.ttl {
+		delete(m.items, key)
+		it = nil
+	}
+
 	if it == nil {
 		it = &memoryItem{
 			limiter:  rate.NewLimiter(rate.Limit(rps), burst),
