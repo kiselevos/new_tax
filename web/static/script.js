@@ -125,12 +125,10 @@ function initTooltips() {
         }
 
         function adjustMobileTooltipPosition(text, icon) {
-            console.log('=== DEBUG TOOLTIP POSITIONING ===');
-            
             // Сбрасываем ВСЕ стили
             text.removeAttribute('style');
             text.classList.remove("tooltip-above", "tooltip-below", "adjust-left", "adjust-right");
-            
+
             // Применяем только нужные стили
             text.style.position = 'absolute';
             text.style.zIndex = '10000';
@@ -139,98 +137,75 @@ function initTooltips() {
             text.style.boxSizing = 'border-box';
             text.style.left = '50%';
             text.style.transform = 'translateX(-50%)';
-            
+
             void text.offsetWidth; // форсируем рефлоу
-            
-            const computedStyle = window.getComputedStyle(text);
-            console.log('CSS width:', computedStyle.width);
-            console.log('CSS max-width:', computedStyle.maxWidth);
-            console.log('Actual width:', text.offsetWidth);
-            
+
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-            console.log('Viewport width:', viewportWidth);
-            console.log('Viewport height:', viewportHeight);
 
             // ПОЛУЧАЕМ РАЗМЕРЫ ЭЛЕМЕНТОВ
             const iconRect = icon.getBoundingClientRect();
             const tooltipRect = text.getBoundingClientRect();
-            
-            console.log('Icon position - left:', iconRect.left, 'right:', iconRect.right);
-            console.log('Tooltip height:', tooltipRect.height);
 
             // Определяем доступное пространство
             const spaceBelow = viewportHeight - iconRect.bottom;
             const spaceAbove = iconRect.top;
             const tooltipHeight = tooltipRect.height;
-            
-            console.log('Space above:', spaceAbove, 'Space below:', spaceBelow);
 
             // Выбираем позицию (сверху или снизу)
             if (spaceBelow >= tooltipHeight + 20 || spaceAbove < 100) {
                 // Показываем снизу
                 text.classList.add('tooltip-below');
                 text.style.top = 'calc(100% + 8px)';
-                console.log('Position: BELOW icon');
             } else {
                 // Показываем сверху
                 text.classList.add('tooltip-above');
                 text.style.bottom = 'calc(100% + 8px)';
-                console.log('Position: ABOVE icon');
             }
 
             // РАСЧЕТ ГОРИЗОНТАЛЬНОЙ ПОЗИЦИИ С УЧЕТОМ ГРАНИЦ ЭКРАНА
             const iconCenterX = iconRect.left + (iconRect.width / 2);
             const tooltipWidth = 300; // Фиксированная ширина
             let desiredLeft = iconCenterX - (tooltipWidth / 2);
-            
-            console.log('Icon center X:', iconCenterX);
-            console.log('Desired left position:', desiredLeft);
 
             // Корректируем позицию чтобы не выходить за экран
             const safeMargin = 15;
-            
+
             // Если тултип не помещается по ширине, уменьшаем его
             if (tooltipWidth > viewportWidth - safeMargin * 2) {
                 const newWidth = viewportWidth - safeMargin * 2;
                 text.style.width = newWidth + 'px';
                 text.style.maxWidth = newWidth + 'px';
-                console.log('Tooltip too wide, adjusted to:', newWidth);
             }
-            
+
             if (desiredLeft < safeMargin) {
                 // Выравниваем по левому краю с отступом
                 text.classList.add('adjust-left');
                 text.style.left = safeMargin + 'px';
                 text.style.transform = 'none';
-                console.log('Adjusted: LEFT edge');
             } else if (desiredLeft + tooltipWidth > viewportWidth - safeMargin) {
                 // Выравниваем по правому краю с отступом
                 text.classList.add('adjust-right');
                 text.style.left = 'auto';
                 text.style.right = safeMargin + 'px';
                 text.style.transform = 'none';
-                console.log('Adjusted: RIGHT edge');
             } else {
                 // Центрируем относительно иконки
                 text.style.left = '50%';
                 text.style.transform = 'translateX(-50%)';
-                console.log('Position: CENTERED');
             }
 
             // ФИНАЛЬНАЯ ПРОВЕРКА
             requestAnimationFrame(() => {
                 const finalRect = text.getBoundingClientRect();
-                console.log('Final position - left:', finalRect.left, 'right:', finalRect.right);
-                
+
                 // Если все равно выходит за край, принудительно корректируем ширину
                 if (finalRect.right > viewportWidth - 5) {
                     const overflow = finalRect.right - viewportWidth + 5;
                     const newWidth = tooltipWidth - overflow;
                     text.style.width = newWidth + 'px';
-                    console.log('Final correction - right overflow, new width:', newWidth);
                 }
-                
+
                 if (finalRect.left < 5) {
                     const overflow = 5 - finalRect.left;
                     const newWidth = tooltipWidth - overflow;
@@ -238,10 +213,7 @@ function initTooltips() {
                     if (text.classList.contains('adjust-left')) {
                         text.style.left = '5px';
                     }
-                    console.log('Final correction - left overflow, new width:', newWidth);
                 }
-
-                console.log('=== END TOOLTIP POSITIONING ===');
             });
         }
 

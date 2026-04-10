@@ -23,7 +23,9 @@ type memoryItem struct {
 }
 
 func NewMemoryLimiter(ttl time.Duration, cleanupEvery int) *memoryLimiter {
-
+	if cleanupEvery <= 0 {
+		cleanupEvery = 1000
+	}
 	return &memoryLimiter{
 		items:        make(map[string]*memoryItem),
 		ttl:          ttl,

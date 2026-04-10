@@ -127,7 +127,7 @@ func LoadRedisConfig() *RedisConfig {
 		addr = "redis:6379"
 	}
 
-	ttl := os.Getenv("REDIS_CASH_TTL")
+	ttl := os.Getenv("REDIS_CACHE_TTL")
 	cacheTTL := 10 * time.Minute
 
 	if ttl != "" {
