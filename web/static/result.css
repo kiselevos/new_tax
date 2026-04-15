@@ -1,9 +1,12 @@
 /* static/result.css */
 
-.container { 
-    max-width: 700px; 
-    margin: 0 auto; 
-    padding: 20px; 
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
 }
 
 .results-header { 
@@ -111,7 +114,8 @@
 /* Адаптивность */
 @media (max-width: 768px) {
     .container {
-        padding: 15px;
+        padding: 1.25rem;
+        border-radius: 12px;
     }
     
     .results-header {

@@ -3,14 +3,17 @@
   <div class="results-header">
     <h2>Помесячная детализация</h2>
   </div>
+  {{$prevRate := 0}}
   {{range $i, $m := .MonthlyDetails}}
-  <div class="accordion-item {{if eq $i 0}}active{{end}}">
+  {{$rateChanged := and (gt $i 0) (ne $m.TaxRate $prevRate)}}
+  <div class="accordion-item {{if eq $i 0}}active{{end}} {{if $rateChanged}}rate-jumped{{end}}">
     <div class="accordion-header">
       <div class="month-title">
         <strong>{{russianMonth $m.Month}}</strong>
       </div>
       <div class="month-rate">
         Ставка НДФЛ: <span class="tax-rate-value">{{$m.TaxRate}}%</span>
+        {{if $rateChanged}}<span class="rate-up-badge">↑ {{$prevRate}}%&nbsp;→&nbsp;{{$m.TaxRate}}%</span>{{end}}
       </div>
     </div>
 
@@ -129,6 +132,7 @@
       </div>
     </div>
   </div>
+  {{$prevRate = $m.TaxRate}}
   {{end}}
 </div>
 {{end}}

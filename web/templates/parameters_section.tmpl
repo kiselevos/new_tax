@@ -76,8 +76,11 @@
       {{ if eq $i 0 }}
         {{ $prev = $m.TaxRate }}
       {{ else if ne $prev $m.TaxRate }}
-        <div class="rate-change-line">
-          • {{russianMonth $m.Month}}: {{$prev}}% → {{$m.TaxRate}}%
+        <div class="rate-transition">
+          <span class="rate-pill old">{{$prev}}%</span>
+          <span class="rate-arrow-icon">→</span>
+          <span class="rate-pill new">{{$m.TaxRate}}%</span>
+          <span class="rate-month-name">с {{russianMonth $m.Month}}</span>
         </div>
       {{ end }}
       {{ $prev = $m.TaxRate }}

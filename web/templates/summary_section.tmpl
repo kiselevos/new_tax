@@ -5,6 +5,16 @@
                 Новый расчёт
             </a>
 </div>
+
+{{if .MonthlyDetails}}
+{{$first := index .MonthlyDetails 0}}
+<div class="monthly-net-highlight">
+    <div class="monthly-net-label">На руки в месяц</div>
+    <div class="monthly-net-value">{{fmtMoney $first.MonthlyNetIncome}}</div>
+    <div class="monthly-net-sub">из {{fmtMoney $first.MonthlyGrossIncome}} до налогов — НДФЛ {{fmtMoney $first.MonthlyTaxAmount}}</div>
+</div>
+{{end}}
+
 <div class="summary-grid">
     <div class="summary-card">
         <div>Общий доход</div>

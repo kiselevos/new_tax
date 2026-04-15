@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Результаты расчёта</title>
+    <title>Результат расчёта НДФЛ — {{fmtMoney .GrossSalary}} в месяц</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/result.css">
     <link rel="stylesheet" href="/static/monthly_accordion.css">
@@ -44,6 +44,14 @@
             </a>
         </div>
     </div>
+
+    <footer class="site-footer">
+        <div class="footer-links">
+            <a class="footer-link" href="/about">О проекте</a>
+            <a class="footer-link" href="/api-docs">API для разработчиков</a>
+        </div>
+        <div class="footer-copy">© 2025 Калькулятор НДФЛ</div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

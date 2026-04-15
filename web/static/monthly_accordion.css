@@ -80,6 +80,15 @@
   word-break: break-word;
 }
 
+.calc-row .dots {
+  flex: 1;
+  border-bottom: 1px dotted #ccc;
+  margin: 0 8px;
+  align-self: flex-end;
+  margin-bottom: 4px;
+  min-width: 16px;
+}
+
 .calc-row .value {
   text-align: right;
   white-space: nowrap;
@@ -128,6 +137,26 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: nowrap;
+}
+
+/* --- Смена ставки НДФЛ --- */
+.accordion-item.rate-jumped > .accordion-header {
+  background: #fffaf2;
+  border-left: 3px solid #f5b942;
+}
+
+.rate-up-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 1px 8px;
+  background: #fff3e0;
+  color: #e67e22;
+  border: 1px solid #f5b942;
+  border-radius: 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* --- Мобильная адаптация --- */
