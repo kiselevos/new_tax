@@ -31,12 +31,26 @@
 
 /* Карточки */
 .info-card {
+  position: relative;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.info-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, #2980b9, #3498db);
+  border-radius: 10px 10px 0 0;
+  opacity: 0.7;
 }
 
 .info-card-title {
@@ -68,7 +82,7 @@
 .info-link {
   display: flex;
   align-items: center;
-  color: #007bff;
+  color: #1c7ed6;
   text-decoration: none;
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
@@ -76,7 +90,7 @@
 }
 
 .info-link:hover {
-  color: #0056b3;
+  color: #1558a8;
   text-decoration: underline;
 }
 
@@ -87,6 +101,38 @@
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
+}
+
+.info-source-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.info-source-list li {
+  font-size: 0.88rem;
+  color: #555;
+  padding-left: 0.25rem;
+}
+
+.info-source-list a.info-source-link {
+  color: #1c7ed6;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.info-source-list a.info-source-link::before {
+  content: "↗ ";
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.info-source-list a.info-source-link:hover {
+  color: #1558a8;
+  text-decoration: underline;
 }
 
 /* Примеры */
@@ -118,7 +164,7 @@
 }
 
 .info-button {
-  background: #007bff;
+  background: #1c7ed6;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -130,7 +176,7 @@
 }
 
 .info-button:hover {
-  background: #0056b3;
+  background: #1558a8;
 }
 
 /* Адаптивность */
