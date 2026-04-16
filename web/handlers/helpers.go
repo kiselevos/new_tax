@@ -53,6 +53,9 @@ type ResultPayload struct {
 	AnnualPFR         uint64
 	AnnualFOMS        uint64
 	AnnualFSS         uint64
+	MonthlyBonuses    []uint64 // 12 элементов, индекс 0 = январь (копейки)
+	AnnualBonus       uint64   // сумма всех премий за год (копейки)
+	StartMonthNum     int      // номер месяца начала расчёта (1-12)
 }
 
 func PrepareMonths() []Month {
@@ -151,6 +154,21 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		}
 	}
 
+	// Бонусы по месяцам: поля bonus_1 … bonus_12
+	bonuses := make([]uint64, 12)
+	for i := 1; i <= 12; i++ {
+		raw := strings.TrimSpace(r.FormValue(fmt.Sprintf("bonus_%d", i)))
+		if raw == "" {
+			continue
+		}
+		raw = strings.ReplaceAll(raw, "\u00A0", "")
+		raw = strings.ReplaceAll(raw, " ", "")
+		raw = strings.ReplaceAll(raw, ",", ".")
+		if v, err := strconv.ParseFloat(raw, 64); err == nil && v >= 0 {
+			bonuses[i-1] = uint64(math.Round(v * 100))
+		}
+	}
+
 	return &pb.CalculatePrivateRequest{
 		GrossSalary:           grossSalary,
 		StartDate:             startTS,
@@ -158,6 +176,7 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		NorthernCoefficient:   uint64Ptr(uint64(northern)),
 		HasTaxPrivilege:       boolPtr(hasTaxPrivilege),
 		IsNotResident:         boolPtr(isNotResident),
+		MonthlyBonuses:        bonuses,
 	}, nil
 }
 

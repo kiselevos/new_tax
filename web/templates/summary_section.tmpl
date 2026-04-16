@@ -28,5 +28,11 @@
         <div>Чистый доход</div>
         <div class="summary-value">{{fmtMoney .AnnualNetIncome}}</div>
     </div>
+    {{if gt .AnnualBonus 0}}
+    <div class="summary-card summary-card--bonus">
+        <div>Премии за год</div>
+        <div class="summary-value">{{fmtMoney .AnnualBonus}}</div>
+    </div>
+    {{end}}
 </div>
 {{end}}

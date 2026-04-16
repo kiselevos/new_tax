@@ -11,12 +11,22 @@
     <link rel="stylesheet" href="/static/parameters_section.css">
     <link rel="stylesheet" href="/static/summary_section.css">
     <link rel="stylesheet" href="/static/employer_contrib.css">
+    <link rel="stylesheet" href="/static/bonuses.css">
 
     <!-- favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
+<form id="bonuses-form" method="POST" action="/calculate">
+    <!-- Скрытые поля: параметры исходного расчёта -->
+    <input type="hidden" name="grossSalary" value="{{fmtMoneyRaw .GrossSalary}}">
+    <input type="hidden" name="startDate" value="{{.StartMonthNum}}">
+    <input type="hidden" name="territorialMultiplier" value="{{.TerritorialMult}}">
+    <input type="hidden" name="northernCoefficient" value="{{.NorthernCoeff}}">
+    {{if .HasTaxPrivilege}}<input type="hidden" name="hasTaxPrivilege" value="1">{{end}}
+    {{if .IsNotResident}}<input type="hidden" name="isNotResident" value="1">{{end}}
+
     <div class="container">
         <!-- Предупреждение -->
         {{if .ShowWarning}}
@@ -53,12 +63,16 @@
         <div class="footer-copy">© 2025 Калькулятор НДФЛ</div>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const headers = document.querySelectorAll('.accordion-header');
-            headers.forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('active')));
-        });
-    </script>
+    <!-- Липкая панель пересчёта (появляется при вводе премий) -->
+    <div class="bonus-sticky-bar" id="bonus-sticky-bar">
+        <div class="bonus-sticky-inner">
+            <span class="bonus-sticky-label" id="bonus-sticky-label">Пересчитать с 1 премией</span>
+            <button type="submit" class="bonus-sticky-btn">Пересчитать →</button>
+        </div>
+    </div>
+</form>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>
 {{end}}
