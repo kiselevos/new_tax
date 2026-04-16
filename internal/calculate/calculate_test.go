@@ -314,7 +314,7 @@ func Test_TaxCalculateWithNorth_Scenarios(t *testing.T) {
 
 		t.Run("WithNorth/"+sc.Name, func(t *testing.T) {
 			baseA, baseB := basesFromScenario(sc)
-			got := TaxCalculateWithNorth(baseA, baseB, sc.StartDate(), int(sc.StartMonth), nil)
+			got := TaxCalculateWithNorth(baseA, baseB, sc.StartDate(), int(sc.StartMonth), make([]uint64, 12))
 
 			require.Equal(t, len(want.Monthly), len(got), "months length")
 
@@ -342,7 +342,7 @@ func Test_TaxCalculateOnlySalary_Scenarios(t *testing.T) {
 
 		t.Run("OnlySalary/"+sc.Name, func(t *testing.T) {
 			baseA, _ := basesFromScenario(sc)
-			got := TaxCalculateOnlySalary(baseA, sc.StartDate(), int(sc.StartMonth), nil)
+			got := TaxCalculateOnlySalary(baseA, sc.StartDate(), int(sc.StartMonth), make([]uint64, 12))
 
 			require.Equal(t, len(want.Monthly), len(got), "months length")
 
@@ -380,7 +380,7 @@ func Test_TaxCalculateForNotResident_Scenarios(t *testing.T) {
 
 		t.Run("NonResident/"+sc.Name, func(t *testing.T) {
 			baseA, _ := basesFromScenario(sc) // у NR считаем только по базе A
-			got := TaxCalculateForNotResident(baseA, sc.StartDate(), int(sc.StartMonth), nil)
+			got := TaxCalculateForNotResident(baseA, sc.StartDate(), int(sc.StartMonth), make([]uint64, 12))
 
 			require.Equal(t, len(want.Monthly), len(got), "months length")
 

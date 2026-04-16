@@ -196,7 +196,7 @@ func TestTaxCalculateWithPrivilege_BasicAndBoundaries(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := TaxCalculateWithPrivilege(tt.salary, tt.start, 1, nil)
+			result := TaxCalculateWithPrivilege(tt.salary, tt.start, 1, make([]uint64, 12))
 			require.Len(t, result, tt.wantLen)
 			for i, m := range result {
 				assert.Equal(t, tt.monthly[i], m.MonthlyTaxAmount,
@@ -210,7 +210,7 @@ func TestTaxCalculateWithPrivilege_TaxRateTransition(t *testing.T) {
 	jan := time.Date(time.Now().UTC().Year(), time.January, 1, 0, 0, 0, 0, time.UTC)
 
 	// 500k * 10 = 5M — ровно на границе порога в конце октября
-	result := TaxCalculateWithPrivilege(500_000_00, jan, 1, nil)
+	result := TaxCalculateWithPrivilege(500_000_00, jan, 1, make([]uint64, 12))
 	require.Len(t, result, 12)
 
 	for i := 0; i < 10; i++ {
@@ -223,7 +223,7 @@ func TestTaxCalculateWithPrivilege_TaxRateTransition(t *testing.T) {
 
 func TestTaxCalculateWithPrivilege_YTDMonotone(t *testing.T) {
 	jan := time.Date(time.Now().UTC().Year(), time.January, 1, 0, 0, 0, 0, time.UTC)
-	result := TaxCalculateWithPrivilege(200_000_00, jan, 1, nil)
+	result := TaxCalculateWithPrivilege(200_000_00, jan, 1, make([]uint64, 12))
 	for i := 1; i < len(result); i++ {
 		assert.GreaterOrEqual(t, result[i].AnnualTaxAmount, result[i-1].AnnualTaxAmount,
 			"годовой налог должен монотонно расти")

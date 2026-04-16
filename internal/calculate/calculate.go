@@ -20,6 +20,11 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	var months []MonthlyTax
 
 	bonuses := input.MonthlyBonuses
+	if len(bonuses) < 12 {
+		normalized := make([]uint64, 12)
+		copy(normalized, bonuses)
+		bonuses = normalized
+	}
 
 	switch {
 	case input.IsNotResident: // Для нерезидентов: 30% со всего дохода
@@ -70,16 +75,6 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	return months
 }
 
-// getBonusForMonth возвращает разовую выплату для месяца m (1=январь..12=декабрь).
-// bonuses — массив из 12 элементов, индекс 0 = январь. Возвращает 0 при выходе за границы.
-func getBonusForMonth(bonuses []uint64, m int) uint64 {
-	idx := m - 1
-	if idx < 0 || idx >= len(bonuses) {
-		return 0
-	}
-	return bonuses[idx]
-}
-
 // TaxCalculateForNotResident - расчёт налога для налоговых нерезидентов РФ (30% со всех доходов).
 // Округление выполняется на месячной дельте.
 func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth int, bonuses []uint64) []MonthlyTax {
@@ -91,7 +86,7 @@ func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth i
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		bonus := getBonusForMonth(bonuses, m)
+		bonus := bonuses[m-1]
 		monthlyGross := salary + bonus
 		annualGrossIncome += monthlyGross
 
@@ -132,7 +127,7 @@ func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth in
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		bonus := getBonusForMonth(bonuses, m)
+		bonus := bonuses[m-1]
 		monthlyGross := salary + bonus
 		annualGrossIncome += monthlyGross
 
@@ -174,7 +169,7 @@ func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int, 
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		bonus := getBonusForMonth(bonuses, m)
+		bonus := bonuses[m-1]
 		monthlyGross := salary + bonus
 		annualGrossIncome += monthlyGross
 
@@ -227,7 +222,7 @@ func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time,
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		bonus := getBonusForMonth(bonuses, m) // бонус идёт в базу A (общая шкала)
+		bonus := bonuses[m-1] // бонус идёт в базу A (общая шкала)
 
 		// Доходы YTD по базам
 		annualBaseGrossIncome += salary + bonus

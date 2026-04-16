@@ -79,6 +79,13 @@ func FromPrivateRequest(req *pb.CalculatePrivateRequest) CalculateInput {
 		north = 100
 	}
 
+	bonuses := make([]uint64, 12)
+	for i, v := range req.GetMonthlyBonuses() {
+		if i < 12 {
+			bonuses[i] = v
+		}
+	}
+
 	return CalculateInput{
 		GrossSalary:           req.GetGrossSalary(),
 		TerritorialMultiplier: terr,
@@ -86,7 +93,7 @@ func FromPrivateRequest(req *pb.CalculatePrivateRequest) CalculateInput {
 		StartDate:             startDate,
 		HasTaxPrivilege:       req.GetHasTaxPrivilege(),
 		IsNotResident:         req.GetIsNotResident(),
-		MonthlyBonuses:        req.GetMonthlyBonuses(),
+		MonthlyBonuses:        bonuses,
 	}
 }
 
