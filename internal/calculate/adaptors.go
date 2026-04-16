@@ -15,6 +15,7 @@ type CalculateInput struct {
 	StartDate             time.Time
 	HasTaxPrivilege       bool
 	IsNotResident         bool
+	MonthlyBonuses        []uint64 // Разовые выплаты по месяцам (копейки), индекс 0 = январь
 }
 
 // MonthlyTax содержит данные по налогам за конкретный месяц.
@@ -43,6 +44,9 @@ type MonthlyTax struct {
 	AnnualNorthTaxAmount   uint64
 	AnnualBaseGrossIncome  uint64
 	AnnualBaseTaxAmount    uint64
+
+	// Разовая выплата (премия) в этом месяце
+	MonthlyBonus uint64
 
 	// Расчет налоговой нагрузки для работодателя
 	MonthlyPFR  uint64 //Месячный налог с работодателя в Пенсионный фонд России
@@ -82,6 +86,7 @@ func FromPrivateRequest(req *pb.CalculatePrivateRequest) CalculateInput {
 		StartDate:             startDate,
 		HasTaxPrivilege:       req.GetHasTaxPrivilege(),
 		IsNotResident:         req.GetIsNotResident(),
+		MonthlyBonuses:        req.GetMonthlyBonuses(),
 	}
 }
 
@@ -139,6 +144,7 @@ func ToGRPCPrivateResponse(monthDetails []MonthlyTax) []*pb.MonthlyPrivateTax {
 			AnnualFSS:               m.AnnualFSS,
 			AnnualFOMS:              m.AnnualFOMS,
 			AnnualPFR:               m.AnnualPFR,
+			MonthlyBonus:            m.MonthlyBonus,
 		})
 	}
 
