@@ -36,6 +36,7 @@ type IndexData struct {
 	Months        []Month
 	Territorial   []CoefficientOption
 	Northern      []BonusOption
+	FormError     string
 }
 
 type ResultPayload struct {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -53,6 +54,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 	data := PrepareIndexData()
+	data.FormError = r.URL.Query().Get("error")
 
 	if err := s.Tmpl.ExecuteTemplate(w, "index", data); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "index", "err", err)
@@ -105,7 +107,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		log.Warn("form_validation_failed", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "validate").Inc()
 		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
-		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
+		http.Redirect(w, r, "/?error="+url.QueryEscape("Введите корректный оклад (например, 50 000 ₽)"), http.StatusSeeOther)
 		return
 	}
 
@@ -120,7 +122,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
 		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Redirect(w, r, "/?error="+url.QueryEscape("Ошибка при расчёте. Попробуйте ещё раз"), http.StatusSeeOther)
 		return
 	}
 
