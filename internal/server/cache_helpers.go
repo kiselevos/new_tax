@@ -54,15 +54,15 @@ func buildPublicKey(in calculate.CalculateInput) string {
 }
 
 func buildPrivateKey(in calculate.CalculateInput) string {
-
 	start := in.StartDate.UTC().Format("2006-01")
 	return fmt.Sprintf(
-		"calc:private:v1:gross=%d:tm=%d:nc=%d:start=%s:priv=%t:nonres=%t",
+		"calc:private:v1:gross=%d:tm=%d:nc=%d:start=%s:priv=%t:nonres=%t:bonuses=%v",
 		in.GrossSalary,
 		in.TerritorialMultiplier,
 		in.NorthernCoefficient,
 		start,
 		in.HasTaxPrivilege,
 		in.IsNotResident,
+		in.MonthlyBonuses,
 	)
 }

@@ -12,6 +12,8 @@ import (
 
 var Funcs = template.FuncMap{
 	"fmtMoney":         formatMoney,
+	"fmtMoneyRaw":      formatMoneyRaw,
+	"monthNum":         monthNum,
 	"getMinSalary":     GetMinSalary,
 	"getMinLivingWage": GetMinLivingWage,
 	"getFeedbackEmail": GetFeedbackEmail,
@@ -79,6 +81,20 @@ func GetApiVersion() string {
 		return "v1"
 	}
 	return apiVersion
+}
+
+// formatMoneyRaw переводит копейки в целые рубли для подстановки в поля формы.
+// Например: 5000000 → "50000"
+func formatMoneyRaw(kopecks uint64) string {
+	return strconv.FormatUint(kopecks/100, 10)
+}
+
+// monthNum возвращает номер месяца (1-12) из timestamp.
+func monthNum(ts *timestamppb.Timestamp) int {
+	if ts == nil {
+		return 0
+	}
+	return int(ts.AsTime().Month())
 }
 
 // Функция для форматирования месяца на русском из timestamp

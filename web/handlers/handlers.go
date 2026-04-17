@@ -129,22 +129,39 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	minWage := web.GetMinLivingWage()
 	showWarning := req.GrossSalary < minWage
 
+	// Суммируем премии за год и определяем месяц начала расчёта
+	var annualBonus uint64
+	for _, m := range res.MonthlyDetails {
+		annualBonus += m.MonthlyBonus
+	}
+	startMonthNum := 1
+	if len(res.MonthlyDetails) > 0 && res.MonthlyDetails[0].Month != nil {
+		startMonthNum = int(res.MonthlyDetails[0].Month.AsTime().Month())
+	}
+
+	// Нормализуем бонусы в срез из 12 элементов для шаблона
+	bonuses := make([]uint64, 12)
+	for _, m := range res.MonthlyDetails {
+		if m.Month != nil {
+			idx := int(m.Month.AsTime().Month()) - 1
+			bonuses[idx] = m.MonthlyBonus
+		}
+	}
+
+	// Первый месяц без премии — для виджета «На руки в месяц»
+	var baseMonth *pb.MonthlyPrivateTax
+	for _, m := range res.MonthlyDetails {
+		if m.MonthlyBonus == 0 {
+			baseMonth = m
+			break
+		}
+	}
+	if baseMonth == nil && len(res.MonthlyDetails) > 0 {
+		baseMonth = res.MonthlyDetails[0]
+	}
+
 	// Prepare data
-	data := struct {
-		AnnualTaxAmount   uint64
-		AnnualGrossIncome uint64
-		AnnualNetIncome   uint64
-		GrossSalary       uint64
-		TerritorialMult   uint64
-		NorthernCoeff     uint64
-		MonthlyDetails    []*pb.MonthlyPrivateTax
-		ShowWarning       bool
-		HasTaxPrivilege   bool
-		IsNotResident     bool
-		AnnualPFR         uint64
-		AnnualFOMS        uint64
-		AnnualFSS         uint64
-	}{
+	data := ResultPayload{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
 		AnnualGrossIncome: res.AnnualGrossIncome,
 		AnnualNetIncome:   res.AnnualNetIncome,
@@ -158,6 +175,10 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		AnnualPFR:         res.AnnualPFR,
 		AnnualFOMS:        res.AnnualFOMS,
 		AnnualFSS:         res.AnnualFSS,
+		MonthlyBonuses:    bonuses,
+		AnnualBonus:       annualBonus,
+		StartMonthNum:     startMonthNum,
+		BaseMonth:         baseMonth,
 	}
 
 	// render template

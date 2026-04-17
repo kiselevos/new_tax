@@ -2,16 +2,15 @@
 <div class="results-header">
             <h2>Результаты расчёта</h2>
             <a href="/" class="back-button">
-                Новый расчёт
+                ← Назад к калькулятору
             </a>
 </div>
 
-{{if .MonthlyDetails}}
-{{$first := index .MonthlyDetails 0}}
+{{if .BaseMonth}}
 <div class="monthly-net-highlight">
     <div class="monthly-net-label">На руки в месяц</div>
-    <div class="monthly-net-value">{{fmtMoney $first.MonthlyNetIncome}}</div>
-    <div class="monthly-net-sub">из {{fmtMoney $first.MonthlyGrossIncome}} до налогов — НДФЛ {{fmtMoney $first.MonthlyTaxAmount}}</div>
+    <div class="monthly-net-value">{{fmtMoney .BaseMonth.MonthlyNetIncome}}</div>
+    <div class="monthly-net-sub">из {{fmtMoney .BaseMonth.MonthlyGrossIncome}} до налогов — НДФЛ {{fmtMoney .BaseMonth.MonthlyTaxAmount}}</div>
 </div>
 {{end}}
 
@@ -28,5 +27,11 @@
         <div>Чистый доход</div>
         <div class="summary-value">{{fmtMoney .AnnualNetIncome}}</div>
     </div>
+    {{if gt .AnnualBonus 0}}
+    <div class="summary-card summary-card--bonus">
+        <div>Премии за год</div>
+        <div class="summary-value">{{fmtMoney .AnnualBonus}}</div>
+    </div>
+    {{end}}
 </div>
 {{end}}
