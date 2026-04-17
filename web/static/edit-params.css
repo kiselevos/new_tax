@@ -50,12 +50,13 @@
     max-height: 800px;
     opacity: 1;
     padding-top: 1rem;
+    overflow: visible;
 }
 
 /* --- Сетка полей --- */
 .edit-params-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1rem;
 }
@@ -65,10 +66,14 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    flex: 1;
+    min-width: 140px;
+    max-width: 210px;
 }
 
 .edit-field--full {
-    grid-column: 1 / -1;
+    flex: 0 0 100%;
+    max-width: 100%;
 }
 
 .edit-label {
@@ -156,9 +161,10 @@
 }
 
 .edit-checkbox-item input[type="checkbox"] {
-    width: auto;
+    width: 16px;
+    height: 16px;
     margin: 0;
-    transform: scale(1.15);
+    flex-shrink: 0;
     accent-color: #1c7ed6;
     cursor: pointer;
 }
