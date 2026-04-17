@@ -185,6 +185,13 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		Months:            indexData.Months,
 		Territorial:       indexData.Territorial,
 		Northern:          indexData.Northern,
+		DeductionResult:            res.DeductionResult,
+		ChildrenCountInput:         req.GetChildrenCount(),
+		DisabledChildrenCountInput: req.GetDisabledChildrenCount(),
+		HousingExpenseInput:        req.GetHousingExpense() / 100,
+		MortgageExpenseInput:       req.GetMortgageExpense() / 100,
+		SocialExpenseInput:         req.GetSocialExpense() / 100,
+		ChildEduExpenseInput:       req.GetChildEduExpense() / 100,
 	}
 
 	// render template

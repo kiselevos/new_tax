@@ -375,6 +375,46 @@
     text-decoration: underline;
 }
 
+/* --- Результаты вычетов от бэкенда --- */
+.deduction-result-line {
+    padding: 0.25rem 0;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.deduction-result-line:first-child {
+    border-top: none;
+}
+
+.deduction-result-line.deduction-result-total {
+    font-size: 0.95rem;
+    color: #1a4a35;
+}
+
+/* --- Кнопка пересчёта вычетов --- */
+.deductions-recalc-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0.5rem 0 0.75rem;
+}
+
+.deductions-recalc-btn {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.deductions-recalc-btn:hover {
+    background: #1e8e4e;
+}
+
 /* --- Мобильная адаптация --- */
 @media (max-width: 540px) {
     .deduction-input-row {

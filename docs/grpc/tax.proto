@@ -24,8 +24,8 @@ message CalculatePrivateRequest {
   repeated uint64 monthly_bonuses = 7; // Разовые выплаты по месяцам (копейки), индекс 0 = январь
 
   // Параметры налоговых вычетов (опционально)
-  optional uint32 children_count    = 8;  // Количество детей до 18 лет (ст. 218 НК РФ)
-  optional bool has_disabled_child  = 9;  // Наличие ребёнка-инвалида (+12 000 ₽/мес к вычету)
+  optional uint32 children_count          = 8;  // Количество детей до 18 лет (ст. 218 НК РФ)
+  optional uint32 disabled_children_count = 9;  // Количество детей-инвалидов (+12 000 ₽/мес на каждого, ст. 218 НК РФ)
   optional uint64 housing_expense   = 10; // Расходы на покупку жилья, копейки (ст. 220 НК РФ)
   optional uint64 mortgage_expense  = 11; // Уплаченные проценты по ипотеке, копейки (ст. 220 НК РФ)
   optional uint64 social_expense    = 12; // Расходы на лечение и своё обучение, копейки (ст. 219 НК РФ)

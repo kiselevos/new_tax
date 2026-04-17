@@ -16,6 +16,7 @@ type CalculateInput struct {
 	HasTaxPrivilege       bool
 	IsNotResident         bool
 	MonthlyBonuses        []uint64 // Разовые выплаты по месяцам (копейки), индекс 0 = январь
+	Deductions            DeductionInput
 }
 
 // MonthlyTax содержит данные по налогам за конкретный месяц.
@@ -94,6 +95,14 @@ func FromPrivateRequest(req *pb.CalculatePrivateRequest) CalculateInput {
 		HasTaxPrivilege:       req.GetHasTaxPrivilege(),
 		IsNotResident:         req.GetIsNotResident(),
 		MonthlyBonuses:        bonuses,
+		Deductions: DeductionInput{
+			ChildrenCount:         req.GetChildrenCount(),
+			DisabledChildrenCount: req.GetDisabledChildrenCount(),
+			HousingExpense:        req.GetHousingExpense(),
+			MortgageExpense:       req.GetMortgageExpense(),
+			SocialExpense:         req.GetSocialExpense(),
+			ChildEduExpense:       req.GetChildEduExpense(),
+		},
 	}
 }
 
