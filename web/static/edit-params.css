@@ -55,9 +55,10 @@
 
 /* --- Сетка полей --- */
 .edit-params-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem 1.25rem;
+    align-items: start;
     margin-bottom: 1rem;
 }
 
@@ -66,14 +67,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
-    flex: 1;
-    min-width: 140px;
-    max-width: 210px;
 }
 
 .edit-field--full {
-    flex: 0 0 100%;
-    max-width: 100%;
+    grid-column: 1 / -1;
 }
 
 .edit-label {
@@ -244,7 +241,7 @@
 }
 
 /* --- Мобильная адаптация --- */
-@media (max-width: 560px) {
+@media (max-width: 480px) {
     .edit-params-grid {
         grid-template-columns: 1fr;
     }
