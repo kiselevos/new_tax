@@ -91,5 +91,96 @@
 {{/* ===== /конец блока изменений ===== */}}
 
     </div>
+
+    <!-- Кнопка открытия панели редактирования -->
+    <div class="edit-params-toggle-wrap">
+        <button type="button" id="edit-params-toggle" class="edit-params-toggle">
+            ✏️ Изменить параметры
+        </button>
+    </div>
+
+    <!-- Панель редактирования параметров -->
+    <div id="edit-params-panel" class="edit-params-panel">
+        <div class="edit-params-grid">
+
+            <!-- Оклад -->
+            <div class="edit-field">
+                <label class="edit-label">Оклад</label>
+                <div class="edit-salary-wrap">
+                    <input type="text" name="grossSalary"
+                           value="{{fmtMoneyRaw .GrossSalary}}"
+                           class="edit-input edit-input--salary"
+                           placeholder="50 000">
+                    <span class="edit-currency">₽</span>
+                </div>
+            </div>
+
+            <!-- Месяц начала -->
+            <div class="edit-field">
+                <label class="edit-label">Месяц начала</label>
+                <select name="startDate" class="edit-select">
+                    {{range .Months}}
+                    <option value="{{.Value}}"
+                        {{if eq .Value (printf "%02d" $.StartMonthNum)}}selected{{end}}>
+                        {{.Label}}
+                    </option>
+                    {{end}}
+                </select>
+            </div>
+
+            <!-- Территориальный коэффициент -->
+            <div class="edit-field">
+                <label class="edit-label">Территориальный коэффициент</label>
+                <select name="territorialMultiplier" class="edit-select">
+                    <option value="100" {{if eq (toInt $.TerritorialMult) 100}}selected{{end}}>нет</option>
+                    {{range .Territorial}}
+                    <option value="{{.Value}}"
+                        {{if eq .Value (toInt $.TerritorialMult)}}selected{{end}}>
+                        {{.Label}}
+                    </option>
+                    {{end}}
+                </select>
+            </div>
+
+            <!-- Северная надбавка -->
+            <div class="edit-field">
+                <label class="edit-label">Северная надбавка</label>
+                <select name="northernCoefficient" class="edit-select">
+                    <option value="100" {{if eq (toInt $.NorthernCoeff) 100}}selected{{end}}>нет</option>
+                    {{range .Northern}}
+                    <option value="{{.Value}}"
+                        {{if eq .Value (toInt $.NorthernCoeff)}}selected{{end}}>
+                        {{.Label}}
+                    </option>
+                    {{end}}
+                </select>
+            </div>
+
+            <!-- Льготы -->
+            <div class="edit-field edit-field--full">
+                <label class="edit-label">Особые условия</label>
+                <div class="edit-checkboxes">
+                    <label class="edit-checkbox-item">
+                        <input type="checkbox" name="hasTaxPrivilege"
+                               class="edit-exclusive"
+                               {{if .HasTaxPrivilege}}checked{{end}}>
+                        Льготное налогообложение (силовые структуры)
+                    </label>
+                    <label class="edit-checkbox-item">
+                        <input type="checkbox" name="isNotResident"
+                               class="edit-exclusive"
+                               {{if .IsNotResident}}checked{{end}}>
+                        Налоговый нерезидент
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="edit-params-actions">
+            <button type="submit" class="edit-params-submit">Пересчитать →</button>
+            <button type="button" id="edit-params-cancel" class="edit-params-cancel">Отмена</button>
+        </div>
+    </div>
 </div>
 {{end}}

@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     // === Запускаем логику страницы результата (если она открыта) ===
     initBonuses();
+    initEditParams();
 
     // === Ниже — только страница с формой расчёта ===
     const salaryInput = document.getElementById("grossSalary");
@@ -492,4 +493,53 @@ function initBonuses() {
 
     // Инициализация: при пересчёте с бонусами поля уже заполнены
     updateStickyBar();
+}
+
+// ===================================================================
+// ПАНЕЛЬ РЕДАКТИРОВАНИЯ ПАРАМЕТРОВ
+// ===================================================================
+function initEditParams() {
+    var toggle = document.getElementById("edit-params-toggle");
+    var panel  = document.getElementById("edit-params-panel");
+    var cancel = document.getElementById("edit-params-cancel");
+    if (!toggle || !panel) return;
+
+    function openPanel() {
+        panel.classList.add("open");
+        toggle.classList.add("active");
+        toggle.textContent = "✏️ Параметры открыты";
+    }
+
+    function closePanel() {
+        panel.classList.remove("open");
+        toggle.classList.remove("active");
+        toggle.textContent = "✏️ Изменить параметры";
+    }
+
+    toggle.addEventListener("click", function() {
+        if (panel.classList.contains("open")) {
+            closePanel();
+        } else {
+            openPanel();
+        }
+    });
+
+    if (cancel) {
+        cancel.addEventListener("click", closePanel);
+    }
+
+    // Взаимоисключающие чекбоксы внутри панели
+    var exclusives = panel.querySelectorAll(".edit-exclusive");
+    exclusives.forEach(function(cb) {
+        cb.addEventListener("change", function() {
+            if (this.checked) {
+                exclusives.forEach(function(other) {
+                    if (other !== cb) other.checked = false;
+                });
+            }
+        });
+    });
+
+    // Если после пересчёта были изменены параметры — открываем панель
+    // (определяем по наличию query-параметра, который не нужен — панель закрыта по умолчанию)
 }

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/static/summary_section.css">
     <link rel="stylesheet" href="/static/employer_contrib.css">
     <link rel="stylesheet" href="/static/bonuses.css">
+    <link rel="stylesheet" href="/static/edit-params.css">
 
     <!-- favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
@@ -19,14 +20,6 @@
 </head>
 <body>
 <form id="bonuses-form" method="POST" action="/calculate">
-    <!-- Скрытые поля: параметры исходного расчёта -->
-    <input type="hidden" name="grossSalary" value="{{fmtMoneyRaw .GrossSalary}}">
-    <input type="hidden" name="startDate" value="{{.StartMonthNum}}">
-    <input type="hidden" name="territorialMultiplier" value="{{.TerritorialMult}}">
-    <input type="hidden" name="northernCoefficient" value="{{.NorthernCoeff}}">
-    {{if .HasTaxPrivilege}}<input type="hidden" name="hasTaxPrivilege" value="1">{{end}}
-    {{if .IsNotResident}}<input type="hidden" name="isNotResident" value="1">{{end}}
-
     <div class="container">
         <!-- Предупреждение -->
         {{if .ShowWarning}}
