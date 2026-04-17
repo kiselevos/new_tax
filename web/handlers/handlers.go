@@ -148,6 +148,18 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Первый месяц без премии — для виджета «На руки в месяц»
+	var baseMonth *pb.MonthlyPrivateTax
+	for _, m := range res.MonthlyDetails {
+		if m.MonthlyBonus == 0 {
+			baseMonth = m
+			break
+		}
+	}
+	if baseMonth == nil && len(res.MonthlyDetails) > 0 {
+		baseMonth = res.MonthlyDetails[0]
+	}
+
 	// Prepare data
 	data := ResultPayload{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
@@ -166,6 +178,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		MonthlyBonuses:    bonuses,
 		AnnualBonus:       annualBonus,
 		StartMonthNum:     startMonthNum,
+		BaseMonth:         baseMonth,
 	}
 
 	// render template

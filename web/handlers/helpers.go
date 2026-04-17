@@ -53,9 +53,10 @@ type ResultPayload struct {
 	AnnualPFR         uint64
 	AnnualFOMS        uint64
 	AnnualFSS         uint64
-	MonthlyBonuses    []uint64 // 12 элементов, индекс 0 = январь (копейки)
-	AnnualBonus       uint64   // сумма всех премий за год (копейки)
-	StartMonthNum     int      // номер месяца начала расчёта (1-12)
+	MonthlyBonuses    []uint64              // 12 элементов, индекс 0 = январь (копейки)
+	AnnualBonus       uint64                // сумма всех премий за год (копейки)
+	StartMonthNum     int                   // номер месяца начала расчёта (1-12)
+	BaseMonth         *pb.MonthlyPrivateTax // первый месяц без премии (для виджета «На руки»)
 }
 
 func PrepareMonths() []Month {
