@@ -1,8 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const form = document.querySelector("form");
-    const salaryInput = document.getElementById("grossSalary");
+    // === Запускаем логику страницы результата (если она открыта) ===
+    initBonuses();
 
-    if (!form || !salaryInput) return;
+    // === Ниже — только страница с формой расчёта ===
+    const salaryInput = document.getElementById("grossSalary");
+    if (!salaryInput) return;
+
+    const form = document.querySelector("form.form");
 
     const MIN_SALARY = window.APP_CONFIG?.minSalary || 0;
     const MAX_SALARY = 100000000;
@@ -386,3 +390,99 @@ else {
     initTooltips();
     initAccordion();
 });
+
+// ===================================================================
+// СТРАНИЦА РЕЗУЛЬТАТА — помесячный аккордеон и ввод премий
+// ===================================================================
+function initBonuses() {
+    const stickyBar = document.getElementById("bonus-sticky-bar");
+    if (!stickyBar) return; // не страница результата
+
+    const stickyLabel = document.getElementById("bonus-sticky-label");
+
+    // --- Аккордеон помесячной детализации ---
+    document.querySelectorAll(".accordion-header").forEach(function(header) {
+        header.addEventListener("click", function(e) {
+            // Игнорируем клик по кнопкам внутри заголовка
+            if (e.target.closest("button")) return;
+            header.parentElement.classList.toggle("active");
+        });
+    });
+
+    // --- Обработчик кнопки «Добавить премию» ---
+    function onAddBtnClick() {
+        var section = this.closest(".bonus-section");
+        var inputRow = section.querySelector(".bonus-input-row");
+        this.style.display = "none";
+        inputRow.classList.remove("bonus-input-row--hidden");
+        var input = inputRow.querySelector(".bonus-input");
+        if (input) input.focus();
+    }
+
+    document.querySelectorAll(".bonus-add-btn").forEach(function(btn) {
+        btn.addEventListener("click", onAddBtnClick);
+    });
+
+    // --- Обработчик кнопки × (убрать премию) ---
+    document.querySelectorAll(".bonus-clear-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+            var section = btn.closest(".bonus-section");
+            var inputRow = btn.closest(".bonus-input-row");
+            var input = inputRow.querySelector(".bonus-input");
+
+            if (input) input.value = "";
+            inputRow.classList.add("bonus-input-row--hidden");
+
+            // Показываем кнопку «Добавить премию» или создаём её (если была преднаполненная строка)
+            var addBtn = section.querySelector(".bonus-add-btn");
+            if (!addBtn) {
+                addBtn = document.createElement("button");
+                addBtn.type = "button";
+                addBtn.className = "bonus-add-btn";
+                addBtn.textContent = "＋ Добавить премию";
+                addBtn.addEventListener("click", onAddBtnClick);
+                section.insertBefore(addBtn, inputRow);
+            }
+            addBtn.style.display = "";
+
+            updateStickyBar();
+        });
+    });
+
+    // --- Слушаем ввод во всех полях премий ---
+    document.addEventListener("input", function(e) {
+        if (e.target.classList.contains("bonus-input")) {
+            updateStickyBar();
+        }
+    });
+
+    // --- Обновление липкой панели ---
+    function updateStickyBar() {
+        var count = 0;
+        document.querySelectorAll(".bonus-input").forEach(function(input) {
+            var val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) count++;
+        });
+
+        if (count > 0) {
+            stickyBar.classList.add("visible");
+            var label = declension(count, ["премией", "премиями", "премиями"]);
+            stickyLabel.textContent = "Пересчитать с " + count + "\u00A0" + label;
+        } else {
+            stickyBar.classList.remove("visible");
+        }
+    }
+
+    // --- Склонение числительных ---
+    function declension(n, forms) {
+        var mod10 = n % 10;
+        var mod100 = n % 100;
+        if (mod100 >= 11 && mod100 <= 19) return forms[2];
+        if (mod10 === 1) return forms[0];
+        if (mod10 >= 2 && mod10 <= 4) return forms[1];
+        return forms[2];
+    }
+
+    // Инициализация: при пересчёте с бонусами поля уже заполнены
+    updateStickyBar();
+}
