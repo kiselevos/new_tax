@@ -471,7 +471,7 @@ function initBonuses() {
             var text = "Пересчитать с " + count + "\u00A0" + label;
             stickyLabel.textContent = text;
             if (inlineRecalcBtn) {
-                inlineRecalcBtn.style.display = "";
+                inlineRecalcBtn.style.display = "inline-block";
                 inlineRecalcBtn.textContent = text + " →";
             }
         } else {
