@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/static/employer_contrib.css">
     <link rel="stylesheet" href="/static/bonuses.css">
     <link rel="stylesheet" href="/static/edit-params.css">
+    <link rel="stylesheet" href="/static/deductions.css">
 
     <!-- favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
@@ -39,6 +40,9 @@
 
         <!-- Помесячная детализация -->
         {{template "monthly_accordion" .}}
+
+        <!-- Блок налоговых вычетов -->
+        {{template "deductions_section" .}}
 
         <!-- Кнопки -->
         <div class="actions actions--result">

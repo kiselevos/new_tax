@@ -1,0 +1,121 @@
+{{define "deductions_section"}}
+<section class="deductions-section"
+  data-annual-tax="{{.AnnualTaxAmount}}"
+  data-annual-gross="{{.AnnualGrossIncome}}"
+  data-monthly-gross="{{.GrossSalary}}"
+  {{if .IsNotResident}}data-not-resident="true"{{end}}>
+
+  <button type="button" class="deductions-toggle" id="toggle-deductions">
+    Можно ли вернуть часть налога?
+    <span class="deductions-arrow">▼</span>
+  </button>
+
+  <div class="deductions-content" id="deductions-content">
+    {{if .IsNotResident}}
+    <div class="deductions-notice deductions-notice--warn">
+      Нерезиденты РФ не имеют права на налоговые вычеты (ст. 210, 224 НК РФ). Вычеты доступны только налоговым резидентам.
+    </div>
+    {{else}}
+    <p class="deductions-intro">
+      За выбранный период вы уплатили <strong>{{fmtMoney .AnnualTaxAmount}} НДФЛ</strong>.
+      Часть этих денег можно вернуть — это называется налоговым вычетом. Укажите, что к вам относится.
+    </p>
+
+    <!-- Стандартные вычеты (ст. 218) -->
+    <div class="deduction-block deduction-block--children">
+      <div class="deduction-block-header">
+        <h4 class="deduction-block-title">
+          Вычет на детей
+          <span class="deduction-law">ст. 218 НК РФ</span>
+        </h4>
+        <p class="deduction-block-desc">
+          1-й ребёнок — 1 400 ₽/мес, 2-й — 2 800 ₽/мес, 3-й и последующие — 6 000 ₽/мес.
+          Действует до месяца, в котором ваш доход с начала года превысит 450 000 ₽.
+        </p>
+      </div>
+      <div class="deduction-inputs">
+        <div class="deduction-input-row">
+          <label class="deduction-label" for="children-count">Количество детей до 18 лет:</label>
+          <div class="deduction-counter">
+            <button type="button" class="counter-btn" id="children-minus">−</button>
+            <input type="number" id="children-count" class="deduction-num-input" min="0" max="10" value="0">
+            <button type="button" class="counter-btn" id="children-plus">+</button>
+          </div>
+        </div>
+        <label class="deduction-checkbox-label">
+          <input type="checkbox" id="disabled-child" class="deduction-checkbox">
+          Есть ребёнок-инвалид (+12 000 ₽/мес дополнительно)
+        </label>
+      </div>
+      <div class="deduction-result" id="children-result"></div>
+    </div>
+
+    <!-- Имущественные вычеты (ст. 220) -->
+    <div class="deduction-block deduction-block--property">
+      <div class="deduction-block-header">
+        <h4 class="deduction-block-title">
+          Покупка жилья и ипотека
+          <span class="deduction-law">ст. 220 НК РФ</span>
+        </h4>
+        <p class="deduction-block-desc">
+          Покупка жилья: вычет до 2 000 000 ₽ → вернуть до 260 000 ₽.
+          Проценты по ипотеке: вычет до 3 000 000 ₽ → вернуть до 390 000 ₽.
+          Если сумма возврата больше уплаченного за год НДФЛ, остаток переносится на следующие годы.
+        </p>
+      </div>
+      <div class="deduction-inputs">
+        <div class="deduction-input-row">
+          <label class="deduction-label" for="housing-amount">Расходы на покупку жилья, ₽:</label>
+          <input type="number" id="housing-amount" class="deduction-amount-input" min="0" placeholder="0">
+        </div>
+        <div class="deduction-input-row">
+          <label class="deduction-label" for="mortgage-amount">Уплаченные проценты по ипотеке, ₽:</label>
+          <input type="number" id="mortgage-amount" class="deduction-amount-input" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="deduction-result" id="property-result"></div>
+    </div>
+
+    <!-- Социальные вычеты (ст. 219) -->
+    <div class="deduction-block deduction-block--social">
+      <div class="deduction-block-header">
+        <h4 class="deduction-block-title">
+          Лечение и обучение
+          <span class="deduction-law">ст. 219 НК РФ</span>
+        </h4>
+        <p class="deduction-block-desc">
+          Расходы на лечение, медикаменты и собственное обучение: общий лимит 150 000 ₽/год → вернуть до 19 500 ₽.
+          Обучение ребёнка учитывается отдельно: лимит 110 000 ₽/год → вернуть до 14 300 ₽.
+        </p>
+      </div>
+      <div class="deduction-inputs">
+        <div class="deduction-input-row">
+          <label class="deduction-label" for="social-amount">Лечение и своё обучение, ₽:</label>
+          <input type="number" id="social-amount" class="deduction-amount-input" min="0" placeholder="0">
+        </div>
+        <div class="deduction-input-row">
+          <label class="deduction-label" for="child-edu-amount">Обучение ребёнка, ₽:</label>
+          <input type="number" id="child-edu-amount" class="deduction-amount-input" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="deduction-result" id="social-result"></div>
+    </div>
+
+    <!-- Итоговая строка (появляется при наличии хоть какого-то вычета) -->
+    <div class="deductions-total" id="deductions-total">
+      <div class="deductions-total-row">
+        <span class="deductions-total-label">Итого можно вернуть:</span>
+        <span class="deductions-total-value" id="total-return-value">—</span>
+      </div>
+      <div class="deductions-total-note" id="total-return-note"></div>
+    </div>
+
+    <p class="deductions-disclaimer">
+      Расчёт приблизительный — предполагает ставку 13% и не учитывает все нюансы.
+      Для точного расчёта и подачи декларации 3-НДФЛ используйте
+      <a href="https://nalog.gov.ru" target="_blank" rel="noopener noreferrer">nalog.gov.ru</a>.
+    </p>
+    {{end}}
+  </div>
+</section>
+{{end}}

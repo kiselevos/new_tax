@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // === Запускаем логику страницы результата (если она открыта) ===
     initBonuses();
     initEditParams();
+    initDeductions();
 
     // === Ниже — только страница с формой расчёта ===
     const salaryInput = document.getElementById("grossSalary");
@@ -572,4 +573,208 @@ function initEditParams() {
 
     // Если после пересчёта были изменены параметры — открываем панель
     // (определяем по наличию query-параметра, который не нужен — панель закрыта по умолчанию)
+}
+
+// ===================================================================
+// БЛОК НАЛОГОВЫХ ВЫЧЕТОВ
+// ===================================================================
+function initDeductions() {
+    var section = document.querySelector(".deductions-section");
+    if (!section) return;
+
+    var toggle  = document.getElementById("toggle-deductions");
+    var content = document.getElementById("deductions-content");
+    var arrow   = toggle ? toggle.querySelector(".deductions-arrow") : null;
+
+    if (toggle && content) {
+        toggle.addEventListener("click", function() {
+            var isOpen = content.classList.toggle("open");
+            if (arrow) arrow.style.transform = isOpen ? "rotate(180deg)" : "";
+            toggle.classList.toggle("open", isOpen);
+        });
+    }
+
+    // Если нерезидент — интерактивная часть не нужна
+    if (section.dataset.notResident) return;
+
+    // Данные из атрибутов (копейки)
+    var annualTaxKop     = parseInt(section.dataset.annualTax,     10) || 0;
+    var monthlyGrossKop  = parseInt(section.dataset.monthlyGross,  10) || 0;
+
+    // --- Элементы ---
+    var childrenCountEl  = document.getElementById("children-count");
+    var disabledChildEl  = document.getElementById("disabled-child");
+    var childrenMinusEl  = document.getElementById("children-minus");
+    var childrenPlusEl   = document.getElementById("children-plus");
+
+    var housingEl        = document.getElementById("housing-amount");
+    var mortgageEl       = document.getElementById("mortgage-amount");
+    var socialEl         = document.getElementById("social-amount");
+    var childEduEl       = document.getElementById("child-edu-amount");
+
+    var childrenResultEl = document.getElementById("children-result");
+    var propertyResultEl = document.getElementById("property-result");
+    var socialResultEl   = document.getElementById("social-result");
+    var totalEl          = document.getElementById("deductions-total");
+    var totalValueEl     = document.getElementById("total-return-value");
+    var totalNoteEl      = document.getElementById("total-return-note");
+
+    // --- Счётчик детей ---
+    if (childrenMinusEl && childrenCountEl) {
+        childrenMinusEl.addEventListener("click", function() {
+            var v = parseInt(childrenCountEl.value, 10) || 0;
+            if (v > 0) childrenCountEl.value = v - 1;
+            recalc();
+        });
+    }
+    if (childrenPlusEl && childrenCountEl) {
+        childrenPlusEl.addEventListener("click", function() {
+            var v = parseInt(childrenCountEl.value, 10) || 0;
+            if (v < 10) childrenCountEl.value = v + 1;
+            recalc();
+        });
+    }
+
+    // --- Слушаем все поля ---
+    [childrenCountEl, disabledChildEl, housingEl, mortgageEl, socialEl, childEduEl].forEach(function(el) {
+        if (el) el.addEventListener("change", recalc);
+        if (el && el.type === "number") el.addEventListener("input", recalc);
+    });
+
+    // --- Форматирование ---
+    function fmtRub(rubles) {
+        return Math.round(rubles).toLocaleString("ru-RU") + "\u00A0\u20BD";
+    }
+
+    function renderResultBlock(container, rows, noteText) {
+        if (!container) return;
+        if (!rows || rows.length === 0) {
+            container.innerHTML = "";
+            return;
+        }
+        var html = rows.map(function(row) {
+            return '<div class="deduction-result-row">' +
+                '<span class="deduction-result-label">' + row.label + '</span>' +
+                '<span class="deduction-result-amount">' + row.value + '</span>' +
+                '</div>';
+        }).join("");
+        if (noteText) {
+            html += '<div class="deduction-result-note">' + noteText + '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    // --- Расчёт вычета на детей (ст. 218) ---
+    function calcChildren() {
+        var count      = parseInt((childrenCountEl && childrenCountEl.value) || 0, 10);
+        var hasDisabled = disabledChildEl && disabledChildEl.checked;
+        if (count === 0 && !hasDisabled) {
+            renderResultBlock(childrenResultEl, []);
+            return 0;
+        }
+
+        // Ежемесячная сумма вычета (рубли)
+        var monthlyDed = 0;
+        for (var i = 1; i <= count; i++) {
+            if      (i === 1) monthlyDed += 1400;
+            else if (i === 2) monthlyDed += 2800;
+            else              monthlyDed += 6000;
+        }
+        if (hasDisabled && count > 0) monthlyDed += 12000;
+
+        // Месяцев до превышения лимита 450 000 ₽
+        var monthlyGrossRub = monthlyGrossKop / 100;
+        var months = monthlyGrossRub > 0 ? Math.min(12, Math.floor(450000 / monthlyGrossRub)) : 12;
+        if (months <= 0) months = 0;
+
+        var totalDed  = monthlyDed * months;
+        var taxReturn = Math.min(Math.round(totalDed * 0.13), annualTaxKop / 100);
+
+        var note = months < 12
+            ? "Вычет действует " + months + "\u00A0мес. (до превышения лимита дохода 450\u00A0000\u00A0\u20BD)"
+            : null;
+
+        renderResultBlock(childrenResultEl, [
+            { label: "Ежемесячный вычет:", value: fmtRub(monthlyDed) },
+            { label: "Возврат налога за период:", value: fmtRub(taxReturn) }
+        ], note);
+
+        return taxReturn;
+    }
+
+    // --- Расчёт имущественного вычета (ст. 220) ---
+    function calcProperty() {
+        var housing  = parseFloat((housingEl  && housingEl.value)  || 0) || 0;
+        var mortgage = parseFloat((mortgageEl && mortgageEl.value) || 0) || 0;
+        if (housing <= 0 && mortgage <= 0) {
+            renderResultBlock(propertyResultEl, []);
+            return 0;
+        }
+
+        var housingDed  = Math.min(housing,  2000000);
+        var mortgageDed = Math.min(mortgage, 3000000);
+        var maxReturn   = Math.round((housingDed + mortgageDed) * 0.13);
+
+        var annualTaxRub  = annualTaxKop / 100;
+        var thisYearReturn = Math.min(maxReturn, annualTaxRub);
+
+        var rows = [];
+        if (housing > 0)  rows.push({ label: "Возврат за жильё (до 260\u00A0000\u00A0\u20BD):", value: fmtRub(Math.round(housingDed * 0.13)) });
+        if (mortgage > 0) rows.push({ label: "Возврат за ипотеку (до 390\u00A0000\u00A0\u20BD):", value: fmtRub(Math.round(mortgageDed * 0.13)) });
+
+        var note = null;
+        if (maxReturn > annualTaxRub) {
+            note = "Остаток " + fmtRub(maxReturn - thisYearReturn) + " можно перенести на следующие годы";
+        }
+
+        renderResultBlock(propertyResultEl, rows, note);
+        return thisYearReturn;
+    }
+
+    // --- Расчёт социального вычета (ст. 219) ---
+    function calcSocial() {
+        var social   = parseFloat((socialEl   && socialEl.value)   || 0) || 0;
+        var childEdu = parseFloat((childEduEl && childEduEl.value) || 0) || 0;
+        if (social <= 0 && childEdu <= 0) {
+            renderResultBlock(socialResultEl, []);
+            return 0;
+        }
+
+        var socialDed   = Math.min(social,   150000);
+        var childEduDed = Math.min(childEdu, 110000);
+        var totalReturn = Math.round((socialDed + childEduDed) * 0.13);
+        var capped      = Math.min(totalReturn, annualTaxKop / 100);
+
+        var rows = [];
+        if (social > 0)   rows.push({ label: "Лечение и своё обучение (до 19\u00A0500\u00A0\u20BD):", value: fmtRub(Math.round(socialDed * 0.13)) });
+        if (childEdu > 0) rows.push({ label: "Обучение ребёнка (до 14\u00A0300\u00A0\u20BD):",       value: fmtRub(Math.round(childEduDed * 0.13)) });
+
+        renderResultBlock(socialResultEl, rows, null);
+        return capped;
+    }
+
+    // --- Пересчёт итога ---
+    function recalc() {
+        var r1 = calcChildren();
+        var r2 = calcProperty();
+        var r3 = calcSocial();
+
+        var total = r1 + r2 + r3;
+        if (total <= 0) {
+            if (totalValueEl) totalValueEl.textContent = "\u2014";
+            if (totalNoteEl)  totalNoteEl.textContent  = "";
+            return;
+        }
+
+        // Итог не может превышать уплаченный НДФЛ
+        var annualTaxRub = annualTaxKop / 100;
+        var capped = Math.min(total, annualTaxRub);
+
+        if (totalValueEl) totalValueEl.textContent = fmtRub(capped);
+        if (totalNoteEl) {
+            totalNoteEl.textContent = total > annualTaxRub
+                ? "Ограничено уплаченным НДФЛ. Имущественный вычет можно перенести на следующие годы."
+                : "";
+        }
+    }
 }
