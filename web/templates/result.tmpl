@@ -47,11 +47,14 @@
         <!-- Помесячная детализация -->
         {{template "monthly_accordion" .}}
 
-        <!-- Кнопка -->
-        <div class="actions">
-            <a href="/" class="primary-button">
-                Сделать новый расчёт
+        <!-- Кнопки -->
+        <div class="actions actions--result">
+            <a href="/" class="back-button">
+                ← Назад к калькулятору
             </a>
+            <button type="submit" class="bonus-recalc-btn" id="bonus-recalc-btn">
+                Пересчитать с премиями →
+            </button>
         </div>
     </div>
 

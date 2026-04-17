@@ -200,6 +200,29 @@
     transform: none;
 }
 
+/* --- Кнопка «Пересчитать с премиями» в блоке actions --- */
+.actions--result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bonus-recalc-btn {
+    display: none; /* показывается через JS */
+    padding: 10px 24px;
+    font-size: 14px;
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
+}
+
+.bonus-recalc-btn:hover {
+    background: linear-gradient(135deg, #1e8449, #196f3d);
+    box-shadow: 0 6px 16px rgba(39, 174, 96, 0.45);
+    transform: translateY(-2px);
+}
+
 /* --- Мобильная адаптация --- */
 @media (max-width: 480px) {
     .bonus-sticky-inner {

@@ -399,6 +399,7 @@ function initBonuses() {
     if (!stickyBar) return; // не страница результата
 
     const stickyLabel = document.getElementById("bonus-sticky-label");
+    const inlineRecalcBtn = document.getElementById("bonus-recalc-btn");
 
     // --- Аккордеон помесячной детализации ---
     document.querySelectorAll(".accordion-header").forEach(function(header) {
@@ -467,9 +468,15 @@ function initBonuses() {
         if (count > 0) {
             stickyBar.classList.add("visible");
             var label = declension(count, ["премией", "премиями", "премиями"]);
-            stickyLabel.textContent = "Пересчитать с " + count + "\u00A0" + label;
+            var text = "Пересчитать с " + count + "\u00A0" + label;
+            stickyLabel.textContent = text;
+            if (inlineRecalcBtn) {
+                inlineRecalcBtn.style.display = "";
+                inlineRecalcBtn.textContent = text + " →";
+            }
         } else {
             stickyBar.classList.remove("visible");
+            if (inlineRecalcBtn) inlineRecalcBtn.style.display = "none";
         }
     }
 
