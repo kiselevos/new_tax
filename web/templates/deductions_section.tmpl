@@ -6,12 +6,8 @@
   {{if .IsNotResident}}data-not-resident="true"{{end}}>
 
   <button type="button" class="deductions-toggle" id="toggle-deductions">
-    <span class="deductions-toggle-text">Можно ли вернуть часть налога?</span>
-    <span class="deductions-toggle-right">
-      <a href="/tax-deductions" target="_blank" rel="noopener"
-         class="deductions-info-link" onclick="event.stopPropagation()">Что такое вычеты →</a>
-      <span class="deductions-arrow">▼</span>
-    </span>
+    Можно ли вернуть часть налога?
+    <span class="deductions-arrow">▼</span>
   </button>
 
   <div class="deductions-content" id="deductions-content">
@@ -22,7 +18,9 @@
     {{else}}
     <p class="deductions-intro">
       За выбранный период вы уплатили <strong>{{fmtMoney .AnnualTaxAmount}} НДФЛ</strong>.
-      Часть этих денег можно вернуть — это называется налоговым вычетом. Укажите, что к вам относится.
+      Часть этих денег можно вернуть —
+      <a href="/tax-deductions" target="_blank" rel="noopener" class="deductions-intro-link">подробнее о налоговых вычетах</a>.
+      Укажите, что к вам относится.
     </p>
 
     <!-- Стандартные вычеты (ст. 218) -->

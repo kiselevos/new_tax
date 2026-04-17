@@ -42,29 +42,14 @@
     transform: translateY(-1px);
 }
 
-.deductions-toggle-text {
-    flex: 1;
-}
-
-.deductions-toggle-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
-}
-
-.deductions-info-link {
-    font-size: 0.8rem;
-    font-weight: 500;
-    font-style: normal;
+.deductions-intro-link {
     color: #27ae60;
     text-decoration: none;
-    white-space: nowrap;
     border-bottom: 1px dashed #27ae60;
-    transition: color 0.15s;
+    transition: color 0.15s, border-color 0.15s;
 }
 
-.deductions-info-link:hover {
+.deductions-intro-link:hover {
     color: #1a7a45;
     border-bottom-color: #1a7a45;
 }
