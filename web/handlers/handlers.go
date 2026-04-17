@@ -160,6 +160,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		baseMonth = res.MonthlyDetails[0]
 	}
 
+	indexData := PrepareIndexData()
+
 	// Prepare data
 	data := ResultPayload{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
@@ -179,6 +181,9 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		AnnualBonus:       annualBonus,
 		StartMonthNum:     startMonthNum,
 		BaseMonth:         baseMonth,
+		Months:            indexData.Months,
+		Territorial:       indexData.Territorial,
+		Northern:          indexData.Northern,
 	}
 
 	// render template

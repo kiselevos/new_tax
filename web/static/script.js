@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function() {
     // === Запускаем логику страницы результата (если она открыта) ===
     initBonuses();
+    initEditParams();
 
     // === Ниже — только страница с формой расчёта ===
     const salaryInput = document.getElementById("grossSalary");
@@ -465,19 +466,23 @@ function initBonuses() {
             if (!isNaN(val) && val > 0) count++;
         });
 
+        var panelOpen = document.getElementById("edit-params-panel") &&
+                        document.getElementById("edit-params-panel").classList.contains("open");
+
         if (count > 0) {
-            stickyBar.classList.add("visible");
             var label = declension(count, ["премией", "премиями", "премиями"]);
             var text = "Пересчитать с " + count + "\u00A0" + label;
+            stickyBar.classList.add("visible");
             stickyLabel.textContent = text;
             if (inlineRecalcBtn) {
                 inlineRecalcBtn.style.display = "inline-block";
                 inlineRecalcBtn.textContent = text + " →";
             }
-        } else {
+        } else if (!panelOpen) {
             stickyBar.classList.remove("visible");
-            if (inlineRecalcBtn) inlineRecalcBtn.style.display = "none";
+            if (inlineRecalcBtn) inlineRecalcBtn.style.display = "";
         }
+        // если panelOpen и бонусов нет — не трогаем (за это отвечает initEditParams)
     }
 
     // --- Склонение числительных ---
@@ -492,4 +497,79 @@ function initBonuses() {
 
     // Инициализация: при пересчёте с бонусами поля уже заполнены
     updateStickyBar();
+}
+
+// ===================================================================
+// ПАНЕЛЬ РЕДАКТИРОВАНИЯ ПАРАМЕТРОВ
+// ===================================================================
+function initEditParams() {
+    var toggle = document.getElementById("edit-params-toggle");
+    var panel  = document.getElementById("edit-params-panel");
+    var cancel = document.getElementById("edit-params-cancel");
+    if (!toggle || !panel) return;
+
+    function openPanel() {
+        panel.classList.add("open");
+        toggle.classList.add("active");
+        toggle.textContent = "✏️ Параметры открыты";
+        showRecalcButtons("Пересчитать");
+    }
+
+    function closePanel() {
+        panel.classList.remove("open");
+        toggle.classList.remove("active");
+        toggle.textContent = "✏️ Изменить параметры";
+        // Скрываем кнопки только если нет заполненных бонусов
+        var hasBonuses = false;
+        document.querySelectorAll(".bonus-input").forEach(function(input) {
+            if (!isNaN(parseFloat(input.value)) && parseFloat(input.value) > 0) hasBonuses = true;
+        });
+        if (!hasBonuses) hideRecalcButtons();
+    }
+
+    function showRecalcButtons(label) {
+        var stickyBar   = document.getElementById("bonus-sticky-bar");
+        var stickyLabel = document.getElementById("bonus-sticky-label");
+        var inlineBtn   = document.getElementById("bonus-recalc-btn");
+        if (stickyBar)   stickyBar.classList.add("visible");
+        if (stickyLabel) stickyLabel.textContent = label;
+        if (inlineBtn) {
+            inlineBtn.style.display = "inline-block";
+            inlineBtn.textContent = label + " →";
+        }
+    }
+
+    function hideRecalcButtons() {
+        var stickyBar = document.getElementById("bonus-sticky-bar");
+        var inlineBtn = document.getElementById("bonus-recalc-btn");
+        if (stickyBar) stickyBar.classList.remove("visible");
+        if (inlineBtn) inlineBtn.style.display = "";
+    }
+
+    toggle.addEventListener("click", function() {
+        if (panel.classList.contains("open")) {
+            closePanel();
+        } else {
+            openPanel();
+        }
+    });
+
+    if (cancel) {
+        cancel.addEventListener("click", closePanel);
+    }
+
+    // Взаимоисключающие чекбоксы внутри панели
+    var exclusives = panel.querySelectorAll(".edit-exclusive");
+    exclusives.forEach(function(cb) {
+        cb.addEventListener("change", function() {
+            if (this.checked) {
+                exclusives.forEach(function(other) {
+                    if (other !== cb) other.checked = false;
+                });
+            }
+        });
+    });
+
+    // Если после пересчёта были изменены параметры — открываем панель
+    // (определяем по наличию query-параметра, который не нужен — панель закрыта по умолчанию)
 }

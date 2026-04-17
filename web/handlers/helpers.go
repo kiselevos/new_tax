@@ -57,6 +57,9 @@ type ResultPayload struct {
 	AnnualBonus       uint64                // сумма всех премий за год (копейки)
 	StartMonthNum     int                   // номер месяца начала расчёта (1-12)
 	BaseMonth         *pb.MonthlyPrivateTax // первый месяц без премии (для виджета «На руки»)
+	Months            []Month               // опции для select месяца в панели редактирования
+	Territorial       []CoefficientOption   // опции РК
+	Northern          []BonusOption         // опции СН
 }
 
 func PrepareMonths() []Month {

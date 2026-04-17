@@ -23,6 +23,7 @@ var Funcs = template.FuncMap{
 	},
 	"minus100": func(a uint64) uint64 { return a - 100 },
 	"divf":     func(a uint64, b float64) float64 { return float64(a) / b },
+	"toInt":    func(n uint64) int { return int(n) },
 	"sum":      sum,
 }
 
