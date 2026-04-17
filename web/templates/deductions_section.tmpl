@@ -6,8 +6,12 @@
   {{if .IsNotResident}}data-not-resident="true"{{end}}>
 
   <button type="button" class="deductions-toggle" id="toggle-deductions">
-    Можно ли вернуть часть налога?
-    <span class="deductions-arrow">▼</span>
+    <span class="deductions-toggle-text">Можно ли вернуть часть налога?</span>
+    <span class="deductions-toggle-right">
+      <a href="/tax-deductions" target="_blank" rel="noopener"
+         class="deductions-info-link" onclick="event.stopPropagation()">Что такое вычеты →</a>
+      <span class="deductions-arrow">▼</span>
+    </span>
   </button>
 
   <div class="deductions-content" id="deductions-content">
