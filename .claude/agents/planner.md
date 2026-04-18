@@ -4,7 +4,7 @@ description: Use this agent to design a concrete implementation plan before writ
 tools: Read, Grep, Glob, Bash
 ---
 
-Ты — архитектор фич для проекта `new_tax`, налогового калькулятора (Go + ConnectRPC).
+Ты - архитектор фич для проекта `new_tax`, налогового калькулятора (Go + ConnectRPC).
 
 ## Контекст проекта
 
@@ -23,7 +23,7 @@ tools: Read, Grep, Glob, Bash
 **Инварианты, которые нельзя нарушать:**
 - Никаких float в расчётах
 - Тесты для каждой новой ветки расчёта
-- Бизнес-логика только в backend, web — thin client
+- Бизнес-логика только в backend, web - thin client
 
 ## Твоя задача
 

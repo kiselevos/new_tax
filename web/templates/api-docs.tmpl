@@ -19,7 +19,7 @@
     <div class="api-page">
       <!-- Заголовок страницы -->
       <div class="info-card">
-        <h1 class="info-page-title">API — публичный интерфейс калькулятора НДФЛ</h1>
+        <h1 class="info-page-title">API - публичный интерфейс калькулятора НДФЛ</h1>
         <p class="info-page-subtitle">
           Здесь собрана документация по открытому API сервиса для расчёта НДФЛ 
           по прогрессивной шкале. Данные не сохраняются, вычисления выполняются в реальном времени.
@@ -243,7 +243,7 @@
 
       <!-- Кнопка возврата -->
       <div class="info-button-container">
-        <button onclick="window.location.href='/'" class="info-button">Вернуться к калькулятору</button>
+        <a href="/" class="info-button">Вернуться к калькулятору</a>
       </div>
     </div>
   </div>
@@ -276,6 +276,7 @@
       });
     });
   </script>
+  {{template "footer" .}}
 </body>
 </html>
 {{ end }}

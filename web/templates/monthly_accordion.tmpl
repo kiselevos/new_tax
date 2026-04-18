@@ -139,8 +139,8 @@
         <div class="bonus-input-row">
           <label class="bonus-label">Премия в этот месяц</label>
           <div class="bonus-input-wrap">
-            <input type="number" name="bonus_{{$mNum}}" value="{{fmtMoneyRaw $bonus}}"
-                   class="bonus-input" min="0" placeholder="0">
+            <input type="text" inputmode="numeric" name="bonus_{{$mNum}}" value="{{fmtMoneyRaw $bonus}}"
+                   class="bonus-input" placeholder="0">
             <span class="bonus-currency">₽</span>
             <button type="button" class="bonus-clear-btn" aria-label="Убрать премию">✕</button>
           </div>
@@ -150,8 +150,8 @@
         <div class="bonus-input-row bonus-input-row--hidden">
           <label class="bonus-label">Премия в этот месяц</label>
           <div class="bonus-input-wrap">
-            <input type="number" name="bonus_{{$mNum}}" value=""
-                   class="bonus-input" min="0" placeholder="0">
+            <input type="text" inputmode="numeric" name="bonus_{{$mNum}}" value=""
+                   class="bonus-input" placeholder="0">
             <span class="bonus-currency">₽</span>
             <button type="button" class="bonus-clear-btn" aria-label="Убрать премию">✕</button>
           </div>

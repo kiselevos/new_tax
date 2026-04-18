@@ -1,0 +1,541 @@
+/* ===== БЛОК НАЛОГОВЫХ ВЫЧЕТОВ ===== */
+
+.deductions-section {
+    margin-top: 2rem;
+}
+
+/* --- Кнопка-тоггл --- */
+.deductions-toggle {
+    width: 100%;
+    background: #f0faf5;
+    border: none;
+    border-left: 4px solid #27ae60;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 1rem;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1a4a35;
+    font-weight: 500;
+    font-style: italic;
+    box-shadow: 0 2px 6px rgba(39, 174, 96, 0.08);
+    transition: all 0.25s ease;
+}
+
+.deductions-toggle::before {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-right: 0.6rem;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2327ae60' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z'/%3E%3Cpath d='M12 6v6l4 2'/%3E%3C/svg%3E") center/contain no-repeat;
+    flex-shrink: 0;
+    font-style: normal;
+}
+
+.deductions-toggle:hover {
+    background: #e4f5ec;
+    box-shadow: 0 3px 8px rgba(39, 174, 96, 0.15);
+    transform: translateY(-1px);
+}
+
+.deductions-intro-link {
+    color: #27ae60;
+    text-decoration: none;
+    border-bottom: 1px dashed #27ae60;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.deductions-intro-link:hover {
+    color: #1a7a45;
+    border-bottom-color: #1a7a45;
+}
+
+.deductions-arrow {
+    font-size: 1rem;
+    transition: transform 0.25s ease;
+    color: #27ae60;
+    margin-left: 0.5rem;
+    font-style: normal;
+    flex-shrink: 0;
+}
+
+.deductions-toggle.open .deductions-arrow {
+    transform: rotate(180deg);
+}
+
+/* --- Панель контента --- */
+.deductions-content {
+    display: none;
+    background: #fff;
+    border: 1px solid #c8e6c9;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 0.6rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.deductions-content.open {
+    display: block;
+    animation: deductionsFadeIn 0.25s ease-in;
+}
+
+@keyframes deductionsFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Вводный абзац --- */
+.deductions-intro {
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+}
+
+.deductions-intro strong {
+    color: #1a4a35;
+}
+
+/* --- Уведомление для нерезидентов --- */
+.deductions-notice {
+    padding: 0.9rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.deductions-notice--warn {
+    background: #fff3e0;
+    border-left: 4px solid #f57c00;
+    color: #4e2c00;
+}
+
+/* --- Блок вычета --- */
+.deduction-block {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s;
+}
+
+.deduction-block--children { border-left: 3px solid #1c7ed6; }
+.deduction-block--property { border-left: 3px solid #7b2de0; }
+.deduction-block--social   { border-left: 3px solid #e67e22; }
+
+.deduction-block:focus-within {
+    border-color: #b0b0b0;
+}
+
+/* --- Заголовок блока --- */
+.deduction-block-header {
+    margin-bottom: 0.85rem;
+}
+
+.deduction-block-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+    margin: 0 0 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.deduction-law {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #888;
+    background: #f0f0f0;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+.deduction-block-desc {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* --- Поля ввода --- */
+.deduction-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.deduction-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.deduction-label {
+    font-size: 0.85rem;
+    color: #444;
+    flex: 1;
+    min-width: 180px;
+}
+
+/* --- Счётчик детей --- */
+.deduction-counter {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.counter-btn {
+    width: 32px;
+    height: 32px;
+    background: #f5f5f5;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #444;
+    transition: background 0.15s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.counter-btn:hover {
+    background: #e8e8e8;
+}
+
+.deduction-num-input {
+    width: 40px;
+    height: 32px;
+    border: none;
+    border-left: 1px solid #d0d0d0;
+    border-right: 1px solid #d0d0d0;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #222;
+    outline: none;
+    background: #fff;
+    -moz-appearance: textfield;
+}
+
+.deduction-num-input::-webkit-inner-spin-button,
+.deduction-num-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+/* --- Поля суммы --- */
+.deduction-amount-input {
+    width: 160px;
+    padding: 6px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #222;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fff;
+    -moz-appearance: textfield;
+}
+
+.deduction-amount-input::-webkit-inner-spin-button,
+.deduction-amount-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+.deduction-amount-input:focus {
+    border-color: #27ae60;
+    box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+}
+
+/* --- Чекбокс --- */
+.deduction-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #444;
+    cursor: pointer;
+    padding: 3px 0;
+}
+
+.deduction-checkbox {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: #1c7ed6;
+    cursor: pointer;
+}
+
+/* --- Результат блока --- */
+.deduction-result {
+    font-size: 0.9rem;
+    min-height: 1.4em;
+}
+
+.deduction-result:empty {
+    display: none;
+}
+
+.deduction-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.3rem 0;
+    border-top: 1px dashed #e0e0e0;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.deduction-result-label {
+    color: #555;
+}
+
+.deduction-result-amount {
+    font-weight: 600;
+    color: #1a9c6e;
+    white-space: nowrap;
+}
+
+.deduction-result-note {
+    font-size: 0.8rem;
+    color: #888;
+    padding-top: 0.15rem;
+}
+
+/* --- Итог --- */
+.deductions-total {
+    background: linear-gradient(90deg, #e8f8ee, #d0f0dd);
+    border-left: 4px solid #27ae60;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.deductions-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.deductions-total-label {
+    font-weight: 600;
+    color: #1a4a35;
+    font-size: 1rem;
+}
+
+.deductions-total-value {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: #1a9c6e;
+    white-space: nowrap;
+}
+
+.deductions-total-note {
+    font-size: 0.82rem;
+    color: #3a7a55;
+    margin-top: 0.4rem;
+    line-height: 1.45;
+}
+
+/* --- Дисклеймер --- */
+.deductions-disclaimer {
+    font-size: 0.82rem;
+    color: #777;
+    line-height: 1.5;
+    margin: 0;
+    border-top: 1px solid #e8e8e8;
+    padding-top: 0.9rem;
+}
+
+.deductions-disclaimer a {
+    color: #27ae60;
+    text-decoration: none;
+}
+
+.deductions-disclaimer a:hover {
+    text-decoration: underline;
+}
+
+/* --- Результаты вычетов от бэкенда --- */
+.deduction-result-line {
+    padding: 0.25rem 0;
+    border-top: 1px dashed #e0e0e0;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.deduction-result-line:first-child {
+    border-top: none;
+}
+
+.deduction-result-line.deduction-result-total {
+    font-size: 0.95rem;
+    color: #1a4a35;
+}
+
+/* --- Кнопка пересчёта вычетов --- */
+.deductions-recalc-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0.5rem 0 0.75rem;
+}
+
+.deductions-recalc-btn {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.deductions-recalc-btn:hover {
+    background: #1e8e4e;
+}
+
+/* --- Подсказка «изменить» в заголовке аккордеона --- */
+.deductions-toggle-hint {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #3a9e6e;
+    margin-left: 0.4rem;
+    font-style: normal;
+    opacity: 0.8;
+}
+
+/* ===== ПЛАШКА ИТОГА ВЫЧЕТОВ В ОСНОВНЫХ РЕЗУЛЬТАТАХ ===== */
+
+.deduction-summary-card {
+    background: linear-gradient(135deg, #e8f8ee 0%, #d5f0e2 100%);
+    border: 1px solid #a8dfc0;
+    border-left: 4px solid #27ae60;
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-top: 1rem;
+}
+
+.deduction-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.deduction-summary-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a4a35;
+}
+
+.deduction-summary-total {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a9c6e;
+    white-space: nowrap;
+}
+
+.deduction-summary-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.deduction-summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: #2d5a3d;
+    flex-wrap: wrap;
+}
+
+.deduction-summary-line--note {
+    color: #5a8a6d;
+    font-size: 0.82rem;
+}
+
+.deduction-summary-line--note .deduction-summary-amount {
+    color: #5a8a6d;
+    font-weight: 500;
+}
+
+.deduction-summary-amount {
+    font-weight: 600;
+    color: #1a7a4e;
+    white-space: nowrap;
+}
+
+.deduction-summary-caveat {
+    font-size: 0.8rem;
+    color: #5a7a6a;
+    line-height: 1.5;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #b8dfc8;
+}
+
+/* --- Мобильная адаптация --- */
+@media (max-width: 540px) {
+    .deduction-input-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+    }
+
+    .deduction-amount-input {
+        width: 100%;
+    }
+
+    .deductions-total-row {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .deductions-total-value {
+        font-size: 1.3rem;
+    }
+
+    .deduction-summary-header {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .deduction-summary-total {
+        font-size: 1.25rem;
+    }
+
+    .deduction-summary-line {
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .deduction-summary-amount {
+        font-size: 0.9rem;
+    }
+}

@@ -48,18 +48,19 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
 
-	//--- redis ---
+	// Если вычеты не заданы — пробуем кэш (вычеты зависят от пользовательского ввода, не кэшируются).
+	hasDeductions := input.Deductions.HasDeductions()
 	key := buildPrivateKey(input)
-
-	cached := &pb.CalculatePrivateResponse{}
-
-	ok, err := s.cacheGet(ctx, key, cached)
-	if err != nil {
-		log.Warn("cache_get_failed", "err", err)
-	}
-	if ok {
-		log.Info("cache_hit")
-		return cached, nil
+	if !hasDeductions {
+		cached := &pb.CalculatePrivateResponse{}
+		ok, err := s.cacheGet(ctx, key, cached)
+		if err != nil {
+			log.Warn("cache_get_failed", "err", err)
+		}
+		if ok {
+			log.Info("cache_hit")
+			return cached, nil
+		}
 	}
 
 	// --- calculation ---
@@ -82,11 +83,13 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		GrossSalary:           input.GrossSalary,
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
+		DeductionResult:       calculate.CalcDeductions(input.Deductions, months),
 	}
 
-	err = s.cacheSet(ctx, key, resp, s.cacheTTL)
-	if err != nil {
-		log.Warn("cache_set_failed", "err", err)
+	if !hasDeductions {
+		if err := s.cacheSet(ctx, key, resp, s.cacheTTL); err != nil {
+			log.Warn("cache_set_failed", "err", err)
+		}
 	}
 
 	return resp, nil

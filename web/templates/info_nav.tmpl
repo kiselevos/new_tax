@@ -1,0 +1,21 @@
+{{define "info_nav"}}
+<nav class="info-nav">
+  <div class="info-nav-inner">
+    <a href="/" class="info-nav-home">← Калькулятор</a>
+
+    <div class="info-nav-links">
+      <a href="/tax-deductions" class="info-nav-link{{if eq . "tax-deductions"}} info-nav-link--active{{end}}">Вычеты</a>
+      <a href="/regional-info" class="info-nav-link{{if eq . "regional-info"}} info-nav-link--active{{end}}">Коэффициенты</a>
+      <a href="/special-tax-modes" class="info-nav-link{{if eq . "special-tax"}} info-nav-link--active{{end}}">Спецрежимы</a>
+      <a href="/about" class="info-nav-link{{if eq . "about"}} info-nav-link--active{{end}}">О проекте</a>
+    </div>
+
+    <select class="info-nav-select" onchange="window.location.href=this.value">
+      <option value="/tax-deductions"{{if eq . "tax-deductions"}} selected{{end}}>Вычеты</option>
+      <option value="/regional-info"{{if eq . "regional-info"}} selected{{end}}>Коэффициенты</option>
+      <option value="/special-tax-modes"{{if eq . "special-tax"}} selected{{end}}>Спецрежимы</option>
+      <option value="/about"{{if eq . "about"}} selected{{end}}>О проекте</option>
+    </select>
+  </div>
+</nav>
+{{end}}

@@ -60,6 +60,15 @@ type ResultPayload struct {
 	Months            []Month               // опции для select месяца в панели редактирования
 	Territorial       []CoefficientOption   // опции РК
 	Northern          []BonusOption         // опции СН
+	DeductionResult   *pb.DeductionResult   // результат расчёта налоговых вычетов (если переданы параметры)
+
+	// Значения из последнего запроса вычетов (для предзаполнения формы после пересчёта)
+	ChildrenCountInput         uint32
+	DisabledChildrenCountInput uint32
+	HousingExpenseInput        uint64 // рубли (для input[type=number])
+	MortgageExpenseInput       uint64
+	SocialExpenseInput         uint64
+	ChildEduExpenseInput       uint64
 }
 
 func PrepareMonths() []Month {
@@ -173,7 +182,15 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		}
 	}
 
-	return &pb.CalculatePrivateRequest{
+	// Налоговые вычеты (опциональные поля, передаются только при заполнении)
+	childrenCount := parseUint32Form(r, "childrenCount")
+	disabledChildrenCount := parseUint32Form(r, "disabledChildrenCount")
+	housingExpense := parseKopecksForm(r, "housingExpense")
+	mortgageExpense := parseKopecksForm(r, "mortgageExpense")
+	socialExpense := parseKopecksForm(r, "socialExpense")
+	childEduExpense := parseKopecksForm(r, "childEduExpense")
+
+	req := &pb.CalculatePrivateRequest{
 		GrossSalary:           grossSalary,
 		StartDate:             startTS,
 		TerritorialMultiplier: uint64Ptr(uint64(territorial)),
@@ -181,7 +198,55 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		HasTaxPrivilege:       boolPtr(hasTaxPrivilege),
 		IsNotResident:         boolPtr(isNotResident),
 		MonthlyBonuses:        bonuses,
-	}, nil
+	}
+	if childrenCount > 0 {
+		req.ChildrenCount = &childrenCount
+	}
+	if disabledChildrenCount > 0 {
+		req.DisabledChildrenCount = &disabledChildrenCount
+	}
+	if housingExpense > 0 {
+		req.HousingExpense = &housingExpense
+	}
+	if mortgageExpense > 0 {
+		req.MortgageExpense = &mortgageExpense
+	}
+	if socialExpense > 0 {
+		req.SocialExpense = &socialExpense
+	}
+	if childEduExpense > 0 {
+		req.ChildEduExpense = &childEduExpense
+	}
+	return req, nil
+}
+
+// parseUint32Form читает числовое поле формы как uint32.
+func parseUint32Form(r *http.Request, field string) uint32 {
+	s := strings.TrimSpace(r.FormValue(field))
+	if s == "" {
+		return 0
+	}
+	v, err := strconv.ParseUint(s, 10, 32)
+	if err != nil || v == 0 {
+		return 0
+	}
+	return uint32(v)
+}
+
+// parseKopecksForm читает поле суммы в рублях и конвертирует в копейки (uint64).
+func parseKopecksForm(r *http.Request, field string) uint64 {
+	s := strings.TrimSpace(r.FormValue(field))
+	if s == "" {
+		return 0
+	}
+	s = strings.ReplaceAll(s, "\u00A0", "")
+	s = strings.ReplaceAll(s, " ", "")
+	s = strings.ReplaceAll(s, ",", ".")
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil || v <= 0 {
+		return 0
+	}
+	return uint64(math.Round(v * 100))
 }
 
 func PrepareApiData() (*ApiDocsData, error) {

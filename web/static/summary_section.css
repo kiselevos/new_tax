@@ -79,7 +79,7 @@
     background: linear-gradient(135deg, #3498db, #2980b9);
 }
 
-/* === "На руки в месяц" — главный акцент === */
+/* === "На руки в месяц" - главный акцент === */
 .monthly-net-highlight {
     background: linear-gradient(135deg, #f0fdf4, #e8f8ed);
     border: 2px solid #27ae60;

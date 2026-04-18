@@ -42,7 +42,7 @@ Factors that increase cost:
 
 No estimate needed for:
 - Explore agents (always cheap, haiku-level)
-- Direct tool calls (Read, Edit, Grep — not agents)
+- Direct tool calls (Read, Edit, Grep - not agents)
 - Resuming an agent (cost already committed)
 
 ## Reference

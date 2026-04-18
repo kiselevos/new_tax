@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // === Запускаем логику страницы результата (если она открыта) ===
     initBonuses();
     initEditParams();
+    initDeductions();
 
-    // === Ниже — только страница с формой расчёта ===
+    // === Ниже - только страница с формой расчёта ===
     const salaryInput = document.getElementById("grossSalary");
     if (!salaryInput) return;
 
@@ -393,7 +394,7 @@ else {
 });
 
 // ===================================================================
-// СТРАНИЦА РЕЗУЛЬТАТА — помесячный аккордеон и ввод премий
+// СТРАНИЦА РЕЗУЛЬТАТА - помесячный аккордеон и ввод премий
 // ===================================================================
 function initBonuses() {
     const stickyBar = document.getElementById("bonus-sticky-bar");
@@ -458,20 +459,33 @@ function initBonuses() {
         }
     });
 
+    // --- Форматирование полей премий ---
+    document.querySelectorAll(".bonus-input").forEach(initAmountInput);
+
+    // --- Снимок начального состояния полей (чтобы знать, изменилось ли что-то) ---
+    var initialBonusValues = {};
+    document.querySelectorAll(".bonus-input").forEach(function(input) {
+        initialBonusValues[input.name] = input.value;
+    });
+
     // --- Обновление липкой панели ---
     function updateStickyBar() {
         var count = 0;
+        var changed = false;
         document.querySelectorAll(".bonus-input").forEach(function(input) {
-            var val = parseFloat(input.value);
+            var raw = input.value.replace(/\D/g, "");
+            var val = parseInt(raw, 10);
             if (!isNaN(val) && val > 0) count++;
+            if (input.value !== (initialBonusValues[input.name] || "")) changed = true;
         });
 
         var panelOpen = document.getElementById("edit-params-panel") &&
                         document.getElementById("edit-params-panel").classList.contains("open");
 
-        if (count > 0) {
-            var label = declension(count, ["премией", "премиями", "премиями"]);
-            var text = "Пересчитать с " + count + "\u00A0" + label;
+        if (changed) {
+            var text = count > 0
+                ? "Пересчитать с " + count + "\u00A0" + declension(count, ["премией", "премиями", "премиями"])
+                : "Пересчитать без премий";
             stickyBar.classList.add("visible");
             stickyLabel.textContent = text;
             if (inlineRecalcBtn) {
@@ -482,7 +496,7 @@ function initBonuses() {
             stickyBar.classList.remove("visible");
             if (inlineRecalcBtn) inlineRecalcBtn.style.display = "";
         }
-        // если panelOpen и бонусов нет — не трогаем (за это отвечает initEditParams)
+        // если panelOpen и бонусов нет - не трогаем (за это отвечает initEditParams)
     }
 
     // --- Склонение числительных ---
@@ -522,7 +536,8 @@ function initEditParams() {
         // Скрываем кнопки только если нет заполненных бонусов
         var hasBonuses = false;
         document.querySelectorAll(".bonus-input").forEach(function(input) {
-            if (!isNaN(parseFloat(input.value)) && parseFloat(input.value) > 0) hasBonuses = true;
+            var v = parseInt(input.value.replace(/\D/g, ""), 10);
+            if (!isNaN(v) && v > 0) hasBonuses = true;
         });
         if (!hasBonuses) hideRecalcButtons();
     }
@@ -570,6 +585,93 @@ function initEditParams() {
         });
     });
 
-    // Если после пересчёта были изменены параметры — открываем панель
-    // (определяем по наличию query-параметра, который не нужен — панель закрыта по умолчанию)
+    // Если после пересчёта были изменены параметры - открываем панель
+    // (определяем по наличию query-параметра, который не нужен - панель закрыта по умолчанию)
+}
+
+// ===================================================================
+// БЛОК НАЛОГОВЫХ ВЫЧЕТОВ
+// ===================================================================
+function initDeductions() {
+    var section = document.querySelector(".deductions-section");
+    if (!section) return;
+
+    var toggle  = document.getElementById("toggle-deductions");
+    var content = document.getElementById("deductions-content");
+    var arrow   = toggle ? toggle.querySelector(".deductions-arrow") : null;
+
+    if (toggle && content) {
+        toggle.addEventListener("click", function() {
+            var isOpen = content.classList.toggle("open");
+            if (arrow) arrow.style.transform = isOpen ? "rotate(180deg)" : "";
+            toggle.classList.toggle("open", isOpen);
+        });
+    }
+
+    if (section.dataset.notResident) return;
+
+    // --- Счётчик детей ---
+    makeCounter("children-minus", "children-plus", "children-count");
+
+    // --- Счётчик детей-инвалидов ---
+    makeCounter("disabled-minus", "disabled-plus", "disabled-count");
+
+    // --- Форматирование полей сумм ---
+    section.querySelectorAll(".deduction-amount-input").forEach(initAmountInput);
+}
+
+// Форматирование числового поля: пробелы-разделители при blur, сырое число при focus.
+function initAmountInput(input) {
+    function formatValue(raw) {
+        var n = parseInt(raw.replace(/\D/g, ""), 10);
+        if (isNaN(n) || n === 0) return "";
+        return n.toLocaleString("ru-RU");
+    }
+
+    function rawValue() {
+        return input.value.replace(/\s/g, "").replace(/\u00A0/g, "");
+    }
+
+    // Форматируем предзаполненное значение сразу
+    if (input.value) input.value = formatValue(input.value);
+
+    input.addEventListener("input", function() {
+        var pos = input.selectionStart;
+        var before = input.value.length;
+        // Разрешаем только цифры
+        input.value = input.value.replace(/[^\d]/g, "");
+        var diff = input.value.length - before;
+        input.setSelectionRange(pos + diff, pos + diff);
+    });
+
+    input.addEventListener("blur", function() {
+        input.value = formatValue(rawValue());
+    });
+
+    input.addEventListener("focus", function() {
+        var raw = rawValue();
+        input.value = raw === "0" ? "" : raw;
+    });
+}
+
+// Вспомогательная функция: создаёт логику кнопок +/− для числового поля.
+function makeCounter(minusBtnId, plusBtnId, inputId) {
+    var minusBtn = document.getElementById(minusBtnId);
+    var plusBtn  = document.getElementById(plusBtnId);
+    var input    = document.getElementById(inputId);
+    if (!input) return;
+
+    if (minusBtn) {
+        minusBtn.addEventListener("click", function() {
+            var v = parseInt(input.value, 10) || 0;
+            if (v > 0) input.value = v - 1;
+        });
+    }
+    if (plusBtn) {
+        plusBtn.addEventListener("click", function() {
+            var v = parseInt(input.value, 10) || 0;
+            var max = parseInt(input.max, 10) || 10;
+            if (v < max) input.value = v + 1;
+        });
+    }
 }

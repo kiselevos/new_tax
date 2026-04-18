@@ -22,6 +22,14 @@ message CalculatePrivateRequest {
   optional bool has_tax_privilege = 5; // Льготы для силовых структур
   optional bool is_not_resident = 6; // Статус налогового нерезидента
   repeated uint64 monthly_bonuses = 7; // Разовые выплаты по месяцам (копейки), индекс 0 = январь
+
+  // Параметры налоговых вычетов (опционально)
+  optional uint32 children_count          = 8;  // Количество детей до 18 лет (ст. 218 НК РФ)
+  optional uint32 disabled_children_count = 9;  // Количество детей-инвалидов (+12 000 ₽/мес на каждого, ст. 218 НК РФ)
+  optional uint64 housing_expense   = 10; // Расходы на покупку жилья, копейки (ст. 220 НК РФ)
+  optional uint64 mortgage_expense  = 11; // Уплаченные проценты по ипотеке, копейки (ст. 220 НК РФ)
+  optional uint64 social_expense    = 12; // Расходы на лечение и своё обучение, копейки (ст. 219 НК РФ)
+  optional uint64 child_edu_expense = 13; // Расходы на обучение ребёнка, копейки (ст. 219 НК РФ)
 }
 
 // Ответ для гостей (усечённый)
@@ -37,13 +45,27 @@ message CalculatePublicResponse {
   optional uint64 northern_coefficient = 7; // Указанная в запросе северная надбавка
 }
 
+// Результат расчёта налоговых вычетов
+message DeductionResult {
+  uint64 children_monthly_deduction = 1; // Ежемесячная сумма вычета на детей, копейки
+  uint32 children_months            = 2; // Количество месяцев, за которые применён детский вычет
+  uint64 children_return            = 3; // Возврат налога по детскому вычету, копейки
+
+  uint64 property_return_this_year  = 4; // Возврат за жильё/ипотеку в расчётном периоде, копейки
+  uint64 property_return_total      = 5; // Полная сумма возврата за жильё/ипотеку (часть переносится на след. годы)
+
+  uint64 social_return              = 6; // Возврат по социальному вычету, копейки
+
+  uint64 total_return               = 7; // Итого к возврату в расчётном периоде, копейки
+}
+
 // Ответ для авторизованных пользователей (подробный)
 message CalculatePrivateResponse {
   repeated MonthlyPrivateTax monthly_details = 1; // Помесячная детализация
 
-  uint64 annual_tax_amount = 2; // Уплаченный налог с начала выбранного периода 
-  uint64 annual_gross_income = 3; // Гросс доход с начала указанного периода 
-  uint64 annual_net_income = 4; // Чистый доход с начала указанного периода 
+  uint64 annual_tax_amount = 2; // Уплаченный налог с начала выбранного периода
+  uint64 annual_gross_income = 3; // Гросс доход с начала указанного периода
+  uint64 annual_net_income = 4; // Чистый доход с начала указанного периода
 
   uint64 gross_salary = 5; // Указаный оклад в запросе
   optional uint64 territorial_multiplier = 6; // Указаный в запросе территориальный коэффициент
@@ -52,6 +74,8 @@ message CalculatePrivateResponse {
   uint64 annualPFR = 20; // Налог с начала выбранного периода работодателя в Пенсионный фонд России
   uint64 annualFOMS = 21; //Налог с начала выбранного периода работодателя в Фонд Обязательного медиционского страхования
   uint64 annualFSS = 22; //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
+
+  optional DeductionResult deduction_result = 24; // Результат расчёта налоговых вычетов (если переданы параметры)
 }
 
 // Полный расчёт на месяц для авторизованного пользователя

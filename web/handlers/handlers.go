@@ -40,6 +40,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/about", s.About)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
+	mux.HandleFunc("/tax-deductions", s.TaxDeductions)
 	mux.HandleFunc("/api-docs", s.HandleApiDocs)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
@@ -184,6 +185,13 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		Months:            indexData.Months,
 		Territorial:       indexData.Territorial,
 		Northern:          indexData.Northern,
+		DeductionResult:            res.DeductionResult,
+		ChildrenCountInput:         req.GetChildrenCount(),
+		DisabledChildrenCountInput: req.GetDisabledChildrenCount(),
+		HousingExpenseInput:        req.GetHousingExpense() / 100,
+		MortgageExpenseInput:       req.GetMortgageExpense() / 100,
+		SocialExpenseInput:         req.GetSocialExpense() / 100,
+		ChildEduExpenseInput:       req.GetChildEduExpense() / 100,
 	}
 
 	// render template
@@ -236,6 +244,13 @@ func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
 	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", nil); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "special_tax_modes", "err", err)
+		http.Error(w, "internal server error", 500)
+	}
+}
+
+func (s *Server) TaxDeductions(w http.ResponseWriter, r *http.Request) {
+	if err := s.Tmpl.ExecuteTemplate(w, "tax_deductions", nil); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "tax_deductions", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
