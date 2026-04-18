@@ -5,8 +5,8 @@
 
 .info-page {
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 1.75rem 1rem 2rem;
   font-family: system-ui, sans-serif;
   color: #333;
   line-height: 1.6;
@@ -157,7 +157,95 @@
   color: #856404;
 }
 
-/* Кнопки */
+/* === Навигация между инфо-страницами (sticky) === */
+.info-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #d3eaff 0%, #c7ddff 35%, #bad1ff 70%, #aec5ff 100%);
+  background-attachment: fixed;
+  border-bottom: 1px solid rgba(180, 200, 240, 0.6);
+}
+
+.info-nav-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.info-nav-home {
+  color: #555;
+  text-decoration: none;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  padding: 0.3rem 0;
+}
+
+.info-nav-home:hover {
+  color: #1c7ed6;
+}
+
+.info-nav-links {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: nowrap;
+}
+
+.info-nav-link {
+  color: #555;
+  text-decoration: none;
+  font-size: 0.875rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.info-nav-link:hover {
+  background: #e8f0fe;
+  color: #1c7ed6;
+}
+
+.info-nav-link--active {
+  background: #1c7ed6;
+  color: #fff;
+  font-weight: 500;
+}
+
+.info-nav-link--active:hover {
+  background: #1558a8;
+  color: #fff;
+}
+
+/* Мобильный select — скрыт на десктопе */
+.info-nav-select {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .info-nav-links {
+    display: none;
+  }
+
+  .info-nav-select {
+    display: block;
+    font-size: 0.875rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    max-width: 160px;
+  }
+}
+
 .info-button-container {
   text-align: center;
   margin-top: 2rem;

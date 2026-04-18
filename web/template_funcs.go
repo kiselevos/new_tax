@@ -21,6 +21,12 @@ var Funcs = template.FuncMap{
 	"sub": func(a, b int) int {
 		return a - b
 	},
+	"subU64": func(a, b uint64) uint64 {
+		if a > b {
+			return a - b
+		}
+		return 0
+	},
 	"minus100": func(a uint64) uint64 { return a - 100 },
 	"divf":     func(a uint64, b float64) float64 { return float64(a) / b },
 	"toInt":    func(n uint64) int { return int(n) },

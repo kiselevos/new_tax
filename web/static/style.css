@@ -501,25 +501,51 @@ a.button.large {
 
 /* === FOOTER === */
 .site-footer {
-    text-align: center;
     padding: 40px 20px 30px;
     font-size: 13px;
     color: #8a8a8a;
     margin-top: 60px;
-    border-top: 1px solid rgba(255, 255, 255, 0.4); /* мягкий белый разделитель */
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+/* Двухколоночный грид футера */
+.footer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem 4rem;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 160px;
+}
+
+.footer-col-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #aaa;
+    margin-bottom: 0.2rem;
+}
+
+/* Старые одноколоночные ссылки (обратная совместимость) */
 .footer-links {
     display: flex;
-    flex-wrap: wrap;           /* позволяет переносить строки */
-    justify-content: center;   /* центрует даже при переносе */
-    gap: 10px 16px;            /* вертикальный и горизонтальный отступ */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 16px;
     max-width: 100%;
     margin-bottom: 8px;
 }
 
 .footer-link {
-    white-space: nowrap;       /* пункт всегда целиком, не делится по словам */
+    white-space: nowrap;
     color: #597ccf;
     text-decoration: none;
     font-size: 13px;
@@ -534,6 +560,7 @@ a.button.large {
     font-size: 12px;
     color: #9c9c9c;
     margin-top: 4px;
+    text-align: center;
 }
 
 

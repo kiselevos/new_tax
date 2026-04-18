@@ -219,19 +219,7 @@ window.APP_CONFIG = {
     </form>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-links">
-      <a class="footer-link" href="/about">О проекте</a>
-      <a class="footer-link" href="/api-docs">API для разработчиков</a>
-      <a class="footer-link" href="mailto:{{.FeedbackEmail}}?subject=Калькулятор%20НДФЛ">
-        Написать разработчику
-      </a>
-    </div>
-
-    <div class="footer-copy">
-      © 2025 Калькулятор НДФЛ
-    </div>
-  </footer>
+  {{template "footer" .}}
 
 </body>
 </html>

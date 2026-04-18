@@ -19,6 +19,7 @@
   <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
+  {{template "info_nav" "about"}}
   <div class="info-page">
     <h1 class="info-page-title">О проекте</h1>
 
@@ -193,10 +194,8 @@
       </ul>
     </div>
 
-    <div class="info-button-container">
-      <button onclick="window.location.href='/'" class="info-button">Вернуться к калькулятору</button>
-    </div>
   </div>
+  {{template "footer" .}}
 </body>
 </html>
 {{end}}

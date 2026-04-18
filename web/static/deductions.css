@@ -415,6 +415,91 @@
     background: #1e8e4e;
 }
 
+/* --- Подсказка «изменить» в заголовке аккордеона --- */
+.deductions-toggle-hint {
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: #3a9e6e;
+    margin-left: 0.4rem;
+    font-style: normal;
+    opacity: 0.8;
+}
+
+/* ===== ПЛАШКА ИТОГА ВЫЧЕТОВ В ОСНОВНЫХ РЕЗУЛЬТАТАХ ===== */
+
+.deduction-summary-card {
+    background: linear-gradient(135deg, #e8f8ee 0%, #d5f0e2 100%);
+    border: 1px solid #a8dfc0;
+    border-left: 4px solid #27ae60;
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-top: 1rem;
+}
+
+.deduction-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.deduction-summary-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a4a35;
+}
+
+.deduction-summary-total {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a9c6e;
+    white-space: nowrap;
+}
+
+.deduction-summary-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.deduction-summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: #2d5a3d;
+    flex-wrap: wrap;
+}
+
+.deduction-summary-line--note {
+    color: #5a8a6d;
+    font-size: 0.82rem;
+}
+
+.deduction-summary-line--note .deduction-summary-amount {
+    color: #5a8a6d;
+    font-weight: 500;
+}
+
+.deduction-summary-amount {
+    font-weight: 600;
+    color: #1a7a4e;
+    white-space: nowrap;
+}
+
+.deduction-summary-caveat {
+    font-size: 0.8rem;
+    color: #5a7a6a;
+    line-height: 1.5;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #b8dfc8;
+}
+
 /* --- Мобильная адаптация --- */
 @media (max-width: 540px) {
     .deduction-input-row {
@@ -434,5 +519,23 @@
 
     .deductions-total-value {
         font-size: 1.3rem;
+    }
+
+    .deduction-summary-header {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .deduction-summary-total {
+        font-size: 1.25rem;
+    }
+
+    .deduction-summary-line {
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .deduction-summary-amount {
+        font-size: 0.9rem;
     }
 }

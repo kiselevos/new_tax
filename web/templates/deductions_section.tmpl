@@ -6,7 +6,11 @@
   {{if .IsNotResident}}data-not-resident="true"{{end}}>
 
   <button type="button" class="deductions-toggle" id="toggle-deductions">
+    {{if .DeductionResult}}
+    Налоговые вычеты · {{fmtMoney .DeductionResult.TotalReturn}} <span class="deductions-toggle-hint">изменить</span>
+    {{else}}
     Можно ли вернуть часть налога?
+    {{end}}
     <span class="deductions-arrow">▼</span>
   </button>
 
@@ -56,12 +60,6 @@
           </div>
         </div>
       </div>
-      <div class="deduction-result" id="children-result">
-        {{if .DeductionResult}}{{if .DeductionResult.ChildrenReturn}}
-        <div class="deduction-result-line">Ежемесячный вычет: <strong>{{fmtMoney .DeductionResult.ChildrenMonthlyDeduction}}</strong> × {{.DeductionResult.ChildrenMonths}} мес.</div>
-        <div class="deduction-result-line deduction-result-total">Возврат: <strong>{{fmtMoney .DeductionResult.ChildrenReturn}}</strong></div>
-        {{end}}{{end}}
-      </div>
     </div>
 
     <!-- Имущественные вычеты (ст. 220) -->
@@ -80,24 +78,16 @@
       <div class="deduction-inputs">
         <div class="deduction-input-row">
           <label class="deduction-label" for="housing-amount">Расходы на покупку жилья, ₽:</label>
-          <input type="number" id="housing-amount" name="housingExpense"
-                 class="deduction-amount-input" min="0" placeholder="0"
+          <input type="text" inputmode="numeric" id="housing-amount" name="housingExpense"
+                 class="deduction-amount-input" placeholder="например, 2 000 000"
                  value="{{if .HousingExpenseInput}}{{.HousingExpenseInput}}{{end}}">
         </div>
         <div class="deduction-input-row">
           <label class="deduction-label" for="mortgage-amount">Уплаченные проценты по ипотеке, ₽:</label>
-          <input type="number" id="mortgage-amount" name="mortgageExpense"
-                 class="deduction-amount-input" min="0" placeholder="0"
+          <input type="text" inputmode="numeric" id="mortgage-amount" name="mortgageExpense"
+                 class="deduction-amount-input" placeholder="например, 1 500 000"
                  value="{{if .MortgageExpenseInput}}{{.MortgageExpenseInput}}{{end}}">
         </div>
-      </div>
-      <div class="deduction-result" id="property-result">
-        {{if .DeductionResult}}{{if .DeductionResult.PropertyReturnThisYear}}
-        <div class="deduction-result-line deduction-result-total">Возврат в этом году: <strong>{{fmtMoney .DeductionResult.PropertyReturnThisYear}}</strong></div>
-        {{if gt .DeductionResult.PropertyReturnTotal .DeductionResult.PropertyReturnThisYear}}
-        <div class="deduction-result-line">Полный возврат: {{fmtMoney .DeductionResult.PropertyReturnTotal}} (остаток переходит на следующие годы)</div>
-        {{end}}
-        {{end}}{{end}}
       </div>
     </div>
 
@@ -116,36 +106,16 @@
       <div class="deduction-inputs">
         <div class="deduction-input-row">
           <label class="deduction-label" for="social-amount">Лечение и своё обучение, ₽:</label>
-          <input type="number" id="social-amount" name="socialExpense"
-                 class="deduction-amount-input" min="0" placeholder="0"
+          <input type="text" inputmode="numeric" id="social-amount" name="socialExpense"
+                 class="deduction-amount-input" placeholder="например, 80 000"
                  value="{{if .SocialExpenseInput}}{{.SocialExpenseInput}}{{end}}">
         </div>
         <div class="deduction-input-row">
           <label class="deduction-label" for="child-edu-amount">Обучение ребёнка, ₽:</label>
-          <input type="number" id="child-edu-amount" name="childEduExpense"
-                 class="deduction-amount-input" min="0" placeholder="0"
+          <input type="text" inputmode="numeric" id="child-edu-amount" name="childEduExpense"
+                 class="deduction-amount-input" placeholder="например, 50 000"
                  value="{{if .ChildEduExpenseInput}}{{.ChildEduExpenseInput}}{{end}}">
         </div>
-      </div>
-      <div class="deduction-result" id="social-result">
-        {{if .DeductionResult}}{{if .DeductionResult.SocialReturn}}
-        <div class="deduction-result-line deduction-result-total">Возврат: <strong>{{fmtMoney .DeductionResult.SocialReturn}}</strong></div>
-        {{end}}{{end}}
-      </div>
-    </div>
-
-    <!-- Итоговая строка -->
-    <div class="deductions-total" id="deductions-total">
-      <div class="deductions-total-row">
-        <span class="deductions-total-label">Итого можно вернуть:</span>
-        <span class="deductions-total-value" id="total-return-value">
-          {{if .DeductionResult}}{{fmtMoney .DeductionResult.TotalReturn}}{{else}}—{{end}}
-        </span>
-      </div>
-      <div class="deductions-total-note" id="total-return-note">
-        {{if .DeductionResult}}{{if gt .DeductionResult.PropertyReturnTotal .DeductionResult.PropertyReturnThisYear}}
-        Полный имущественный возврат {{fmtMoney .DeductionResult.PropertyReturnTotal}} — остаток переходит на следующие годы.
-        {{end}}{{end}}
       </div>
     </div>
 
