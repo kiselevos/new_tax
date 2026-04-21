@@ -644,12 +644,52 @@ function initEditParams() {
     function updateEditPanelFields() {
         var sel = panel.querySelector('input[name="employmentType"]:checked');
         var isSE = sel && sel.value === "SELF_EMPLOYED";
+        var isGPH = sel && sel.value === "GPH";
+
+        // Территориальный и северный — не для НПД
         ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
             var el = panel.querySelector('[name="' + name + '"]');
             if (!el) return;
             var field = el.closest(".edit-field");
             if (field) field.style.display = isSE ? "none" : "";
         });
+
+        // Особые условия (льготы и нерезидент) — скрываем всё поле при НПД,
+        // при ГПХ оставляем видимым но отключаем только льготы
+        var privilegeCb = panel.querySelector('input[name="hasTaxPrivilege"]');
+        var residentCb  = panel.querySelector('input[name="isNotResident"]');
+
+        if (isSE) {
+            // Самозанятый: несовместимо ни с льготами, ни с нерезидентством
+            [privilegeCb, residentCb].forEach(function(cb) {
+                if (!cb) return;
+                cb.checked = false;
+                cb.disabled = true;
+                var item = cb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "0.4";
+            });
+        } else if (isGPH) {
+            // ГПХ: только льготы недоступны
+            if (privilegeCb) {
+                privilegeCb.checked = false;
+                privilegeCb.disabled = true;
+                var item = privilegeCb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "0.4";
+            }
+            if (residentCb) {
+                residentCb.disabled = false;
+                var item2 = residentCb.closest(".edit-checkbox-item");
+                if (item2) item2.style.opacity = "";
+            }
+        } else {
+            // ТД: всё доступно
+            [privilegeCb, residentCb].forEach(function(cb) {
+                if (!cb) return;
+                cb.disabled = false;
+                var item = cb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "";
+            });
+        }
     }
     editRadios.forEach(function(r) {
         r.addEventListener("change", updateEditPanelFields);
