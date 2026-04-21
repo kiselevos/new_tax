@@ -17,7 +17,13 @@ message CalculatePublicRequest {
 enum EmploymentType {
   TD = 0;            // Трудовой договор (по умолчанию)
   GPH = 1;           // Договор гражданско-правового характера (нет ФСС)
-  SELF_EMPLOYED = 2; // Самозанятый, НПД (Фаза 4 — пока не поддерживается)
+  SELF_EMPLOYED = 2; // Самозанятый, НПД
+}
+
+// Источник дохода самозанятого — определяет ставку НПД
+enum NpdIncomeSource {
+  INDIVIDUAL   = 0; // Физическое лицо — ставка 4%
+  LEGAL_ENTITY = 1; // Юридическое лицо или ИП — ставка 6%
 }
 
 // Запрос зарегистрированного
@@ -39,6 +45,10 @@ message CalculatePrivateRequest {
   optional uint64 child_edu_expense = 13; // Расходы на обучение ребёнка, копейки (ст. 219 НК РФ)
 
   optional EmploymentType employment_type = 14; // Тип занятости (TD по умолчанию)
+
+  // Параметры самозанятого (НПД) — заполняются только при employment_type = SELF_EMPLOYED
+  optional NpdIncomeSource npd_income_source       = 15; // Источник дохода: физлицо (4%) или юрлицо (6%)
+  optional bool            has_registration_deduction = 16; // Есть ли вычет 10 000 ₽ при регистрации
 }
 
 // Ответ для гостей (усечённый)
@@ -85,6 +95,8 @@ message CalculatePrivateResponse {
   uint64 annualFSS = 22; //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
 
   optional DeductionResult deduction_result = 24; // Результат расчёта налоговых вычетов (если переданы параметры)
+
+  bool npd_limit_exceeded = 25; // true, если годовой доход самозанятого превысил 2 400 000 ₽
 }
 
 // Полный расчёт на месяц для авторизованного пользователя
@@ -119,6 +131,8 @@ message MonthlyPrivateTax {
   uint64 annualFSS = 22; //Налог с начала выбранного периода работодателя в Фонд социального страхования (Больничные, декреты)
 
   uint64 monthly_bonus = 23; // Разовая выплата (премия) в этом месяце (копейки)
+
+  uint64 npd_deduction_used = 24; // Использованный в этом месяце регистрационный вычет НПД (копейки)
 }
 
 // Упрощённый расчёт на месяц для гостей
