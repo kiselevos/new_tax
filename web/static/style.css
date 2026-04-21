@@ -393,6 +393,15 @@ input::placeholder {
     color: #2c3e50;
 }
 
+.exclusive-option--disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.exclusive-option--disabled:hover {
+    background: transparent;
+}
+
 /* === UNDER-TITLE LINKS === */
 .under-title {
     font-size: 0.875rem;
@@ -563,6 +572,67 @@ a.button.large {
     text-align: center;
 }
 
+
+/* === EMPLOYMENT TYPE === */
+.employment-type-row .field-right {
+    padding-top: 0.25rem;
+}
+
+.employment-type-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.employment-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.employment-option:hover {
+    background: #f8f9fa;
+}
+
+.employment-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+    transform: scale(1.2);
+    accent-color: #3498db;
+    cursor: pointer;
+}
+
+.employment-option-label {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.employment-option--soon {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.employment-option--soon:hover {
+    background: transparent;
+}
+
+.employment-soon-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: #e8f4fd;
+    color: #2980b9;
+    border: 1px solid #bde0f7;
+    border-radius: 4px;
+    padding: 1px 5px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
 
 /* === ADDITIONAL PARAMETERS === */
 .additional-toggle {

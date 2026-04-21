@@ -387,10 +387,39 @@ else {
         }
     }
 
+    // === Тип занятости: блокировка несовместимых опций ===
+    function initEmploymentType() {
+        var radios = document.querySelectorAll('input[name="employmentType"]');
+        var privilegeCheckbox = document.querySelector('input[name="hasTaxPrivilege"]');
+        if (!radios.length || !privilegeCheckbox) return;
+
+        function updateCompatibility() {
+            var selected = document.querySelector('input[name="employmentType"]:checked');
+            var isGPH = selected && selected.value === "GPH";
+
+            if (isGPH) {
+                privilegeCheckbox.checked = false;
+                privilegeCheckbox.disabled = true;
+                privilegeCheckbox.closest(".exclusive-option").classList.add("exclusive-option--disabled");
+                privilegeCheckbox.closest(".exclusive-option").classList.remove("selected");
+            } else {
+                privilegeCheckbox.disabled = false;
+                privilegeCheckbox.closest(".exclusive-option").classList.remove("exclusive-option--disabled");
+            }
+        }
+
+        radios.forEach(function(radio) {
+            radio.addEventListener("change", updateCompatibility);
+        });
+
+        updateCompatibility();
+    }
+
     // Инициализация всех компонентов
     initExclusiveCheckboxes();
     initTooltips();
     initAccordion();
+    initEmploymentType();
 });
 
 // ===================================================================

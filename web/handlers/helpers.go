@@ -60,6 +60,8 @@ type ResultPayload struct {
 	Months            []Month               // опции для select месяца в панели редактирования
 	Territorial       []CoefficientOption   // опции РК
 	Northern          []BonusOption         // опции СН
+	IsGPH             bool                  // договор ГПХ (нет ФСС, нет трудовых гарантий)
+	EmploymentTypeStr string                // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
 	DeductionResult   *pb.DeductionResult   // результат расчёта налоговых вычетов (если переданы параметры)
 
 	// Значения из последнего запроса вычетов (для предзаполнения формы после пересчёта)
@@ -138,6 +140,7 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	northernStr := r.FormValue("northernCoefficient")
 	hasTaxPrivilege := r.FormValue("hasTaxPrivilege") != ""
 	isNotResident := r.FormValue("isNotResident") != ""
+	employmentType := parseEmploymentType(r.FormValue("employmentType"))
 
 	// Месяц
 	monthNum, err := strconv.Atoi(monthStr)
@@ -197,6 +200,7 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		NorthernCoefficient:   uint64Ptr(uint64(northern)),
 		HasTaxPrivilege:       boolPtr(hasTaxPrivilege),
 		IsNotResident:         boolPtr(isNotResident),
+		EmploymentType:        employmentTypePtr(employmentType),
 		MonthlyBonuses:        bonuses,
 	}
 	if childrenCount > 0 {
@@ -247,6 +251,23 @@ func parseKopecksForm(r *http.Request, field string) uint64 {
 		return 0
 	}
 	return uint64(math.Round(v * 100))
+}
+
+// parseEmploymentType конвертирует строку формы в proto-enum EmploymentType.
+func parseEmploymentType(s string) pb.EmploymentType {
+	switch s {
+	case "GPH":
+		return pb.EmploymentType_GPH
+	case "SELF_EMPLOYED":
+		return pb.EmploymentType_SELF_EMPLOYED
+	default:
+		return pb.EmploymentType_TD
+	}
+}
+
+// employmentTypePtr возвращает указатель на pb.EmploymentType для proto optional-поля.
+func employmentTypePtr(v pb.EmploymentType) *pb.EmploymentType {
+	return &v
 }
 
 func PrepareApiData() (*ApiDocsData, error) {

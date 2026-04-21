@@ -175,6 +175,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		ShowWarning:       showWarning,
 		HasTaxPrivilege:   getBool(req.HasTaxPrivilege),
 		IsNotResident:     getBool(req.IsNotResident),
+		IsGPH:             req.GetEmploymentType() == pb.EmploymentType_GPH,
+		EmploymentTypeStr: req.GetEmploymentType().String(),
 		AnnualPFR:         res.AnnualPFR,
 		AnnualFOMS:        res.AnnualFOMS,
 		AnnualFSS:         res.AnnualFSS,

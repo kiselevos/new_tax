@@ -115,6 +115,29 @@ window.APP_CONFIG = {
       </div>
 
 
+      <!-- Тип занятости -->
+      <div class="field-row employment-type-row">
+        <div class="field-left">
+          <div class="field-header">
+            <label>Тип занятости:</label>
+          </div>
+        </div>
+        <div class="field-right employment-type-options">
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="TD" checked>
+            <span class="employment-option-label">Трудовой договор</span>
+          </label>
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="GPH">
+            <span class="employment-option-label">Договор ГПХ</span>
+          </label>
+          <label class="employment-option employment-option--soon">
+            <input type="radio" name="employmentType" value="SELF_EMPLOYED" disabled>
+            <span class="employment-option-label">Самозанятый <span class="employment-soon-badge">Скоро</span></span>
+          </label>
+        </div>
+      </div>
+
       <button type="button" class="additional-toggle">
       <span class="icon-plus">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
