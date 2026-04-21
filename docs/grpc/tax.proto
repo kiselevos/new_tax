@@ -13,6 +13,13 @@ message CalculatePublicRequest {
   optional uint64 northern_coefficient = 3; // Северная надбавка
 }
 
+// Тип занятости — определяет режим расчёта взносов и применимость особых режимов
+enum EmploymentType {
+  TD = 0;            // Трудовой договор (по умолчанию)
+  GPH = 1;           // Договор гражданско-правового характера (нет ФСС)
+  SELF_EMPLOYED = 2; // Самозанятый, НПД (Фаза 4 — пока не поддерживается)
+}
+
 // Запрос зарегистрированного
 message CalculatePrivateRequest {
   uint64 gross_salary = 1; // Оклад указанный в договоре
@@ -30,6 +37,8 @@ message CalculatePrivateRequest {
   optional uint64 mortgage_expense  = 11; // Уплаченные проценты по ипотеке, копейки (ст. 220 НК РФ)
   optional uint64 social_expense    = 12; // Расходы на лечение и своё обучение, копейки (ст. 219 НК РФ)
   optional uint64 child_edu_expense = 13; // Расходы на обучение ребёнка, копейки (ст. 219 НК РФ)
+
+  optional EmploymentType employment_type = 14; // Тип занятости (TD по умолчанию)
 }
 
 // Ответ для гостей (усечённый)
