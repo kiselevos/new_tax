@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Трудовой договор, ГПХ и самозанятость — в чём разница</title>
+  <title>ТД, ГПХ, самозанятость и ИП — налоги и отличия</title>
 
   <meta name="description"
-        content="Чем отличается трудовой договор от договора ГПХ и самозанятости: налоги, взносы, права и риски. Простое сравнение для физических лиц.">
-  <meta name="keywords" content="трудовой договор, договор ГПХ, самозанятость, НПД, НДФЛ, страховые взносы, ФСС, отличия ГПХ от ТД">
+        content="Чем отличается трудовой договор от ГПХ, самозанятости и ИП: налоги, взносы, права и риски. Простое сравнение режимов для физических лиц.">
+  <meta name="keywords" content="трудовой договор, договор ГПХ, самозанятость, НПД, ИП, УСН, НДФЛ, страховые взносы, ФСС, отличия ГПХ от ТД, ИП самозанятый разница">
 
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/info-pages.css">
@@ -20,10 +20,10 @@
 <body>
   {{template "info_nav" "employment-types"}}
   <div class="info-page">
-    <h1 class="info-page-title">Трудовой договор, ГПХ и самозанятость</h1>
+    <h1 class="info-page-title">ТД, ГПХ, самозанятость и ИП</h1>
 
     <p class="info-page-subtitle">
-      Три самых распространённых способа оформить работу в России — и у каждого свои налоги,
+      Четыре основных способа оформить работу в России — и у каждого свои налоги,
       взносы и права. Разбираем главные отличия.
     </p>
 
@@ -82,7 +82,7 @@
 
     <!-- Самозанятость -->
     <div class="info-card">
-      <h2 class="info-card-title">🧾 Самозанятость (НПД)</h2>
+      <h2 class="info-card-title">🧾 Самозанятость (НПД для физлица)</h2>
 
       <p class="info-card-text">
         Специальный налоговый режим — налог на профессиональный доход (НПД).
@@ -105,8 +105,67 @@
       </div>
 
       <div class="info-warning">
+        ⚠️ <strong>Что будет при превышении лимита 2,4 млн ₽?</strong><br>
+        Статус самозанятого теряется автоматически с даты превышения. Доход сверх лимита
+        облагается НДФЛ по обычной прогрессивной шкале — нужно самому подать декларацию 3-НДФЛ.
+        Многие в этой ситуации заранее регистрируют ИП и переходят на УСН.
+      </div>
+
+      <div class="info-warning">
         ⚠️ Самозанятый не может оказывать услуги своему текущему или бывшему работодателю
         в течение 2 лет после увольнения — это запрещено законом.
+      </div>
+    </div>
+
+    <!-- ИП -->
+    <div class="info-card">
+      <h2 class="info-card-title">🏢 Индивидуальный предприниматель (ИП)</h2>
+
+      <p class="info-card-text">
+        ИП — это физлицо, зарегистрированное в качестве предпринимателя. В отличие от самозанятого,
+        ИП <strong>может нанимать сотрудников</strong> и выбирать из нескольких налоговых режимов.
+      </p>
+
+      <p class="info-card-text">
+        Все ИП обязаны платить <strong>фиксированные страховые взносы за себя</strong> — в 2025 году
+        это ~53 658 ₽ в год вне зависимости от дохода (плюс 1% с дохода свыше 300 000 ₽).
+        Исключение — ИП на НПД: они от фиксированных взносов освобождены.
+      </p>
+
+      <p class="info-card-text"><strong>Основные налоговые режимы для ИП:</strong></p>
+
+      <ul class="info-bullet-list">
+        <li>
+          <strong>УСН «Доходы» (6%).</strong> Самый популярный режим. Налог — 6% со всех поступлений.
+          Взносы за себя можно вычесть из налога. Лимит — 450 млн ₽/год.
+        </li>
+        <li>
+          <strong>УСН «Доходы минус расходы» (15%).</strong> Выгоден при высоких подтверждённых расходах.
+          Минимальный налог — 1% от доходов, даже при убытке.
+        </li>
+        <li>
+          <strong>Патент (ПСН).</strong> Фиксированная сумма за определённый вид деятельности.
+          Не зависит от реального дохода. Подходит для локального малого бизнеса.
+        </li>
+        <li>
+          <strong>НПД (как у самозанятого).</strong> ИП может применять НПД — 4%/6%, без фиксированных взносов.
+          Те же ограничения: лимит 2,4 млн ₽/год, нельзя нанимать сотрудников.
+        </li>
+        <li>
+          <strong>ОСНО (общая система).</strong> НДС + НДФЛ 13–22%. Максимальная нагрузка и отчётность.
+          Актуален при работе с НДС-плательщиками.
+        </li>
+      </ul>
+
+      <div class="info-example">
+        ℹ️ Пример: разработчик с доходом 3 млн ₽/год открывает ИП на УСН 6%.
+        Налог — 180 000 ₽. Взносы за себя (~53 000 ₽) вычитаются из налога.
+        Итоговая нагрузка — около 180 000 ₽ против 390 000 ₽ НДФЛ при ТД.
+      </div>
+
+      <div class="info-warning">
+        ⚠️ Если ИП на НПД превышает лимит 2,4 млн ₽, он автоматически переходит на ОСНО.
+        Успеть подать заявление на УСН нужно в течение 20 календарных дней.
       </div>
     </div>
 
@@ -114,40 +173,46 @@
     <div class="info-card">
       <h2 class="info-card-title">⚖️ Краткое сравнение</h2>
 
-      <div class="info-compare-table">
+      <div class="info-compare-table info-compare-table--wide">
         <div class="info-compare-header">
           <div></div>
           <div>ТД</div>
           <div>ГПХ</div>
-          <div>Самозанятость</div>
+          <div>Самозанятый</div>
+          <div>ИП (УСН 6%)</div>
         </div>
         <div class="info-compare-row">
-          <div class="info-compare-label">НДФЛ</div>
-          <div>13–22%</div>
-          <div>13–22%</div>
-          <div>4% / 6% (НПД)</div>
+          <div class="info-compare-label">Налог</div>
+          <div>НДФЛ 13–22%</div>
+          <div>НДФЛ 13–22%</div>
+          <div>НПД 4% / 6%</div>
+          <div>УСН 6%</div>
         </div>
         <div class="info-compare-row">
           <div class="info-compare-label">ПФР</div>
-          <div class="info-compare-yes">✓</div>
-          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-yes">✓ (работодатель)</div>
+          <div class="info-compare-yes">✓ (заказчик)</div>
           <div class="info-compare-no">добровольно</div>
+          <div class="info-compare-yes">✓ фиксированно</div>
         </div>
         <div class="info-compare-row">
           <div class="info-compare-label">ФОМС</div>
           <div class="info-compare-yes">✓</div>
           <div class="info-compare-yes">✓</div>
           <div class="info-compare-no">—</div>
+          <div class="info-compare-yes">✓ фиксированно</div>
         </div>
         <div class="info-compare-row">
           <div class="info-compare-label">ФСС</div>
           <div class="info-compare-yes">✓</div>
           <div class="info-compare-no">—</div>
           <div class="info-compare-no">—</div>
+          <div class="info-compare-no">добровольно</div>
         </div>
         <div class="info-compare-row">
           <div class="info-compare-label">Отпуск</div>
           <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">—</div>
           <div class="info-compare-no">—</div>
           <div class="info-compare-no">—</div>
         </div>
@@ -156,24 +221,28 @@
           <div class="info-compare-yes">✓</div>
           <div class="info-compare-no">—</div>
           <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
         </div>
         <div class="info-compare-row">
-          <div class="info-compare-label">Защита ТК</div>
+          <div class="info-compare-label">Сотрудники</div>
+          <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
           <div class="info-compare-yes">✓</div>
-          <div class="info-compare-no">—</div>
-          <div class="info-compare-no">—</div>
         </div>
         <div class="info-compare-row">
           <div class="info-compare-label">Лимит дохода</div>
           <div>нет</div>
           <div>нет</div>
           <div>2,4 млн/год</div>
+          <div>450 млн/год</div>
         </div>
       </div>
 
       <p class="info-source">📚 Источники:</p>
       <ul class="info-source-list">
         <li><a href="https://www.nalog.gov.ru/rn77/taxation/taxes/npdfl/" target="_blank" class="info-source-link">ФНС: налог на профессиональный доход (НПД)</a></li>
+        <li><a href="https://www.nalog.gov.ru/rn77/taxation/taxes/usn/" target="_blank" class="info-source-link">ФНС: упрощённая система налогообложения (УСН)</a></li>
         <li><a href="https://www.nalog.gov.ru/rn77/taxation/taxes/ndfl/" target="_blank" class="info-source-link">ФНС: НДФЛ — ставки и порядок расчёта</a></li>
       </ul>
     </div>

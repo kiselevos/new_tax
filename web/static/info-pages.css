@@ -184,6 +184,11 @@
   gap: 0;
 }
 
+.info-compare-table--wide .info-compare-header,
+.info-compare-table--wide .info-compare-row {
+  grid-template-columns: 1.2fr 0.85fr 0.9fr 1.1fr 1.1fr;
+}
+
 .info-compare-header {
   background: #f0f4ff;
   font-weight: 600;
@@ -225,7 +230,8 @@
 
 @media (max-width: 600px) {
   .info-compare-table {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
+    overflow-x: auto;
   }
 
   .info-compare-header,
@@ -233,9 +239,15 @@
     grid-template-columns: 1.2fr 0.8fr 0.8fr 1.2fr;
   }
 
+  .info-compare-table--wide .info-compare-header,
+  .info-compare-table--wide .info-compare-row {
+    grid-template-columns: 1.1fr 0.75fr 0.8fr 1fr 1fr;
+    font-size: 0.68rem;
+  }
+
   .info-compare-header > div,
   .info-compare-row > div {
-    padding: 0.5rem 0.4rem;
+    padding: 0.45rem 0.3rem;
   }
 }
 
