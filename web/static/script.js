@@ -422,6 +422,15 @@ else {
 
             // Нерезидент: недоступен при самозанятости (НПД только для резидентов РФ)
             setDisabled(residentCheckbox, isSelfEmployed);
+
+            // Территориальный коэффициент и северная надбавка: не применяются при НПД
+            ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
+                var el = document.querySelector('[name="' + name + '"]');
+                if (!el) return;
+                var row = el.closest(".field-row");
+                if (row) row.style.display = isSelfEmployed ? "none" : "";
+                if (isSelfEmployed) el.value = "100"; // сбрасываем на «без надбавки»
+            });
         }
 
         radios.forEach(function(radio) {
@@ -629,6 +638,23 @@ function initEditParams() {
             }
         });
     });
+
+    // Скрываем территориальный/северный при самозанятом в панели редактирования
+    var editRadios = panel.querySelectorAll('input[name="employmentType"]');
+    function updateEditPanelFields() {
+        var sel = panel.querySelector('input[name="employmentType"]:checked');
+        var isSE = sel && sel.value === "SELF_EMPLOYED";
+        ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
+            var el = panel.querySelector('[name="' + name + '"]');
+            if (!el) return;
+            var field = el.closest(".edit-field");
+            if (field) field.style.display = isSE ? "none" : "";
+        });
+    }
+    editRadios.forEach(function(r) {
+        r.addEventListener("change", updateEditPanelFields);
+    });
+    updateEditPanelFields();
 
     // Если после пересчёта были изменены параметры - открываем панель
     // (определяем по наличию query-параметра, который не нужен - панель закрыта по умолчанию)
