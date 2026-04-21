@@ -15,8 +15,10 @@ type CalculateInput struct {
 	StartDate             time.Time
 	HasTaxPrivilege       bool
 	IsNotResident         bool
-	EmploymentType        pb.EmploymentType // Тип занятости (TD по умолчанию)
-	MonthlyBonuses        []uint64          // Разовые выплаты по месяцам (копейки), индекс 0 = январь
+	EmploymentType           pb.EmploymentType    // Тип занятости (TD по умолчанию)
+	NpdIncomeSource          pb.NpdIncomeSource   // Источник дохода самозанятого (физлицо / юрлицо)
+	HasRegistrationDeduction bool                 // Есть ли регистрационный вычет 10 000 ₽
+	MonthlyBonuses           []uint64             // Разовые выплаты по месяцам (копейки), индекс 0 = январь
 	Deductions            DeductionInput
 }
 
@@ -49,6 +51,9 @@ type MonthlyTax struct {
 
 	// Разовая выплата (премия) в этом месяце
 	MonthlyBonus uint64
+
+	// НПД: использованный регистрационный вычет в этом месяце (копейки)
+	NpdDeductionUsed uint64
 
 	// Расчет налоговой нагрузки для работодателя
 	MonthlyPFR  uint64 //Месячный налог с работодателя в Пенсионный фонд России
@@ -89,14 +94,16 @@ func FromPrivateRequest(req *pb.CalculatePrivateRequest) CalculateInput {
 	}
 
 	return CalculateInput{
-		GrossSalary:           req.GetGrossSalary(),
-		TerritorialMultiplier: terr,
-		NorthernCoefficient:   north,
-		StartDate:             startDate,
-		HasTaxPrivilege:       req.GetHasTaxPrivilege(),
-		IsNotResident:         req.GetIsNotResident(),
-		EmploymentType:        req.GetEmploymentType(),
-		MonthlyBonuses:        bonuses,
+		GrossSalary:              req.GetGrossSalary(),
+		TerritorialMultiplier:    terr,
+		NorthernCoefficient:      north,
+		StartDate:                startDate,
+		HasTaxPrivilege:          req.GetHasTaxPrivilege(),
+		IsNotResident:            req.GetIsNotResident(),
+		EmploymentType:           req.GetEmploymentType(),
+		NpdIncomeSource:          req.GetNpdIncomeSource(),
+		HasRegistrationDeduction: req.GetHasRegistrationDeduction(),
+		MonthlyBonuses:           bonuses,
 		Deductions: DeductionInput{
 			ChildrenCount:         req.GetChildrenCount(),
 			DisabledChildrenCount: req.GetDisabledChildrenCount(),
@@ -163,6 +170,7 @@ func ToGRPCPrivateResponse(monthDetails []MonthlyTax) []*pb.MonthlyPrivateTax {
 			AnnualFOMS:              m.AnnualFOMS,
 			AnnualPFR:               m.AnnualPFR,
 			MonthlyBonus:            m.MonthlyBonus,
+			NpdDeductionUsed:        m.NpdDeductionUsed,
 		})
 	}
 

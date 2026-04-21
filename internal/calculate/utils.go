@@ -27,8 +27,13 @@ func ValidateCalculateInput(input CalculateInput) error {
 	// Валидация типа занятости и совместимости с особыми режимами.
 	switch input.EmploymentType {
 	case pb.EmploymentType_SELF_EMPLOYED:
-		// Самозанятость будет реализована в следующем обновлении.
-		return errors.New("employment_type SELF_EMPLOYED не поддерживается в текущей версии")
+		// При НПД нельзя применять льготы силовых структур или режим нерезидента.
+		if input.HasTaxPrivilege {
+			return errors.New("has_tax_privilege несовместим с employment_type SELF_EMPLOYED")
+		}
+		if input.IsNotResident {
+			return errors.New("is_not_resident несовместим с employment_type SELF_EMPLOYED: нерезиденты не могут применять НПД")
+		}
 
 	case pb.EmploymentType_GPH:
 		// Льготы силовых структур применяются только к трудовому договору.
