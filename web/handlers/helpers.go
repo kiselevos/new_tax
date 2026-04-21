@@ -60,8 +60,12 @@ type ResultPayload struct {
 	Months            []Month               // опции для select месяца в панели редактирования
 	Territorial       []CoefficientOption   // опции РК
 	Northern          []BonusOption         // опции СН
-	IsGPH             bool                  // договор ГПХ (нет ФСС, нет трудовых гарантий)
-	EmploymentTypeStr string                // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
+	IsGPH                    bool   // договор ГПХ (нет ФСС, нет трудовых гарантий)
+	IsSelfEmployed            bool   // самозанятый (НПД)
+	NpdIncomeSourceStr        string // "INDIVIDUAL" | "LEGAL_ENTITY" — для pre-select в форме
+	HasRegistrationDeduction  bool   // был ли вычет 10 000 ₽ при регистрации
+	NpdLimitExceeded          bool   // годовой доход превысил 2 400 000 ₽
+	EmploymentTypeStr         string // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
 	DeductionResult   *pb.DeductionResult   // результат расчёта налоговых вычетов (если переданы параметры)
 
 	// Значения из последнего запроса вычетов (для предзаполнения формы после пересчёта)
@@ -141,6 +145,8 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	hasTaxPrivilege := r.FormValue("hasTaxPrivilege") != ""
 	isNotResident := r.FormValue("isNotResident") != ""
 	employmentType := parseEmploymentType(r.FormValue("employmentType"))
+	npdIncomeSource := parseNpdIncomeSource(r.FormValue("npdIncomeSource"))
+	hasRegistrationDeduction := r.FormValue("hasRegistrationDeduction") != ""
 
 	// Месяц
 	monthNum, err := strconv.Atoi(monthStr)
@@ -202,6 +208,10 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		IsNotResident:         boolPtr(isNotResident),
 		EmploymentType:        employmentTypePtr(employmentType),
 		MonthlyBonuses:        bonuses,
+		NpdIncomeSource:       npdIncomeSourcePtr(npdIncomeSource),
+	}
+	if hasRegistrationDeduction {
+		req.HasRegistrationDeduction = boolPtr(true)
 	}
 	if childrenCount > 0 {
 		req.ChildrenCount = &childrenCount
@@ -251,6 +261,14 @@ func parseKopecksForm(r *http.Request, field string) uint64 {
 		return 0
 	}
 	return uint64(math.Round(v * 100))
+}
+
+// parseNpdIncomeSource конвертирует строку формы в proto-enum NpdIncomeSource.
+func parseNpdIncomeSource(s string) pb.NpdIncomeSource {
+	if s == "LEGAL_ENTITY" {
+		return pb.NpdIncomeSource_LEGAL_ENTITY
+	}
+	return pb.NpdIncomeSource_INDIVIDUAL
 }
 
 // parseEmploymentType конвертирует строку формы в proto-enum EmploymentType.
@@ -313,3 +331,4 @@ func PrepareApiData() (*ApiDocsData, error) {
 // Вспомогательные функции:
 func uint64Ptr(v uint64) *uint64 { return &v }
 func boolPtr(v bool) *bool       { return &v }
+func npdIncomeSourcePtr(v pb.NpdIncomeSource) *pb.NpdIncomeSource { return &v }

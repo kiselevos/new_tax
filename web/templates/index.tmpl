@@ -132,10 +132,55 @@ window.APP_CONFIG = {
             <input type="radio" name="employmentType" value="GPH">
             <span class="employment-option-label">Договор ГПХ</span>
           </label>
-          <label class="employment-option employment-option--soon">
-            <input type="radio" name="employmentType" value="SELF_EMPLOYED" disabled>
-            <span class="employment-option-label">Самозанятый <span class="employment-soon-badge">Скоро</span></span>
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="SELF_EMPLOYED">
+            <span class="employment-option-label">Самозанятый (НПД)</span>
           </label>
+        </div>
+      </div>
+
+      <!-- Параметры НПД — показываются только при выборе «Самозанятый» -->
+      <div id="npd-params" class="npd-params hidden">
+        <div class="field-row">
+          <div class="field-left">
+            <div class="field-header">
+              <div class="field-tooltip">
+                <span class="tooltip-icon">?</span>
+                <div class="tooltip-text">
+                  Ставка НПД зависит от источника дохода:
+                  4% — если платит физическое лицо, 6% — если организация или ИП.
+                </div>
+              </div>
+              <label for="npdIncomeSource">Источник дохода:</label>
+            </div>
+          </div>
+          <div class="field-right date-field">
+            <select id="npdIncomeSource" name="npdIncomeSource" class="wide-select">
+              <option value="INDIVIDUAL">Физическое лицо — 4%</option>
+              <option value="LEGAL_ENTITY">Организация / ИП — 6%</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-left">
+            <div class="field-header">
+              <div class="field-tooltip">
+                <span class="tooltip-icon">?</span>
+                <div class="tooltip-text">
+                  При регистрации самозанятый получает налоговый бонус 10 000 ₽.
+                  Он снижает ставку: 4% → 3%, 6% → 4% — пока бонус не израсходован.
+                </div>
+              </div>
+              <label>Налоговый бонус:</label>
+            </div>
+          </div>
+          <div class="field-right checkbox-column">
+            <label class="checkbox-inline">
+              <input type="checkbox" name="hasRegistrationDeduction">
+              <span>Есть вычет 10 000 ₽ при регистрации</span>
+            </label>
+          </div>
         </div>
       </div>
 

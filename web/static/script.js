@@ -387,24 +387,34 @@ else {
         }
     }
 
-    // === Тип занятости: блокировка несовместимых опций ===
+    // === Тип занятости: блок НПД и блокировка несовместимых опций ===
     function initEmploymentType() {
         var radios = document.querySelectorAll('input[name="employmentType"]');
         var privilegeCheckbox = document.querySelector('input[name="hasTaxPrivilege"]');
-        if (!radios.length || !privilegeCheckbox) return;
+        var npdParams = document.getElementById("npd-params");
+        if (!radios.length) return;
 
         function updateCompatibility() {
             var selected = document.querySelector('input[name="employmentType"]:checked');
-            var isGPH = selected && selected.value === "GPH";
+            var value = selected ? selected.value : "TD";
+            var isGPH = value === "GPH";
+            var isSelfEmployed = value === "SELF_EMPLOYED";
 
-            if (isGPH) {
-                privilegeCheckbox.checked = false;
-                privilegeCheckbox.disabled = true;
-                privilegeCheckbox.closest(".exclusive-option").classList.add("exclusive-option--disabled");
-                privilegeCheckbox.closest(".exclusive-option").classList.remove("selected");
-            } else {
-                privilegeCheckbox.disabled = false;
-                privilegeCheckbox.closest(".exclusive-option").classList.remove("exclusive-option--disabled");
+            // Блок НПД
+            if (npdParams) {
+                npdParams.classList.toggle("hidden", !isSelfEmployed);
+            }
+
+            // Блокировка льгот при ГПХ или самозанятом
+            if (privilegeCheckbox) {
+                var disablePrivilege = isGPH || isSelfEmployed;
+                if (disablePrivilege) privilegeCheckbox.checked = false;
+                privilegeCheckbox.disabled = disablePrivilege;
+                var optionEl = privilegeCheckbox.closest(".exclusive-option");
+                if (optionEl) {
+                    optionEl.classList.toggle("exclusive-option--disabled", disablePrivilege);
+                    if (disablePrivilege) optionEl.classList.remove("selected");
+                }
             }
         }
 

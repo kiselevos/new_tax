@@ -573,6 +573,23 @@ a.button.large {
 }
 
 
+/* === NPD PARAMS BLOCK === */
+.npd-params {
+    border-left: 3px solid #2980b9;
+    margin: 0.25rem 0 0.5rem 0;
+    padding-left: 0.75rem;
+    animation: fadeInNpd 0.2s ease;
+}
+
+.npd-params.hidden {
+    display: none;
+}
+
+@keyframes fadeInNpd {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* === EMPLOYMENT TYPE === */
 .employment-type-row .field-right {
     padding-top: 0.25rem;
