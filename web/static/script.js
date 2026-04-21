@@ -391,8 +391,20 @@ else {
     function initEmploymentType() {
         var radios = document.querySelectorAll('input[name="employmentType"]');
         var privilegeCheckbox = document.querySelector('input[name="hasTaxPrivilege"]');
+        var residentCheckbox = document.querySelector('input[name="isNotResident"]');
         var npdParams = document.getElementById("npd-params");
         if (!radios.length) return;
+
+        function setDisabled(checkbox, disabled) {
+            if (!checkbox) return;
+            if (disabled) checkbox.checked = false;
+            checkbox.disabled = disabled;
+            var optionEl = checkbox.closest(".exclusive-option");
+            if (optionEl) {
+                optionEl.classList.toggle("exclusive-option--disabled", disabled);
+                if (disabled) optionEl.classList.remove("selected");
+            }
+        }
 
         function updateCompatibility() {
             var selected = document.querySelector('input[name="employmentType"]:checked');
@@ -405,17 +417,11 @@ else {
                 npdParams.classList.toggle("hidden", !isSelfEmployed);
             }
 
-            // Блокировка льгот при ГПХ или самозанятом
-            if (privilegeCheckbox) {
-                var disablePrivilege = isGPH || isSelfEmployed;
-                if (disablePrivilege) privilegeCheckbox.checked = false;
-                privilegeCheckbox.disabled = disablePrivilege;
-                var optionEl = privilegeCheckbox.closest(".exclusive-option");
-                if (optionEl) {
-                    optionEl.classList.toggle("exclusive-option--disabled", disablePrivilege);
-                    if (disablePrivilege) optionEl.classList.remove("selected");
-                }
-            }
+            // Льготы: недоступны при ГПХ и самозанятости
+            setDisabled(privilegeCheckbox, isGPH || isSelfEmployed);
+
+            // Нерезидент: недоступен при самозанятости (НПД только для резидентов РФ)
+            setDisabled(residentCheckbox, isSelfEmployed);
         }
 
         radios.forEach(function(radio) {
