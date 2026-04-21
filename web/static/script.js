@@ -423,13 +423,14 @@ else {
             // Нерезидент: недоступен при самозанятости (НПД только для резидентов РФ)
             setDisabled(residentCheckbox, isSelfEmployed);
 
-            // Территориальный коэффициент и северная надбавка: не применяются при НПД
+            // Территориальный коэффициент и северная надбавка: только для ТД
+            var hideCoeffs = isGPH || isSelfEmployed;
             ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
                 var el = document.querySelector('[name="' + name + '"]');
                 if (!el) return;
                 var row = el.closest(".field-row");
-                if (row) row.style.display = isSelfEmployed ? "none" : "";
-                if (isSelfEmployed) el.value = "100"; // сбрасываем на «без надбавки»
+                if (row) row.style.display = hideCoeffs ? "none" : "";
+                if (hideCoeffs) el.value = "100";
             });
         }
 
@@ -646,12 +647,13 @@ function initEditParams() {
         var isSE = sel && sel.value === "SELF_EMPLOYED";
         var isGPH = sel && sel.value === "GPH";
 
-        // Территориальный и северный — не для НПД
+        // Территориальный и северный — только для ТД
+        var hideCoeffs = isSE || isGPH;
         ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
             var el = panel.querySelector('[name="' + name + '"]');
             if (!el) return;
             var field = el.closest(".edit-field");
-            if (field) field.style.display = isSE ? "none" : "";
+            if (field) field.style.display = hideCoeffs ? "none" : "";
         });
 
         // Особые условия (льготы и нерезидент) — скрываем всё поле при НПД,
