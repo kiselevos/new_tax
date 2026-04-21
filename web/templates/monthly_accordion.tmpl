@@ -15,7 +15,7 @@
         {{if gt $bonus 0}}<span class="bonus-badge">＋ {{fmtMoney $bonus}}</span>{{end}}
       </div>
       <div class="month-rate">
-        Ставка НДФЛ: <span class="tax-rate-value">{{$m.TaxRate}}%</span>
+        {{if $.IsSelfEmployed}}Ставка НПД{{else}}Ставка НДФЛ{{end}}: <span class="tax-rate-value">{{$m.TaxRate}}%</span>
         {{if $rateChanged}}<span class="rate-up-badge">↑ {{$prevRate}}%&nbsp;→&nbsp;{{$m.TaxRate}}%</span>{{end}}
       </div>
     </div>
@@ -65,8 +65,16 @@
           </div>
           {{end}}
 
+          {{if gt $m.NpdDeductionUsed 0}}
+          <div class="calc-row small breakdown npd-deduction-row">
+            <span class="label">Налоговый бонус (вычет при регистрации)</span>
+            <span class="dots"></span>
+            <span class="value">−{{fmtMoney $m.NpdDeductionUsed}}</span>
+          </div>
+          {{end}}
+
           <div class="calc-row minus">
-            <span class="label">Удержан налог</span>
+            <span class="label">{{if $.IsSelfEmployed}}Уплачен НПД{{else}}Удержан налог{{end}}</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.MonthlyTaxAmount}}</span>
           </div>
@@ -122,7 +130,7 @@
           {{end}}
 
           <div class="calc-row minus">
-            <span class="label">Удержан налог</span>
+            <span class="label">{{if $.IsSelfEmployed}}Уплачен НПД{{else}}Удержан налог{{end}}</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.AnnualTaxAmount}}</span>
           </div>
