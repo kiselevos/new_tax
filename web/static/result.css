@@ -1,5 +1,36 @@
 /* static/result.css */
 
+/* === GPH BANNER === */
+.gph-banner {
+    background: #e8f4fd;
+    border-left: 4px solid #2980b9;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    color: #1a4f6e;
+}
+
+.gph-banner-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.gph-banner-list {
+    margin: 0 0 0.6rem 1.2rem;
+    padding: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.gph-banner-note {
+    font-size: 0.85rem;
+    color: #2c6e9a;
+    border-top: 1px solid #b8d9f0;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+
 .container {
     max-width: 700px;
     margin: 0 auto;
