@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -71,6 +72,51 @@ func TestValidateCalculateInput_Errors(t *testing.T) {
 			assert.Contains(t, err.Error(), tt.want)
 		})
 	}
+}
+
+func TestValidateCalculateInput_EmploymentType(t *testing.T) {
+	base := CalculateInput{
+		GrossSalary:           100_000_00,
+		TerritorialMultiplier: 100,
+		NorthernCoefficient:   100,
+	}
+
+	t.Run("GPH без льгот — OK", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_GPH
+		require.NoError(t, ValidateCalculateInput(in))
+	})
+
+	t.Run("GPH + силовики — ошибка", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_GPH
+		in.HasTaxPrivilege = true
+		err := ValidateCalculateInput(in)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "несовместим с employment_type GPH")
+	})
+
+	t.Run("SELF_EMPLOYED — ошибка", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_SELF_EMPLOYED
+		err := ValidateCalculateInput(in)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "SELF_EMPLOYED не поддерживается")
+	})
+
+	t.Run("TD + силовики — OK", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_TD
+		in.HasTaxPrivilege = true
+		require.NoError(t, ValidateCalculateInput(in))
+	})
+
+	t.Run("TD + нерезидент — OK", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_TD
+		in.IsNotResident = true
+		require.NoError(t, ValidateCalculateInput(in))
+	})
 }
 
 func TestValidateCoefficient(t *testing.T) {
