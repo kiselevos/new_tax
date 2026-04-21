@@ -15,7 +15,8 @@ type CalculateInput struct {
 	StartDate             time.Time
 	HasTaxPrivilege       bool
 	IsNotResident         bool
-	MonthlyBonuses        []uint64 // Разовые выплаты по месяцам (копейки), индекс 0 = январь
+	EmploymentType        pb.EmploymentType // Тип занятости (TD по умолчанию)
+	MonthlyBonuses        []uint64          // Разовые выплаты по месяцам (копейки), индекс 0 = январь
 	Deductions            DeductionInput
 }
 
@@ -94,6 +95,7 @@ func FromPrivateRequest(req *pb.CalculatePrivateRequest) CalculateInput {
 		StartDate:             startDate,
 		HasTaxPrivilege:       req.GetHasTaxPrivilege(),
 		IsNotResident:         req.GetIsNotResident(),
+		EmploymentType:        req.GetEmploymentType(),
 		MonthlyBonuses:        bonuses,
 		Deductions: DeductionInput{
 			ChildrenCount:         req.GetChildrenCount(),

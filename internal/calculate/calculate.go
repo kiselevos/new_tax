@@ -1,6 +1,10 @@
 package calculate
 
-import "time"
+import (
+	"time"
+
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+)
 
 // CalculateMonthlyTax рассчитывает помесячные значения налога на основе входных данных.
 // Учитывает районный (территориальный) коэффициент и северную надбавку, если они заданы.
@@ -51,6 +55,8 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	}
 
 	// Добавляем взносы от работодателя.
+	// При ГПХ ФСС не начисляется (нет трудового договора — нет соцстрахования).
+	isGPH := input.EmploymentType == pb.EmploymentType_GPH
 	var annualPFR, annualFOMS, annualFSS uint64
 
 	for i := range months {
@@ -58,6 +64,9 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 		incomeYTD := months[i].AnnualGrossIncome
 
 		pfr, foms, fss := calcEmployerContributions(incomeYTD-gross, gross)
+		if isGPH {
+			fss = 0
+		}
 
 		months[i].MonthlyPFR = pfr
 		months[i].MonthlyFOMS = foms
