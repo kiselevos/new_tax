@@ -157,6 +157,88 @@
   color: #856404;
 }
 
+/* Предупреждение */
+.info-warning {
+  background: #fff8e1;
+  border-left: 4px solid #ffb300;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #5a3e00;
+}
+
+/* === Сравнительная таблица типов занятости === */
+.info-compare-table {
+  margin: 1rem 0;
+  border: 1px solid #e0e4ea;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+.info-compare-header,
+.info-compare-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.5fr;
+  gap: 0;
+}
+
+.info-compare-header {
+  background: #f0f4ff;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.info-compare-header > div,
+.info-compare-row > div {
+  padding: 0.6rem 0.75rem;
+  border-right: 1px solid #e0e4ea;
+}
+
+.info-compare-header > div:last-child,
+.info-compare-row > div:last-child {
+  border-right: none;
+}
+
+.info-compare-row {
+  border-top: 1px solid #e8ecf2;
+}
+
+.info-compare-row:nth-child(even) {
+  background: #fafbfc;
+}
+
+.info-compare-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.info-compare-yes {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.info-compare-no {
+  color: #aaa;
+}
+
+@media (max-width: 600px) {
+  .info-compare-table {
+    font-size: 0.78rem;
+  }
+
+  .info-compare-header,
+  .info-compare-row {
+    grid-template-columns: 1.2fr 0.8fr 0.8fr 1.2fr;
+  }
+
+  .info-compare-header > div,
+  .info-compare-row > div {
+    padding: 0.5rem 0.4rem;
+  }
+}
+
 /* === Навигация между инфо-страницами (sticky) === */
 .info-nav {
   position: sticky;

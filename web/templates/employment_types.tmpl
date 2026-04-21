@@ -1,0 +1,185 @@
+{{define "employment_types"}}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Трудовой договор, ГПХ и самозанятость — в чём разница</title>
+
+  <meta name="description"
+        content="Чем отличается трудовой договор от договора ГПХ и самозанятости: налоги, взносы, права и риски. Простое сравнение для физических лиц.">
+  <meta name="keywords" content="трудовой договор, договор ГПХ, самозанятость, НПД, НДФЛ, страховые взносы, ФСС, отличия ГПХ от ТД">
+
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/info-pages.css">
+
+  <!-- favicon -->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+  {{template "info_nav" "employment-types"}}
+  <div class="info-page">
+    <h1 class="info-page-title">Трудовой договор, ГПХ и самозанятость</h1>
+
+    <p class="info-page-subtitle">
+      Три самых распространённых способа оформить работу в России — и у каждого свои налоги,
+      взносы и права. Разбираем главные отличия.
+    </p>
+
+    <!-- Трудовой договор -->
+    <div class="info-card">
+      <h2 class="info-card-title">📄 Трудовой договор (ТД)</h2>
+
+      <p class="info-card-text">
+        Классическое оформление: сотрудник и работодатель — стороны трудовых отношений.
+        На вас распространяется <strong>Трудовой кодекс РФ</strong> в полном объёме.
+      </p>
+
+      <ul class="info-bullet-list">
+        <li><strong>НДФЛ:</strong> по прогрессивной шкале — 13% до 2,4 млн ₽, далее 15–22%.</li>
+        <li><strong>Взносы работодателя:</strong> ПФР (~22%), ФОМС (5,1%), ФСС (2,9%) — сверх вашей зарплаты.</li>
+        <li><strong>Оплачиваемый отпуск:</strong> минимум 28 дней в год.</li>
+        <li><strong>Больничный:</strong> оплачивается из фонда ФСС.</li>
+        <li><strong>Декретный отпуск, пособия</strong> — все социальные гарантии в наличии.</li>
+        <li><strong>Запись в трудовой книжке,</strong> стаж для пенсии идёт автоматически.</li>
+      </ul>
+
+      <div class="info-example">
+        ℹ️ Это самый защищённый формат для наёмного работника. Работодатель не может уволить
+        вас одним днём без оснований, предусмотренных законом.
+      </div>
+    </div>
+
+    <!-- Договор ГПХ -->
+    <div class="info-card">
+      <h2 class="info-card-title">📋 Договор ГПХ (гражданско-правового характера)</h2>
+
+      <p class="info-card-text">
+        Это договор подряда или оказания услуг между физическим лицом и заказчиком.
+        Вы выступаете как исполнитель, а не сотрудник. <strong>Трудовой кодекс не применяется.</strong>
+      </p>
+
+      <ul class="info-bullet-list">
+        <li><strong>НДФЛ:</strong> та же прогрессивная шкала, что и при ТД — 13–22%.</li>
+        <li><strong>Взносы заказчика:</strong> ПФР и ФОМС начисляются. ФСС — <strong>не начисляется.</strong></li>
+        <li><strong>Нет оплачиваемого отпуска</strong> и больничного от работодателя.</li>
+        <li><strong>Нет защиты по ТК:</strong> заказчик вправе расторгнуть договор в любой момент.</li>
+        <li><strong>Нет записи в трудовой книжке.</strong> Пенсионный стаж учитывается через ПФР-взносы.</li>
+        <li>Договор заключается на конкретный результат — выполнение работы или оказание услуги.</li>
+      </ul>
+
+      <div class="info-example">
+        ℹ️ Типичный пример: фрилансер выполняет разовый проект для компании.
+        Компания платит за результат, не несёт обязательств по трудоустройству.
+      </div>
+
+      <div class="info-warning">
+        ⚠️ Если фактически вы работаете как штатный сотрудник, но оформлены по ГПХ —
+        суд может переквалифицировать договор в трудовой. Это риск для заказчика.
+      </div>
+    </div>
+
+    <!-- Самозанятость -->
+    <div class="info-card">
+      <h2 class="info-card-title">🧾 Самозанятость (НПД)</h2>
+
+      <p class="info-card-text">
+        Специальный налоговый режим — налог на профессиональный доход (НПД).
+        Подходит для физических лиц, работающих <strong>самостоятельно, без наёмных сотрудников.</strong>
+      </p>
+
+      <ul class="info-bullet-list">
+        <li><strong>Налог:</strong> 4% с доходов от физических лиц, 6% — от организаций и ИП.</li>
+        <li><strong>НДФЛ не платится</strong> — НПД его заменяет.</li>
+        <li><strong>Страховые взносы:</strong> не обязательны, но можно платить добровольно (влияет на пенсию).</li>
+        <li><strong>Лимит дохода:</strong> не более 2,4 млн ₽ в год. При превышении — утрата статуса.</li>
+        <li><strong>Нет никаких трудовых гарантий</strong> — отпуск, больничный, декрет полностью за свой счёт.</li>
+        <li><strong>Нельзя нанимать сотрудников</strong> по трудовому договору.</li>
+        <li>Регистрация и выдача чеков — через приложение «Мой налог».</li>
+      </ul>
+
+      <div class="info-example">
+        ℹ️ Пример: репетитор, фотограф или разработчик, работающий на нескольких заказчиков,
+        платит 6% от каждого поступления от юридического лица — и никаких других налогов.
+      </div>
+
+      <div class="info-warning">
+        ⚠️ Самозанятый не может оказывать услуги своему текущему или бывшему работодателю
+        в течение 2 лет после увольнения — это запрещено законом.
+      </div>
+    </div>
+
+    <!-- Сравнительная таблица -->
+    <div class="info-card">
+      <h2 class="info-card-title">⚖️ Краткое сравнение</h2>
+
+      <div class="info-compare-table">
+        <div class="info-compare-header">
+          <div></div>
+          <div>ТД</div>
+          <div>ГПХ</div>
+          <div>Самозанятость</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">НДФЛ</div>
+          <div>13–22%</div>
+          <div>13–22%</div>
+          <div>4% / 6% (НПД)</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">ПФР</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">добровольно</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">ФОМС</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">—</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">ФСС</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">Отпуск</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">Больничный</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">Защита ТК</div>
+          <div class="info-compare-yes">✓</div>
+          <div class="info-compare-no">—</div>
+          <div class="info-compare-no">—</div>
+        </div>
+        <div class="info-compare-row">
+          <div class="info-compare-label">Лимит дохода</div>
+          <div>нет</div>
+          <div>нет</div>
+          <div>2,4 млн/год</div>
+        </div>
+      </div>
+
+      <p class="info-source">📚 Источники:</p>
+      <ul class="info-source-list">
+        <li><a href="https://www.nalog.gov.ru/rn77/taxation/taxes/npdfl/" target="_blank" class="info-source-link">ФНС: налог на профессиональный доход (НПД)</a></li>
+        <li><a href="https://www.nalog.gov.ru/rn77/taxation/taxes/ndfl/" target="_blank" class="info-source-link">ФНС: НДФЛ — ставки и порядок расчёта</a></li>
+      </ul>
+    </div>
+
+  </div>
+  {{template "footer" .}}
+</body>
+</html>
+{{end}}
