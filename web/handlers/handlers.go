@@ -273,14 +273,7 @@ func (s *Server) EmploymentTypes(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HandleApiDocs(w http.ResponseWriter, r *http.Request) {
-
-	data, err := PrepareApiData()
-	if err != nil {
-		http.Error(w, "cannot load api docs", 500)
-		return
-	}
-
-	if err := s.Tmpl.ExecuteTemplate(w, "api-docs", data); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "swagger", nil); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "err", err)
 		http.Error(w, "internal server error", 500)
 	}

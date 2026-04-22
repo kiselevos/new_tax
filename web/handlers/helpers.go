@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -290,45 +289,6 @@ func employmentTypePtr(v pb.EmploymentType) *pb.EmploymentType {
 	return &v
 }
 
-func PrepareApiData() (*ApiDocsData, error) {
-
-	raw, err := web.ApiDocsFS.ReadFile("api_docs/swagger.json")
-	if err != nil {
-		return nil, err
-	}
-
-	var d ApiDocsData
-	if err := json.Unmarshal(raw, &d); err != nil {
-		return nil, err
-	}
-
-	v := web.GetApiVersion()
-	d.ApiVers = v
-
-	for i := range d.Endpoints {
-		d.Endpoints[i].Path = strings.ReplaceAll(
-			d.Endpoints[i].Path,
-			"{version}",
-			v,
-		)
-
-		if obj, ok := d.Endpoints[i].ExampleRequest.(map[string]interface{}); ok {
-			pretty, err := json.MarshalIndent(obj, "", "  ")
-			if err == nil {
-				d.Endpoints[i].ExampleRequest = string(pretty)
-			}
-		}
-
-		if obj, ok := d.Endpoints[i].ExampleResponse.(map[string]interface{}); ok {
-			pretty, err := json.MarshalIndent(obj, "", "  ")
-			if err == nil {
-				d.Endpoints[i].ExampleResponse = string(pretty)
-			}
-		}
-	}
-
-	return &d, nil
-}
 
 // npdDeductionRemaining вычисляет остаток регистрационного бонуса НПД.
 // Размер бонуса — 10 000 ₽ (1 000 000 копеек) по ст. 12 Закона № 422-ФЗ.
