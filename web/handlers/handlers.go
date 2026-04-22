@@ -238,7 +238,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) About(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "about", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "about", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "about", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
