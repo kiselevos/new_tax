@@ -8,9 +8,7 @@ import (
 	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/middleware"
 	"github.com/kiselevos/new_tax/internal/middleware/ratelimit"
-	"github.com/kiselevos/new_tax/internal/redisconn"
 	"github.com/kiselevos/new_tax/pkg/logx"
-	"github.com/redis/go-redis/v9"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 
@@ -19,9 +17,8 @@ import (
 )
 
 type Server struct {
-	Grpc  *grpc.Server
-	Lis   net.Listener
-	Redis *redis.Client
+	Grpc *grpc.Server
+	Lis  net.Listener
 }
 
 func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
@@ -31,20 +28,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		return nil, err
 	}
 
-	rdb, err := redisconn.Connect(cfg.RedisCfg, logger)
-	if err != nil {
-		rdb = nil
-	}
-
-	memoryLimiter := ratelimit.NewMemoryLimiter(cfg.RateLimitCfg.TTL, cfg.RateLimitCfg.CleanupEvery)
-
-	var limiter ratelimit.Limiter
-	if rdb != nil {
-		redisLimiter := ratelimit.NewRedisLimiter(rdb, cfg.RateLimitCfg.TTL)
-		limiter = ratelimit.NewHybridLimiter(redisLimiter, memoryLimiter)
-	} else {
-		limiter = memoryLimiter
-	}
+	limiter := ratelimit.NewMemoryLimiter(cfg.RateLimitCfg.TTL, cfg.RateLimitCfg.CleanupEvery)
 
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
@@ -55,10 +39,10 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		),
 	)
 
-	pb.RegisterTaxServiceServer(s, NewGRPCServer(rdb, logger, cfg.RedisCfg.Ttl))
+	pb.RegisterTaxServiceServer(s, NewGRPCServer(logger))
 	reflection.Register(s)
 
-	return &Server{Grpc: s, Lis: lis, Redis: rdb}, nil
+	return &Server{Grpc: s, Lis: lis}, nil
 }
 
 func (s *Server) Serve() error {
@@ -69,14 +53,6 @@ func (s *Server) Serve() error {
 func ShutdownGRPCServer(ctx context.Context, srv *Server) {
 	log := logx.From(ctx)
 	log.Info("Shutting down gRPC server gracefully...")
-
-	if srv.Redis != nil {
-		if err := srv.Redis.Close(); err != nil {
-			log.Warn("redis_close_failed", "err", err)
-		} else {
-			log.Info("redis_closed")
-		}
-	}
 
 	done := make(chan struct{})
 

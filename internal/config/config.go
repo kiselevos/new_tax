@@ -15,8 +15,6 @@ type Config struct {
 	LogLevel string
 
 	RateLimitCfg *RateLimitConfig
-
-	RedisCfg *RedisConfig
 }
 
 type RateLimitConfig struct {
@@ -26,12 +24,6 @@ type RateLimitConfig struct {
 	PrivateBurst int
 	TTL          time.Duration
 	CleanupEvery int
-}
-
-type RedisConfig struct {
-	Enabled bool
-	Addr    string
-	Ttl     time.Duration
 }
 
 func Load() (*Config, error) {
@@ -64,7 +56,6 @@ func Load() (*Config, error) {
 		LogMode:      logMode,
 		LogLevel:     logLevel,
 		RateLimitCfg: LoadRateLimitConf(),
-		RedisCfg:     LoadRedisConfig(),
 	}
 
 	return conf, nil
@@ -115,30 +106,5 @@ func LoadRateLimitConf() *RateLimitConfig {
 		PrivateBurst: privateBurst,
 		CleanupEvery: cleanup,
 		TTL:          rlTTL,
-	}
-}
-
-func LoadRedisConfig() *RedisConfig {
-	enabledStr := strings.TrimSpace(strings.ToLower(os.Getenv("REDIS_ENABLED")))
-	enabled := enabledStr == "1" || enabledStr == "true" || enabledStr == "yes"
-
-	addr := os.Getenv("REDIS_ADDR")
-	if addr == "" {
-		addr = "redis:6379"
-	}
-
-	ttl := os.Getenv("REDIS_CACHE_TTL")
-	cacheTTL := 10 * time.Minute
-
-	if ttl != "" {
-		if parse, err := time.ParseDuration(ttl); err == nil {
-			cacheTTL = parse
-		}
-	}
-
-	return &RedisConfig{
-		Enabled: enabled,
-		Addr:    addr,
-		Ttl:     cacheTTL,
 	}
 }

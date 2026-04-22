@@ -3,12 +3,10 @@ package server
 import (
 	"context"
 	"log/slog"
-	"time"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/kiselevos/new_tax/internal/calculate"
 	"github.com/kiselevos/new_tax/pkg/logx"
-	"github.com/redis/go-redis/v9"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,18 +14,11 @@ import (
 
 type serverStruct struct {
 	pb.UnimplementedTaxServiceServer
-
-	redis    *redis.Client
-	logger   *slog.Logger
-	cacheTTL time.Duration
+	logger *slog.Logger
 }
 
-func NewGRPCServer(rdb *redis.Client, logger *slog.Logger, ttl time.Duration) *serverStruct {
-	return &serverStruct{
-		redis:    rdb,
-		logger:   logger,
-		cacheTTL: ttl,
-	}
+func NewGRPCServer(logger *slog.Logger) *serverStruct {
+	return &serverStruct{logger: logger}
 }
 
 func (s *serverStruct) Healthz(ctx context.Context, req *pb.HealthzRequest) (*pb.HealthzResponse, error) {
@@ -40,30 +31,11 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 
 	input := calculate.FromPrivateRequest(req)
 
-	// --- validation ---
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		log.Warn("calc_invalid_arguments",
-			"reason", err.Error(),
-		)
+		log.Warn("calc_invalid_arguments", "reason", err.Error())
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
 
-	// Если вычеты не заданы — пробуем кэш (вычеты зависят от пользовательского ввода, не кэшируются).
-	hasDeductions := input.Deductions.HasDeductions()
-	key := buildPrivateKey(input)
-	if !hasDeductions {
-		cached := &pb.CalculatePrivateResponse{}
-		ok, err := s.cacheGet(ctx, key, cached)
-		if err != nil {
-			log.Warn("cache_get_failed", "err", err)
-		}
-		if ok {
-			log.Info("cache_hit")
-			return cached, nil
-		}
-	}
-
-	// --- calculation ---
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
 		log.Error("calc_no_months_produced")
@@ -75,7 +47,7 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 	npdLimitExceeded := input.EmploymentType == pb.EmploymentType_SELF_EMPLOYED &&
 		last.AnnualGrossIncome > calculate.NpdIncomeLimit
 
-	resp := &pb.CalculatePrivateResponse{
+	return &pb.CalculatePrivateResponse{
 		MonthlyDetails:        calculate.ToGRPCPrivateResponse(months),
 		AnnualTaxAmount:       last.AnnualTaxAmount,
 		AnnualGrossIncome:     last.AnnualGrossIncome,
@@ -88,15 +60,7 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		NorthernCoefficient:   &input.NorthernCoefficient,
 		DeductionResult:       calculate.CalcDeductions(input.Deductions, months),
 		NpdLimitExceeded:      npdLimitExceeded,
-	}
-
-	if !hasDeductions {
-		if err := s.cacheSet(ctx, key, resp, s.cacheTTL); err != nil {
-			log.Warn("cache_set_failed", "err", err)
-		}
-	}
-
-	return resp, nil
+	}, nil
 }
 
 func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePublicRequest) (*pb.CalculatePublicResponse, error) {
@@ -104,29 +68,11 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 
 	input := calculate.FromPublicRequest(req)
 
-	// --- validation ---
 	if err := calculate.ValidateCalculateInput(input); err != nil {
-		log.Warn("calc_invalid_arguments",
-			"reason", err.Error(),
-		)
+		log.Warn("calc_invalid_arguments", "reason", err.Error())
 		return nil, status.Errorf(codes.InvalidArgument, "validate: %v", err)
 	}
 
-	// --- redis ---
-	key := buildPublicKey(input)
-
-	cached := &pb.CalculatePublicResponse{}
-
-	ok, err := s.cacheGet(ctx, key, cached)
-	if err != nil {
-		log.Warn("cache_get_failed", "err", err)
-	}
-	if ok {
-		log.Info("cache_hit")
-		return cached, nil
-	}
-
-	// --- business calculation ---
 	months := calculate.CalculateMonthlyTax(input)
 	if len(months) == 0 {
 		log.Error("calc_no_months_produced")
@@ -135,7 +81,7 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 
 	last := months[len(months)-1]
 
-	resp := &pb.CalculatePublicResponse{
+	return &pb.CalculatePublicResponse{
 		MonthlyDetails:        calculate.ToGRPCPublicResponse(months),
 		AnnualTaxAmount:       last.AnnualTaxAmount,
 		AnnualGrossIncome:     last.AnnualGrossIncome,
@@ -143,12 +89,5 @@ func (s *serverStruct) CalculatePublic(ctx context.Context, req *pb.CalculatePub
 		GrossSalary:           input.GrossSalary,
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
-	}
-
-	err = s.cacheSet(ctx, key, resp, s.cacheTTL)
-	if err != nil {
-		log.Warn("cache_set_failed", "err", err)
-	}
-
-	return resp, nil
+	}, nil
 }
