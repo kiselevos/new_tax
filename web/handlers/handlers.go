@@ -245,28 +245,28 @@ func (s *Server) About(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "regional_info", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "regional_info", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "regional_info", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
 
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "special_tax_modes", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
 
 func (s *Server) TaxDeductions(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "tax_deductions", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "tax_deductions", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "tax_deductions", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
 
 func (s *Server) EmploymentTypes(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "employment_types", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "employment_types", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "employment_types", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
