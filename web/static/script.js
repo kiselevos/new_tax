@@ -131,96 +131,49 @@ function initTooltips() {
         }
 
         function adjustMobileTooltipPosition(text, icon) {
-            // Сбрасываем ВСЕ стили
             text.removeAttribute('style');
             text.classList.remove("tooltip-above", "tooltip-below", "adjust-left", "adjust-right");
 
-            // Применяем только нужные стили
-            text.style.position = 'absolute';
-            text.style.zIndex = '10000';
-            text.style.width = '300px';
-            text.style.maxWidth = '300px';
-            text.style.boxSizing = 'border-box';
-            text.style.left = '50%';
-            text.style.transform = 'translateX(-50%)';
-
-            void text.offsetWidth; // форсируем рефлоу
-
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-
-            // ПОЛУЧАЕМ РАЗМЕРЫ ЭЛЕМЕНТОВ
+            const safeMargin = 12;
             const iconRect = icon.getBoundingClientRect();
-            const tooltipRect = text.getBoundingClientRect();
 
-            // Определяем доступное пространство
+            // fixed — все координаты относительно viewport, независимо от позиции родителя
+            text.style.position = 'fixed';
+            text.style.zIndex = '10000';
+            text.style.boxSizing = 'border-box';
+            text.style.transform = 'none';
+            text.style.right = 'auto';
+            text.style.bottom = 'auto';
+
+            // Ширина: 300px или меньше если экран маленький
+            const tooltipWidth = Math.min(300, viewportWidth - safeMargin * 2);
+            text.style.width = tooltipWidth + 'px';
+
+            // Горизонталь: центр на иконке, зажато в границы экрана
+            const iconCenterX = iconRect.left + iconRect.width / 2;
+            const left = Math.max(
+                safeMargin,
+                Math.min(iconCenterX - tooltipWidth / 2, viewportWidth - tooltipWidth - safeMargin)
+            );
+            text.style.left = left + 'px';
+
+            // Измеряем высоту при позиции снизу
+            text.style.top = (iconRect.bottom + 8) + 'px';
+            void text.offsetWidth;
+
+            const tooltipHeight = text.getBoundingClientRect().height;
             const spaceBelow = viewportHeight - iconRect.bottom;
-            const spaceAbove = iconRect.top;
-            const tooltipHeight = tooltipRect.height;
 
-            // Выбираем позицию (сверху или снизу)
-            if (spaceBelow >= tooltipHeight + 20 || spaceAbove < 100) {
-                // Показываем снизу
+            if (spaceBelow >= tooltipHeight + 20 || iconRect.top < 100) {
                 text.classList.add('tooltip-below');
-                text.style.top = 'calc(100% + 8px)';
+                text.style.top = (iconRect.bottom + 8) + 'px';
             } else {
-                // Показываем сверху
                 text.classList.add('tooltip-above');
-                text.style.bottom = 'calc(100% + 8px)';
+                text.style.top = 'auto';
+                text.style.bottom = (viewportHeight - iconRect.top + 8) + 'px';
             }
-
-            // РАСЧЕТ ГОРИЗОНТАЛЬНОЙ ПОЗИЦИИ С УЧЕТОМ ГРАНИЦ ЭКРАНА
-            const iconCenterX = iconRect.left + (iconRect.width / 2);
-            const tooltipWidth = 300; // Фиксированная ширина
-            let desiredLeft = iconCenterX - (tooltipWidth / 2);
-
-            // Корректируем позицию чтобы не выходить за экран
-            const safeMargin = 15;
-
-            // Если тултип не помещается по ширине, уменьшаем его
-            if (tooltipWidth > viewportWidth - safeMargin * 2) {
-                const newWidth = viewportWidth - safeMargin * 2;
-                text.style.width = newWidth + 'px';
-                text.style.maxWidth = newWidth + 'px';
-            }
-
-            if (desiredLeft < safeMargin) {
-                // Выравниваем по левому краю с отступом
-                text.classList.add('adjust-left');
-                text.style.left = safeMargin + 'px';
-                text.style.transform = 'none';
-            } else if (desiredLeft + tooltipWidth > viewportWidth - safeMargin) {
-                // Выравниваем по правому краю с отступом
-                text.classList.add('adjust-right');
-                text.style.left = 'auto';
-                text.style.right = safeMargin + 'px';
-                text.style.transform = 'none';
-            } else {
-                // Центрируем относительно иконки
-                text.style.left = '50%';
-                text.style.transform = 'translateX(-50%)';
-            }
-
-            // ФИНАЛЬНАЯ ПРОВЕРКА
-            requestAnimationFrame(() => {
-                const finalRect = text.getBoundingClientRect();
-
-                // Если все равно выходит за край, принудительно корректируем ширину
-                if (finalRect.right > viewportWidth - 5) {
-                    const overflow = finalRect.right - viewportWidth + 5;
-                    const newWidth = tooltipWidth - overflow;
-                    text.style.width = newWidth + 'px';
-                }
-
-                if (finalRect.left < 5) {
-                    const overflow = 5 - finalRect.left;
-                    const newWidth = tooltipWidth - overflow;
-                    text.style.width = newWidth + 'px';
-                    if (text.classList.contains('adjust-left')) {
-                        text.style.left = '5px';
-                    }
-                }
-            });
         }
 
         function adjustDesktopTooltipPosition(text, icon) {
