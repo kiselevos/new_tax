@@ -65,6 +65,8 @@ type ResultPayload struct {
 	NpdIncomeSourceStr        string // "INDIVIDUAL" | "LEGAL_ENTITY" — для pre-select в форме
 	HasRegistrationDeduction  bool   // был ли вычет 10 000 ₽ при регистрации
 	NpdLimitExceeded          bool   // годовой доход превысил 2 400 000 ₽
+	NpdDeductionUsed          uint64 // суммарный использованный регистрационный вычет за период (копейки)
+	NpdDeductionRemaining     uint64 // остаток регистрационного вычета (kopecks); 0 если вычет не применялся
 	EmploymentTypeStr         string // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
 	DeductionResult   *pb.DeductionResult   // результат расчёта налоговых вычетов (если переданы параметры)
 
@@ -326,6 +328,19 @@ func PrepareApiData() (*ApiDocsData, error) {
 	}
 
 	return &d, nil
+}
+
+// npdDeductionRemaining вычисляет остаток регистрационного бонуса НПД.
+// Размер бонуса — 10 000 ₽ (1 000 000 копеек) по ст. 12 Закона № 422-ФЗ.
+func npdDeductionRemaining(hasDeduction bool, used uint64) uint64 {
+	if !hasDeduction {
+		return 0
+	}
+	const total = uint64(1_000_000) // 10 000 ₽ в копейках
+	if used >= total {
+		return 0
+	}
+	return total - used
 }
 
 // Вспомогательные функции:

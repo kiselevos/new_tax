@@ -131,10 +131,11 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 	minWage := web.GetMinLivingWage()
 	showWarning := req.GrossSalary < minWage
 
-	// Суммируем премии за год и определяем месяц начала расчёта
-	var annualBonus uint64
+	// Суммируем премии и использованный НПД-вычет за период
+	var annualBonus, npdDeductionUsed uint64
 	for _, m := range res.MonthlyDetails {
 		annualBonus += m.MonthlyBonus
+		npdDeductionUsed += m.NpdDeductionUsed
 	}
 	startMonthNum := 1
 	if len(res.MonthlyDetails) > 0 && res.MonthlyDetails[0].Month != nil {
@@ -182,6 +183,8 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		NpdIncomeSourceStr:        req.GetNpdIncomeSource().String(),
 		HasRegistrationDeduction:  req.GetHasRegistrationDeduction(),
 		NpdLimitExceeded:          res.GetNpdLimitExceeded(),
+		NpdDeductionUsed:          npdDeductionUsed,
+		NpdDeductionRemaining:     npdDeductionRemaining(req.GetHasRegistrationDeduction(), npdDeductionUsed),
 		AnnualPFR:         res.AnnualPFR,
 		AnnualFOMS:        res.AnnualFOMS,
 		AnnualFSS:         res.AnnualFSS,

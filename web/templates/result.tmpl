@@ -79,8 +79,10 @@
         {{template "employer_contributions" .}}
         {{end}}
 
-        <!-- Блок налоговых вычетов (не для самозанятых) -->
-        {{if .IsSelfEmployed}}{{else}}
+        <!-- Блок налоговых вычетов -->
+        {{if .IsSelfEmployed}}
+        {{template "npd_deductions_section" .}}
+        {{else}}
         {{template "deductions_section" .}}
         {{end}}
 
