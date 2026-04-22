@@ -34,11 +34,10 @@ type TaxConstants struct {
 	NpdRegistrationBonus string // "10 000"
 
 	// Фиксированные взносы ИП «за себя» (ст. 430 НК РФ, ФЗ-389 от 31.07.2023)
-	IpFixedContrib2025    string // "53 658"
-	IpFixedContrib2026    string // "57 390"
+	// Обновлять ежегодно: на 2026 год — 57 390 ₽ (ФЗ-425 от 28.11.2025)
+	IpFixedContrib        string // текущий год
 	IpAdditionalRate      int    // 1% с дохода свыше 300 000 ₽
 	IpAdditionalThreshold string // "300 000"
-	IpAdditionalMax2025   string // "300 888"
 
 	// Имущественные вычеты (ст. 220 НК РФ)
 	PropertyDeductionMax string // "2 000 000"
@@ -79,11 +78,9 @@ func PrepareTaxConstants() TaxConstants {
 		NpdLimit:             "2 400 000",
 		NpdRegistrationBonus: "10 000",
 
-		IpFixedContrib2025:    "53 658",
-		IpFixedContrib2026:    "57 390",
+		IpFixedContrib:        "57 390",
 		IpAdditionalRate:      1,
 		IpAdditionalThreshold: "300 000",
-		IpAdditionalMax2025:   "300 888",
 
 		PropertyDeductionMax: "2 000 000",
 		MortgageDeductionMax: "3 000 000",
