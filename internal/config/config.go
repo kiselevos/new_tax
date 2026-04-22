@@ -5,13 +5,15 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Config struct {
-	BackPort     string
-	ApiKey       string
-	LogMode      string
-	LogLevel     string
+	BackPort string
+	ApiKey   string
+	LogMode  string
+	LogLevel string
+
 	RateLimitCfg *RateLimitConfig
 }
 
@@ -20,6 +22,8 @@ type RateLimitConfig struct {
 	PublicBurst  int
 	PrivateRPS   float64
 	PrivateBurst int
+	TTL          time.Duration
+	CleanupEvery int
 }
 
 func Load() (*Config, error) {
@@ -79,10 +83,28 @@ func LoadRateLimitConf() *RateLimitConfig {
 		privateBurst = 20
 	}
 
+	ttl := os.Getenv("RATE_LIMIT_TTL")
+	rlTTL := 10 * time.Minute
+
+	if ttl != "" {
+		if parse, err := time.ParseDuration(ttl); err == nil {
+			rlTTL = parse
+		}
+	}
+
+	cleanup := 1000
+	if s := os.Getenv("CLEANUP_EVERY"); s != "" {
+		if v, err := strconv.ParseInt(s, 10, 64); err == nil && v > 0 {
+			cleanup = int(v)
+		}
+	}
+
 	return &RateLimitConfig{
 		PublicRPS:    publicRPS,
 		PublicBurst:  publicBurst,
 		PrivateRPS:   privateRPS,
 		PrivateBurst: privateBurst,
+		CleanupEvery: cleanup,
+		TTL:          rlTTL,
 	}
 }

@@ -175,6 +175,20 @@
   line-height: 1.5;
 }
 
+/* === ГПХ: нулевой ФСС === */
+.employer-row--zero .employer-value {
+    color: #aaa;
+    text-decoration: line-through;
+}
+
+.employer-fss-note {
+    display: block;
+    font-size: 0.78rem;
+    color: #888;
+    font-family: system-ui, sans-serif;
+    margin-top: 0.1rem;
+}
+
 /* --- Мобильная адаптация --- */
 @media (max-width: 600px) {
   .employer-row {

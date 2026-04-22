@@ -21,7 +21,7 @@ func firstOf(m time.Month) time.Time {
 }
 
 // быстрая генерация одинаковых месяцев
-func repeatMonthly(y int, start time.Month, n int, mk func(i int) MonthlyTaxLite) []MonthlyTaxLite {
+func repeatMonthly(start time.Month, n int, mk func(i int) MonthlyTaxLite) []MonthlyTaxLite {
 	out := make([]MonthlyTaxLite, n)
 	for i := 0; i < n; i++ {
 		mt := mk(i)
@@ -35,7 +35,7 @@ var Results = []ResultTest{
 	// A: 100k, terr 20% => база A=120k; север=0; 13% весь год
 	{
 		Name: "A: Only salary usual person (100k, terr 20%, jan start)",
-		Monthly: repeatMonthly(2025, time.January, 12, func(i int) MonthlyTaxLite {
+		Monthly: repeatMonthly(time.January, 12, func(i int) MonthlyTaxLite {
 			return MonthlyTaxLite{
 				MonthlyTaxAmount: 15_600_00, // 120 000 * 13%
 				MonthlyBaseTax:   15_600_00,
@@ -48,7 +48,7 @@ var Results = []ResultTest{
 	// B: 200k, no coeffs; годом ровно 2.4М → 13% весь год
 	{
 		Name: "B: 200k salary, no coeffs, at 2.4M threshold (jan start)",
-		Monthly: repeatMonthly(2025, time.January, 12, func(i int) MonthlyTaxLite {
+		Monthly: repeatMonthly(time.January, 12, func(i int) MonthlyTaxLite {
 			return MonthlyTaxLite{
 				MonthlyTaxAmount: 26_000_00, // 200 000 * 13%
 				MonthlyBaseTax:   26_000_00,
@@ -111,7 +111,7 @@ var Results = []ResultTest{
 	// База A=144k → 18 720; Север B=72k → 9 360; Итого 28 080 все 7 мес; ставка 13%
 	{
 		Name: "E: 120k salary + terr 20% + north 50% (start in Jun, projection 7m)",
-		Monthly: repeatMonthly(2025, time.June, 7, func(i int) MonthlyTaxLite {
+		Monthly: repeatMonthly(time.June, 7, func(i int) MonthlyTaxLite {
 			return MonthlyTaxLite{
 				MonthlyTaxAmount: 28_080_00,
 				MonthlyBaseTax:   18_720_00,
@@ -124,7 +124,7 @@ var Results = []ResultTest{
 	// NR-1: нерезидент, 1 ₽/мес → 30% = 30 коп → округляется до 0 каждый месяц
 	{
 		Name: "NR-1: Non-resident, tiny salary → monthly rounding to 0 (jan start)",
-		Monthly: repeatMonthly(2025, time.January, 12, func(i int) MonthlyTaxLite {
+		Monthly: repeatMonthly(time.January, 12, func(i int) MonthlyTaxLite {
 			return MonthlyTaxLite{
 				MonthlyTaxAmount: 0,
 				MonthlyBaseTax:   0,
@@ -137,7 +137,7 @@ var Results = []ResultTest{
 	// NR-2: нерезидент, 120k, старт июнь (7 мес) → 36 000/мес
 	{
 		Name: "NR-2: Non-resident, 120k salary (start in Jun, 7 months)",
-		Monthly: repeatMonthly(2025, time.June, 7, func(i int) MonthlyTaxLite {
+		Monthly: repeatMonthly(time.June, 7, func(i int) MonthlyTaxLite {
 			return MonthlyTaxLite{
 				MonthlyTaxAmount: 36_000_00,
 				MonthlyBaseTax:   36_000_00,

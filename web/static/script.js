@@ -1,8 +1,14 @@
 document.addEventListener("DOMContentLoaded", function() {
-    const form = document.querySelector("form");
-    const salaryInput = document.getElementById("grossSalary");
+    // === Запускаем логику страницы результата (если она открыта) ===
+    initBonuses();
+    initEditParams();
+    initDeductions();
 
-    if (!form || !salaryInput) return;
+    // === Ниже - только страница с формой расчёта ===
+    const salaryInput = document.getElementById("grossSalary");
+    if (!salaryInput) return;
+
+    const form = document.querySelector("form.form");
 
     const MIN_SALARY = window.APP_CONFIG?.minSalary || 0;
     const MAX_SALARY = 100000000;
@@ -125,124 +131,49 @@ function initTooltips() {
         }
 
         function adjustMobileTooltipPosition(text, icon) {
-            console.log('=== DEBUG TOOLTIP POSITIONING ===');
-            
-            // Сбрасываем ВСЕ стили
             text.removeAttribute('style');
             text.classList.remove("tooltip-above", "tooltip-below", "adjust-left", "adjust-right");
-            
-            // Применяем только нужные стили
-            text.style.position = 'absolute';
-            text.style.zIndex = '10000';
-            text.style.width = '300px';
-            text.style.maxWidth = '300px';
-            text.style.boxSizing = 'border-box';
-            text.style.left = '50%';
-            text.style.transform = 'translateX(-50%)';
-            
-            void text.offsetWidth; // форсируем рефлоу
-            
-            const computedStyle = window.getComputedStyle(text);
-            console.log('CSS width:', computedStyle.width);
-            console.log('CSS max-width:', computedStyle.maxWidth);
-            console.log('Actual width:', text.offsetWidth);
-            
+
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-            console.log('Viewport width:', viewportWidth);
-            console.log('Viewport height:', viewportHeight);
-
-            // ПОЛУЧАЕМ РАЗМЕРЫ ЭЛЕМЕНТОВ
+            const safeMargin = 12;
             const iconRect = icon.getBoundingClientRect();
-            const tooltipRect = text.getBoundingClientRect();
-            
-            console.log('Icon position - left:', iconRect.left, 'right:', iconRect.right);
-            console.log('Tooltip height:', tooltipRect.height);
 
-            // Определяем доступное пространство
+            // fixed — все координаты относительно viewport, независимо от позиции родителя
+            text.style.position = 'fixed';
+            text.style.zIndex = '10000';
+            text.style.boxSizing = 'border-box';
+            text.style.transform = 'none';
+            text.style.right = 'auto';
+            text.style.bottom = 'auto';
+
+            // Ширина: 300px или меньше если экран маленький
+            const tooltipWidth = Math.min(300, viewportWidth - safeMargin * 2);
+            text.style.width = tooltipWidth + 'px';
+
+            // Горизонталь: центр на иконке, зажато в границы экрана
+            const iconCenterX = iconRect.left + iconRect.width / 2;
+            const left = Math.max(
+                safeMargin,
+                Math.min(iconCenterX - tooltipWidth / 2, viewportWidth - tooltipWidth - safeMargin)
+            );
+            text.style.left = left + 'px';
+
+            // Измеряем высоту при позиции снизу
+            text.style.top = (iconRect.bottom + 8) + 'px';
+            void text.offsetWidth;
+
+            const tooltipHeight = text.getBoundingClientRect().height;
             const spaceBelow = viewportHeight - iconRect.bottom;
-            const spaceAbove = iconRect.top;
-            const tooltipHeight = tooltipRect.height;
-            
-            console.log('Space above:', spaceAbove, 'Space below:', spaceBelow);
 
-            // Выбираем позицию (сверху или снизу)
-            if (spaceBelow >= tooltipHeight + 20 || spaceAbove < 100) {
-                // Показываем снизу
+            if (spaceBelow >= tooltipHeight + 20 || iconRect.top < 100) {
                 text.classList.add('tooltip-below');
-                text.style.top = 'calc(100% + 8px)';
-                console.log('Position: BELOW icon');
+                text.style.top = (iconRect.bottom + 8) + 'px';
             } else {
-                // Показываем сверху
                 text.classList.add('tooltip-above');
-                text.style.bottom = 'calc(100% + 8px)';
-                console.log('Position: ABOVE icon');
+                text.style.top = 'auto';
+                text.style.bottom = (viewportHeight - iconRect.top + 8) + 'px';
             }
-
-            // РАСЧЕТ ГОРИЗОНТАЛЬНОЙ ПОЗИЦИИ С УЧЕТОМ ГРАНИЦ ЭКРАНА
-            const iconCenterX = iconRect.left + (iconRect.width / 2);
-            const tooltipWidth = 300; // Фиксированная ширина
-            let desiredLeft = iconCenterX - (tooltipWidth / 2);
-            
-            console.log('Icon center X:', iconCenterX);
-            console.log('Desired left position:', desiredLeft);
-
-            // Корректируем позицию чтобы не выходить за экран
-            const safeMargin = 15;
-            
-            // Если тултип не помещается по ширине, уменьшаем его
-            if (tooltipWidth > viewportWidth - safeMargin * 2) {
-                const newWidth = viewportWidth - safeMargin * 2;
-                text.style.width = newWidth + 'px';
-                text.style.maxWidth = newWidth + 'px';
-                console.log('Tooltip too wide, adjusted to:', newWidth);
-            }
-            
-            if (desiredLeft < safeMargin) {
-                // Выравниваем по левому краю с отступом
-                text.classList.add('adjust-left');
-                text.style.left = safeMargin + 'px';
-                text.style.transform = 'none';
-                console.log('Adjusted: LEFT edge');
-            } else if (desiredLeft + tooltipWidth > viewportWidth - safeMargin) {
-                // Выравниваем по правому краю с отступом
-                text.classList.add('adjust-right');
-                text.style.left = 'auto';
-                text.style.right = safeMargin + 'px';
-                text.style.transform = 'none';
-                console.log('Adjusted: RIGHT edge');
-            } else {
-                // Центрируем относительно иконки
-                text.style.left = '50%';
-                text.style.transform = 'translateX(-50%)';
-                console.log('Position: CENTERED');
-            }
-
-            // ФИНАЛЬНАЯ ПРОВЕРКА
-            requestAnimationFrame(() => {
-                const finalRect = text.getBoundingClientRect();
-                console.log('Final position - left:', finalRect.left, 'right:', finalRect.right);
-                
-                // Если все равно выходит за край, принудительно корректируем ширину
-                if (finalRect.right > viewportWidth - 5) {
-                    const overflow = finalRect.right - viewportWidth + 5;
-                    const newWidth = tooltipWidth - overflow;
-                    text.style.width = newWidth + 'px';
-                    console.log('Final correction - right overflow, new width:', newWidth);
-                }
-                
-                if (finalRect.left < 5) {
-                    const overflow = 5 - finalRect.left;
-                    const newWidth = tooltipWidth - overflow;
-                    text.style.width = newWidth + 'px';
-                    if (text.classList.contains('adjust-left')) {
-                        text.style.left = '5px';
-                    }
-                    console.log('Final correction - left overflow, new width:', newWidth);
-                }
-
-                console.log('=== END TOOLTIP POSITIONING ===');
-            });
         }
 
         function adjustDesktopTooltipPosition(text, icon) {
@@ -409,8 +340,404 @@ else {
         }
     }
 
+    // === Тип занятости: блок НПД и блокировка несовместимых опций ===
+    function initEmploymentType() {
+        var radios = document.querySelectorAll('input[name="employmentType"]');
+        var privilegeCheckbox = document.querySelector('input[name="hasTaxPrivilege"]');
+        var residentCheckbox = document.querySelector('input[name="isNotResident"]');
+        var npdParams = document.getElementById("npd-params");
+        if (!radios.length) return;
+
+        function setDisabled(checkbox, disabled) {
+            if (!checkbox) return;
+            if (disabled) checkbox.checked = false;
+            checkbox.disabled = disabled;
+            var optionEl = checkbox.closest(".exclusive-option");
+            if (optionEl) {
+                optionEl.classList.toggle("exclusive-option--disabled", disabled);
+                if (disabled) optionEl.classList.remove("selected");
+            }
+        }
+
+        function updateCompatibility() {
+            var selected = document.querySelector('input[name="employmentType"]:checked');
+            var value = selected ? selected.value : "TD";
+            var isGPH = value === "GPH";
+            var isSelfEmployed = value === "SELF_EMPLOYED";
+
+            // Блок НПД
+            if (npdParams) {
+                npdParams.classList.toggle("hidden", !isSelfEmployed);
+            }
+
+            // Льготы: недоступны при ГПХ и самозанятости
+            setDisabled(privilegeCheckbox, isGPH || isSelfEmployed);
+
+            // Нерезидент: недоступен при самозанятости (НПД только для резидентов РФ)
+            setDisabled(residentCheckbox, isSelfEmployed);
+
+            // Территориальный коэффициент и северная надбавка: только для ТД
+            var hideCoeffs = isGPH || isSelfEmployed;
+            ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
+                var el = document.querySelector('[name="' + name + '"]');
+                if (!el) return;
+                var row = el.closest(".field-row");
+                if (row) row.style.display = hideCoeffs ? "none" : "";
+                if (hideCoeffs) el.value = "100";
+            });
+        }
+
+        radios.forEach(function(radio) {
+            radio.addEventListener("change", updateCompatibility);
+        });
+
+        updateCompatibility();
+    }
+
     // Инициализация всех компонентов
     initExclusiveCheckboxes();
     initTooltips();
     initAccordion();
+    initEmploymentType();
 });
+
+// ===================================================================
+// СТРАНИЦА РЕЗУЛЬТАТА - помесячный аккордеон и ввод премий
+// ===================================================================
+function initBonuses() {
+    const stickyBar = document.getElementById("bonus-sticky-bar");
+    if (!stickyBar) return; // не страница результата
+
+    const stickyLabel = document.getElementById("bonus-sticky-label");
+    const inlineRecalcBtn = document.getElementById("bonus-recalc-btn");
+
+    // --- Аккордеон помесячной детализации ---
+    document.querySelectorAll(".accordion-header").forEach(function(header) {
+        header.addEventListener("click", function(e) {
+            // Игнорируем клик по кнопкам внутри заголовка
+            if (e.target.closest("button")) return;
+            header.parentElement.classList.toggle("active");
+        });
+    });
+
+    // --- Обработчик кнопки «Добавить премию» ---
+    function onAddBtnClick() {
+        var section = this.closest(".bonus-section");
+        var inputRow = section.querySelector(".bonus-input-row");
+        this.style.display = "none";
+        inputRow.classList.remove("bonus-input-row--hidden");
+        var input = inputRow.querySelector(".bonus-input");
+        if (input) input.focus();
+    }
+
+    document.querySelectorAll(".bonus-add-btn").forEach(function(btn) {
+        btn.addEventListener("click", onAddBtnClick);
+    });
+
+    // --- Обработчик кнопки × (убрать премию) ---
+    document.querySelectorAll(".bonus-clear-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+            var section = btn.closest(".bonus-section");
+            var inputRow = btn.closest(".bonus-input-row");
+            var input = inputRow.querySelector(".bonus-input");
+
+            if (input) input.value = "";
+            inputRow.classList.add("bonus-input-row--hidden");
+
+            // Показываем кнопку «Добавить премию» или создаём её (если была преднаполненная строка)
+            var addBtn = section.querySelector(".bonus-add-btn");
+            if (!addBtn) {
+                addBtn = document.createElement("button");
+                addBtn.type = "button";
+                addBtn.className = "bonus-add-btn";
+                addBtn.textContent = "＋ Добавить премию";
+                addBtn.addEventListener("click", onAddBtnClick);
+                section.insertBefore(addBtn, inputRow);
+            }
+            addBtn.style.display = "";
+
+            updateStickyBar();
+        });
+    });
+
+    // --- Слушаем ввод во всех полях премий ---
+    document.addEventListener("input", function(e) {
+        if (e.target.classList.contains("bonus-input")) {
+            updateStickyBar();
+        }
+    });
+
+    // --- Форматирование полей премий ---
+    document.querySelectorAll(".bonus-input").forEach(initAmountInput);
+
+    // --- Снимок начального состояния полей (чтобы знать, изменилось ли что-то) ---
+    var initialBonusValues = {};
+    document.querySelectorAll(".bonus-input").forEach(function(input) {
+        initialBonusValues[input.name] = input.value;
+    });
+
+    // --- Обновление липкой панели ---
+    function updateStickyBar() {
+        var count = 0;
+        var changed = false;
+        document.querySelectorAll(".bonus-input").forEach(function(input) {
+            var raw = input.value.replace(/\D/g, "");
+            var val = parseInt(raw, 10);
+            if (!isNaN(val) && val > 0) count++;
+            if (input.value !== (initialBonusValues[input.name] || "")) changed = true;
+        });
+
+        var panelOpen = document.getElementById("edit-params-panel") &&
+                        document.getElementById("edit-params-panel").classList.contains("open");
+
+        if (changed) {
+            var text = count > 0
+                ? "Пересчитать с " + count + "\u00A0" + declension(count, ["премией", "премиями", "премиями"])
+                : "Пересчитать без премий";
+            stickyBar.classList.add("visible");
+            stickyLabel.textContent = text;
+            if (inlineRecalcBtn) {
+                inlineRecalcBtn.style.display = "inline-block";
+                inlineRecalcBtn.textContent = text + " →";
+            }
+        } else if (!panelOpen) {
+            stickyBar.classList.remove("visible");
+            if (inlineRecalcBtn) inlineRecalcBtn.style.display = "";
+        }
+        // если panelOpen и бонусов нет - не трогаем (за это отвечает initEditParams)
+    }
+
+    // --- Склонение числительных ---
+    function declension(n, forms) {
+        var mod10 = n % 10;
+        var mod100 = n % 100;
+        if (mod100 >= 11 && mod100 <= 19) return forms[2];
+        if (mod10 === 1) return forms[0];
+        if (mod10 >= 2 && mod10 <= 4) return forms[1];
+        return forms[2];
+    }
+
+    // Инициализация: при пересчёте с бонусами поля уже заполнены
+    updateStickyBar();
+}
+
+// ===================================================================
+// ПАНЕЛЬ РЕДАКТИРОВАНИЯ ПАРАМЕТРОВ
+// ===================================================================
+function initEditParams() {
+    var toggle = document.getElementById("edit-params-toggle");
+    var panel  = document.getElementById("edit-params-panel");
+    var cancel = document.getElementById("edit-params-cancel");
+    if (!toggle || !panel) return;
+
+    function openPanel() {
+        panel.classList.add("open");
+        toggle.classList.add("active");
+        toggle.textContent = "✏️ Параметры открыты";
+        showRecalcButtons("Пересчитать");
+    }
+
+    function closePanel() {
+        panel.classList.remove("open");
+        toggle.classList.remove("active");
+        toggle.textContent = "✏️ Изменить параметры";
+        // Скрываем кнопки только если нет заполненных бонусов
+        var hasBonuses = false;
+        document.querySelectorAll(".bonus-input").forEach(function(input) {
+            var v = parseInt(input.value.replace(/\D/g, ""), 10);
+            if (!isNaN(v) && v > 0) hasBonuses = true;
+        });
+        if (!hasBonuses) hideRecalcButtons();
+    }
+
+    function showRecalcButtons(label) {
+        var stickyBar   = document.getElementById("bonus-sticky-bar");
+        var stickyLabel = document.getElementById("bonus-sticky-label");
+        var inlineBtn   = document.getElementById("bonus-recalc-btn");
+        if (stickyBar)   stickyBar.classList.add("visible");
+        if (stickyLabel) stickyLabel.textContent = label;
+        if (inlineBtn) {
+            inlineBtn.style.display = "inline-block";
+            inlineBtn.textContent = label + " →";
+        }
+    }
+
+    function hideRecalcButtons() {
+        var stickyBar = document.getElementById("bonus-sticky-bar");
+        var inlineBtn = document.getElementById("bonus-recalc-btn");
+        if (stickyBar) stickyBar.classList.remove("visible");
+        if (inlineBtn) inlineBtn.style.display = "";
+    }
+
+    toggle.addEventListener("click", function() {
+        if (panel.classList.contains("open")) {
+            closePanel();
+        } else {
+            openPanel();
+        }
+    });
+
+    if (cancel) {
+        cancel.addEventListener("click", closePanel);
+    }
+
+    // Взаимоисключающие чекбоксы внутри панели
+    var exclusives = panel.querySelectorAll(".edit-exclusive");
+    exclusives.forEach(function(cb) {
+        cb.addEventListener("change", function() {
+            if (this.checked) {
+                exclusives.forEach(function(other) {
+                    if (other !== cb) other.checked = false;
+                });
+            }
+        });
+    });
+
+    // Скрываем территориальный/северный при самозанятом в панели редактирования
+    var editRadios = panel.querySelectorAll('input[name="employmentType"]');
+    function updateEditPanelFields() {
+        var sel = panel.querySelector('input[name="employmentType"]:checked');
+        var isSE = sel && sel.value === "SELF_EMPLOYED";
+        var isGPH = sel && sel.value === "GPH";
+
+        // Территориальный и северный — только для ТД
+        var hideCoeffs = isSE || isGPH;
+        ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
+            var el = panel.querySelector('[name="' + name + '"]');
+            if (!el) return;
+            var field = el.closest(".edit-field");
+            if (field) field.style.display = hideCoeffs ? "none" : "";
+        });
+
+        // Особые условия (льготы и нерезидент) — скрываем всё поле при НПД,
+        // при ГПХ оставляем видимым но отключаем только льготы
+        var privilegeCb = panel.querySelector('input[name="hasTaxPrivilege"]');
+        var residentCb  = panel.querySelector('input[name="isNotResident"]');
+
+        if (isSE) {
+            // Самозанятый: несовместимо ни с льготами, ни с нерезидентством
+            [privilegeCb, residentCb].forEach(function(cb) {
+                if (!cb) return;
+                cb.checked = false;
+                cb.disabled = true;
+                var item = cb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "0.4";
+            });
+        } else if (isGPH) {
+            // ГПХ: только льготы недоступны
+            if (privilegeCb) {
+                privilegeCb.checked = false;
+                privilegeCb.disabled = true;
+                var item = privilegeCb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "0.4";
+            }
+            if (residentCb) {
+                residentCb.disabled = false;
+                var item2 = residentCb.closest(".edit-checkbox-item");
+                if (item2) item2.style.opacity = "";
+            }
+        } else {
+            // ТД: всё доступно
+            [privilegeCb, residentCb].forEach(function(cb) {
+                if (!cb) return;
+                cb.disabled = false;
+                var item = cb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "";
+            });
+        }
+    }
+    editRadios.forEach(function(r) {
+        r.addEventListener("change", updateEditPanelFields);
+    });
+    updateEditPanelFields();
+
+    // Если после пересчёта были изменены параметры - открываем панель
+    // (определяем по наличию query-параметра, который не нужен - панель закрыта по умолчанию)
+}
+
+// ===================================================================
+// БЛОК НАЛОГОВЫХ ВЫЧЕТОВ
+// ===================================================================
+function initDeductions() {
+    var section = document.querySelector(".deductions-section");
+    if (!section) return;
+
+    var toggle  = document.getElementById("toggle-deductions");
+    var content = document.getElementById("deductions-content");
+    var arrow   = toggle ? toggle.querySelector(".deductions-arrow") : null;
+
+    if (toggle && content) {
+        toggle.addEventListener("click", function() {
+            var isOpen = content.classList.toggle("open");
+            if (arrow) arrow.style.transform = isOpen ? "rotate(180deg)" : "";
+            toggle.classList.toggle("open", isOpen);
+        });
+    }
+
+    if (section.dataset.notResident) return;
+
+    // --- Счётчик детей ---
+    makeCounter("children-minus", "children-plus", "children-count");
+
+    // --- Счётчик детей-инвалидов ---
+    makeCounter("disabled-minus", "disabled-plus", "disabled-count");
+
+    // --- Форматирование полей сумм ---
+    section.querySelectorAll(".deduction-amount-input").forEach(initAmountInput);
+}
+
+// Форматирование числового поля: пробелы-разделители при blur, сырое число при focus.
+function initAmountInput(input) {
+    function formatValue(raw) {
+        var n = parseInt(raw.replace(/\D/g, ""), 10);
+        if (isNaN(n) || n === 0) return "";
+        return n.toLocaleString("ru-RU");
+    }
+
+    function rawValue() {
+        return input.value.replace(/\s/g, "").replace(/\u00A0/g, "");
+    }
+
+    // Форматируем предзаполненное значение сразу
+    if (input.value) input.value = formatValue(input.value);
+
+    input.addEventListener("input", function() {
+        var pos = input.selectionStart;
+        var before = input.value.length;
+        // Разрешаем только цифры
+        input.value = input.value.replace(/[^\d]/g, "");
+        var diff = input.value.length - before;
+        input.setSelectionRange(pos + diff, pos + diff);
+    });
+
+    input.addEventListener("blur", function() {
+        input.value = formatValue(rawValue());
+    });
+
+    input.addEventListener("focus", function() {
+        var raw = rawValue();
+        input.value = raw === "0" ? "" : raw;
+    });
+}
+
+// Вспомогательная функция: создаёт логику кнопок +/− для числового поля.
+function makeCounter(minusBtnId, plusBtnId, inputId) {
+    var minusBtn = document.getElementById(minusBtnId);
+    var plusBtn  = document.getElementById(plusBtnId);
+    var input    = document.getElementById(inputId);
+    if (!input) return;
+
+    if (minusBtn) {
+        minusBtn.addEventListener("click", function() {
+            var v = parseInt(input.value, 10) || 0;
+            if (v > 0) input.value = v - 1;
+        });
+    }
+    if (plusBtn) {
+        plusBtn.addEventListener("click", function() {
+            var v = parseInt(input.value, 10) || 0;
+            var max = parseInt(input.max, 10) || 10;
+            if (v < max) input.value = v + 1;
+        });
+    }
+}

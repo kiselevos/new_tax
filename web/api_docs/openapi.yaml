@@ -1,0 +1,572 @@
+openapi: 3.0.3
+info:
+  title: Калькулятор НДФЛ — API
+  description: |
+    REST API для расчёта подоходного налога (НДФЛ) по прогрессивной шкале.
+
+    **Формат денег**: все суммы передаются и возвращаются в **копейках** (целые числа без дробной части).
+    Пример: `10 000 000` = 100 000 ₽.
+
+    **Версия**: текущая версия `v1`, путь всегда содержит версию: `/api/v1/...`
+  version: "1.0"
+  contact:
+    email: olegsergeevichkiselev@gmail.com
+
+servers:
+  - url: https://calculator-ndfl.ru
+    description: Production
+
+tags:
+  - name: public
+    description: Публичное API — без авторизации
+  - name: private
+    description: Private API — требуется заголовок `x-api-key`
+
+paths:
+  /api/v1/calc:
+    post:
+      tags: [public]
+      summary: Расчёт НДФЛ (публичный)
+      description: |
+        Базовый расчёт НДФЛ по прогрессивной шкале. Не требует авторизации.
+        Возвращает помесячную детализацию дохода и налога с начала выбранного периода до конца года.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicCalcRequest'
+            example:
+              gross_salary: 10000000
+      responses:
+        '200':
+          description: Успешный расчёт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCalcResponse'
+              example:
+                gross_salary: 10000000
+                annual_gross_income: 120000000
+                annual_net_income: 104400000
+                annual_tax_amount: 15600000
+                monthly_details:
+                  - month: "2025-01-01T00:00:00Z"
+                    monthly_gross_income: 10000000
+                    monthly_net_income: 8700000
+                    monthly_tax_amount: 1300000
+                    annual_gross_income: 10000000
+                    annual_net_income: 8700000
+                    annual_tax_amount: 1300000
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/private-calc:
+    post:
+      tags: [private]
+      summary: Расширенный расчёт НДФЛ (приватный)
+      description: |
+        Полный расчёт с поддержкой:
+        - типов занятости: ТД, ГПХ, самозанятость (НПД)
+        - районного коэффициента и северной надбавки
+        - взносов работодателя (ПФР, ФОМС, ФСС)
+        - налоговых вычетов (дети, жильё, ипотека, лечение, обучение)
+        - ежемесячных премий
+        - особых режимов (силовики, нерезиденты)
+
+        Требует заголовок `x-api-key`.
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivateCalcRequest'
+            examples:
+              td_with_coefficients:
+                summary: ТД — коэффициенты + вычет на детей
+                value:
+                  gross_salary: 20000000
+                  employment_type: TD
+                  territorial_multiplier: 120
+                  northern_coefficient: 150
+                  start_date: "2025-01-01"
+                  children_count: 2
+              gph:
+                summary: Договор ГПХ
+                value:
+                  gross_salary: 15000000
+                  employment_type: GPH
+                  start_date: "2025-01-01"
+              npd_individual:
+                summary: Самозанятый — доход от физлица (4%)
+                value:
+                  gross_salary: 5000000
+                  employment_type: SELF_EMPLOYED
+                  npd_income_source: INDIVIDUAL
+                  has_registration_deduction: true
+                  start_date: "2025-01-01"
+              td_with_bonuses:
+                summary: ТД с ежемесячными премиями
+                value:
+                  gross_salary: 20000000
+                  employment_type: TD
+                  start_date: "2025-01-01"
+                  monthly_bonuses: [0, 0, 0, 0, 0, 0, 200000000, 0, 0, 0, 0, 0]
+      responses:
+        '200':
+          description: Успешный расчёт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivateCalcResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API-ключ для доступа к Private API
+
+  responses:
+    BadRequest:
+      description: Ошибка валидации запроса
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "salary must be > 0"
+    MethodNotAllowed:
+      description: Метод не поддерживается (нужен POST)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "method not allowed"
+    Unauthorized:
+      description: API-ключ отсутствует или недействителен
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "unauthorized"
+    InternalError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "salary must be > 0"
+
+    EmploymentType:
+      type: string
+      enum: [TD, GPH, SELF_EMPLOYED]
+      description: |
+        Тип занятости:
+        - `TD` — трудовой договор (по умолчанию); все взносы ПФР + ФОМС + ФСС
+        - `GPH` — договор ГПХ; ФСС не начисляется
+        - `SELF_EMPLOYED` — самозанятый (НПД); взносов нет, особые ставки НДФЛ
+
+    NpdIncomeSource:
+      type: string
+      enum: [INDIVIDUAL, LEGAL_ENTITY]
+      description: |
+        Источник дохода самозанятого — определяет ставку НПД:
+        - `INDIVIDUAL` — физическое лицо (ставка 4%)
+        - `LEGAL_ENTITY` — организация или ИП (ставка 6%)
+
+    PublicCalcRequest:
+      type: object
+      required: [gross_salary]
+      properties:
+        gross_salary:
+          type: integer
+          format: int64
+          description: Оклад по договору, в копейках
+          minimum: 1
+          maximum: 1000000000
+          example: 10000000
+        territorial_multiplier:
+          type: integer
+          format: int64
+          description: |
+            Районный коэффициент, умноженный на 100. Диапазон: 100–200.
+            Пример: `120` = коэффициент 1.20 (+20% к окладу).
+          minimum: 100
+          maximum: 200
+          example: 120
+        northern_coefficient:
+          type: integer
+          format: int64
+          description: |
+            Северная надбавка, умноженная на 100. Диапазон: 100–200.
+            Пример: `150` = надбавка 50% от (оклад × РК).
+          minimum: 100
+          maximum: 200
+          example: 150
+
+    PublicCalcResponse:
+      type: object
+      properties:
+        gross_salary:
+          type: integer
+          format: int64
+          description: Оклад из запроса, копейки
+        territorial_multiplier:
+          type: integer
+          format: int64
+          description: Территориальный коэффициент из запроса
+        northern_coefficient:
+          type: integer
+          format: int64
+          description: Северная надбавка из запроса
+        annual_gross_income:
+          type: integer
+          format: int64
+          description: Суммарный гросс-доход за период, копейки
+        annual_net_income:
+          type: integer
+          format: int64
+          description: Суммарный чистый доход за период, копейки
+        annual_tax_amount:
+          type: integer
+          format: int64
+          description: Суммарный НДФЛ за период, копейки
+        monthly_details:
+          type: array
+          description: Помесячная детализация
+          items:
+            $ref: '#/components/schemas/MonthlyPublicTax'
+
+    MonthlyPublicTax:
+      type: object
+      properties:
+        month:
+          type: string
+          format: date-time
+          description: Первое число месяца, UTC
+          example: "2025-01-01T00:00:00Z"
+        monthly_gross_income:
+          type: integer
+          format: int64
+          description: Гросс-доход за месяц, копейки
+        monthly_net_income:
+          type: integer
+          format: int64
+          description: Чистый доход за месяц (после НДФЛ), копейки
+        monthly_tax_amount:
+          type: integer
+          format: int64
+          description: НДФЛ за месяц, копейки
+        annual_gross_income:
+          type: integer
+          format: int64
+          description: Накопленный гросс-доход с начала периода, копейки
+        annual_net_income:
+          type: integer
+          format: int64
+          description: Накопленный чистый доход с начала периода, копейки
+        annual_tax_amount:
+          type: integer
+          format: int64
+          description: Накопленный НДФЛ с начала периода, копейки
+
+    PrivateCalcRequest:
+      type: object
+      required: [gross_salary]
+      properties:
+        gross_salary:
+          type: integer
+          format: int64
+          description: Оклад по договору, в копейках
+          minimum: 1
+          maximum: 1000000000
+          example: 20000000
+        employment_type:
+          $ref: '#/components/schemas/EmploymentType'
+        territorial_multiplier:
+          type: integer
+          format: int64
+          description: Районный коэффициент × 100 (100–200). Не применяется при НПД.
+          minimum: 100
+          maximum: 200
+        northern_coefficient:
+          type: integer
+          format: int64
+          description: Северная надбавка × 100 (100–200). Не применяется при НПД.
+          minimum: 100
+          maximum: 200
+        start_date:
+          type: string
+          format: date
+          description: Первый месяц расчёта. Формат `YYYY-MM-DD`, день игнорируется.
+          example: "2025-01-01"
+        has_tax_privilege:
+          type: boolean
+          description: |
+            Льготы для силовых структур — применяется упрощённая шкала 13%/15%
+            вместо пятиступенчатой прогрессии. Только для `employment_type: TD`.
+        is_not_resident:
+          type: boolean
+          description: |
+            Налоговый нерезидент РФ — фиксированная ставка НДФЛ 30%.
+            Перекрывает `has_tax_privilege`.
+        monthly_bonuses:
+          type: array
+          description: |
+            Разовые выплаты (премии) по месяцам, копейки. Массив ровно из 12 элементов,
+            индекс 0 = январь, индекс 11 = декабрь.
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          minItems: 12
+          maxItems: 12
+          example: [0, 0, 0, 0, 0, 0, 200000000, 0, 0, 0, 0, 0]
+        children_count:
+          type: integer
+          minimum: 0
+          description: |
+            Количество детей до 18 лет для стандартного вычета (ст. 218 НК РФ).
+            Вычет: 1 400 ₽/мес на первого и второго, 3 000 ₽/мес на третьего и далее.
+        disabled_children_count:
+          type: integer
+          minimum: 0
+          description: |
+            Количество детей-инвалидов — дополнительно +12 000 ₽/мес на каждого (ст. 218 НК РФ).
+        housing_expense:
+          type: integer
+          format: int64
+          minimum: 0
+          description: |
+            Расходы на покупку жилья, копейки (ст. 220 НК РФ).
+            Лимит вычета: 2 000 000 ₽ (возврат до 260 000 ₽). Неиспользованный остаток переносится на следующие годы.
+        mortgage_expense:
+          type: integer
+          format: int64
+          minimum: 0
+          description: |
+            Уплаченные проценты по ипотеке, копейки (ст. 220 НК РФ).
+            Лимит вычета: 3 000 000 ₽ (возврат до 390 000 ₽).
+        social_expense:
+          type: integer
+          format: int64
+          minimum: 0
+          description: |
+            Расходы на лечение и своё обучение, копейки (ст. 219 НК РФ).
+            Лимит: 150 000 ₽ в год.
+        child_edu_expense:
+          type: integer
+          format: int64
+          minimum: 0
+          description: |
+            Расходы на обучение ребёнка, копейки (ст. 219 НК РФ).
+            Лимит: 110 000 ₽ в год на каждого ребёнка.
+        npd_income_source:
+          $ref: '#/components/schemas/NpdIncomeSource'
+        has_registration_deduction:
+          type: boolean
+          description: |
+            Регистрационный бонус самозанятого 10 000 ₽ (ст. 12 Закона № 422-ФЗ).
+            Автоматически уменьшает начисленный налог до исчерпания суммы.
+            Применяется только при `employment_type: SELF_EMPLOYED`.
+
+    DeductionResult:
+      type: object
+      description: Итог расчёта налоговых вычетов за период
+      properties:
+        children_monthly_deduction:
+          type: integer
+          format: int64
+          description: Ежемесячная сумма вычета на детей, копейки
+        children_months:
+          type: integer
+          description: Количество месяцев, за которые применён детский вычет
+        children_return:
+          type: integer
+          format: int64
+          description: Возврат налога по детскому вычету за период, копейки
+        property_return_this_year:
+          type: integer
+          format: int64
+          description: Возврат за жильё/ипотеку в расчётном периоде, копейки
+        property_return_total:
+          type: integer
+          format: int64
+          description: Полная сумма возврата за жильё/ипотеку (часть может переноситься на след. годы)
+        social_return:
+          type: integer
+          format: int64
+          description: Возврат по социальному вычету, копейки
+        total_return:
+          type: integer
+          format: int64
+          description: Итого к возврату в расчётном периоде, копейки
+
+    MonthlyPrivateTax:
+      type: object
+      properties:
+        month:
+          type: string
+          format: date-time
+          description: Первое число месяца, UTC
+          example: "2025-01-01T00:00:00Z"
+        monthly_gross_income:
+          type: integer
+          format: int64
+          description: Гросс-доход за месяц, копейки
+        monthly_net_income:
+          type: integer
+          format: int64
+          description: Чистый доход за месяц, копейки
+        monthly_tax_amount:
+          type: integer
+          format: int64
+          description: НДФЛ за месяц, копейки
+        tax_rate:
+          type: integer
+          description: Текущая ставка НДФЛ, %
+        annual_gross_income:
+          type: integer
+          format: int64
+          description: Накопленный гросс-доход с начала периода, копейки
+        annual_net_income:
+          type: integer
+          format: int64
+          description: Накопленный чистый доход, копейки
+        annual_tax_amount:
+          type: integer
+          format: int64
+          description: Накопленный НДФЛ с начала периода, копейки
+        monthly_base_gross_income:
+          type: integer
+          format: int64
+          description: Гросс-доход по окладу + РК за месяц (без северной надбавки), копейки
+        monthly_north_gross_income:
+          type: integer
+          format: int64
+          description: Гросс-доход северной надбавки за месяц, копейки
+        monthly_base_tax_amount:
+          type: integer
+          format: int64
+          description: НДФЛ с оклада + РК за месяц, копейки
+        monthly_north_tax_amount:
+          type: integer
+          format: int64
+          description: НДФЛ с северной надбавки за месяц, копейки
+        annual_base_gross_income:
+          type: integer
+          format: int64
+        annual_north_gross_income:
+          type: integer
+          format: int64
+        annual_base_tax_amount:
+          type: integer
+          format: int64
+        annual_north_tax_amount:
+          type: integer
+          format: int64
+        monthlyPFR:
+          type: integer
+          format: int64
+          description: Взнос работодателя в ПФР за месяц, копейки
+        monthlyFOMS:
+          type: integer
+          format: int64
+          description: Взнос работодателя в ФОМС за месяц, копейки
+        monthlyFSS:
+          type: integer
+          format: int64
+          description: Взнос работодателя в ФСС за месяц, копейки (0 при ГПХ и НПД)
+        annualPFR:
+          type: integer
+          format: int64
+          description: Накопленный взнос в ПФР, копейки
+        annualFOMS:
+          type: integer
+          format: int64
+          description: Накопленный взнос в ФОМС, копейки
+        annualFSS:
+          type: integer
+          format: int64
+          description: Накопленный взнос в ФСС, копейки
+        monthly_bonus:
+          type: integer
+          format: int64
+          description: Разовая выплата (премия) в этом месяце, копейки
+        npd_deduction_used:
+          type: integer
+          format: int64
+          description: Использованный в этом месяце регистрационный вычет НПД, копейки
+
+    PrivateCalcResponse:
+      type: object
+      properties:
+        gross_salary:
+          type: integer
+          format: int64
+          description: Оклад из запроса, копейки
+        territorial_multiplier:
+          type: integer
+          format: int64
+        northern_coefficient:
+          type: integer
+          format: int64
+        annual_gross_income:
+          type: integer
+          format: int64
+          description: Суммарный гросс-доход за период, копейки
+        annual_net_income:
+          type: integer
+          format: int64
+          description: Суммарный чистый доход, копейки
+        annual_tax_amount:
+          type: integer
+          format: int64
+          description: Суммарный НДФЛ за период, копейки
+        annualPFR:
+          type: integer
+          format: int64
+          description: Взносы в ПФР за период, копейки
+        annualFOMS:
+          type: integer
+          format: int64
+          description: Взносы в ФОМС за период, копейки
+        annualFSS:
+          type: integer
+          format: int64
+          description: Взносы в ФСС за период, копейки (0 при ГПХ и НПД)
+        npd_limit_exceeded:
+          type: boolean
+          description: true, если годовой доход самозанятого превысил лимит НПД (2 400 000 ₽)
+        deduction_result:
+          $ref: '#/components/schemas/DeductionResult'
+        monthly_details:
+          type: array
+          description: Помесячная детализация
+          items:
+            $ref: '#/components/schemas/MonthlyPrivateTax'

@@ -4,6 +4,7 @@ import (
 	"context"
 	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -39,6 +40,8 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/about", s.About)
 	mux.HandleFunc("/regional-info", s.RegionalInfo)
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
+	mux.HandleFunc("/tax-deductions", s.TaxDeductions)
+	mux.HandleFunc("/employment-types", s.EmploymentTypes)
 	mux.HandleFunc("/api-docs", s.HandleApiDocs)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
@@ -53,6 +56,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 
 func (s *Server) Index(w http.ResponseWriter, r *http.Request) {
 	data := PrepareIndexData()
+	data.FormError = r.URL.Query().Get("error")
 
 	if err := s.Tmpl.ExecuteTemplate(w, "index", data); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "index", "err", err)
@@ -105,7 +109,7 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		log.Warn("form_validation_failed", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "validate").Inc()
 		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
-		http.Error(w, "invalid input: "+err.Error(), http.StatusBadRequest)
+		http.Redirect(w, r, "/?error="+url.QueryEscape("Введите корректный оклад (например, 50 000 ₽)"), http.StatusSeeOther)
 		return
 	}
 
@@ -120,29 +124,49 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		log.Error("grpc_call_failed", "method", "CalculatePrivate", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
 		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Redirect(w, r, "/?error="+url.QueryEscape("Ошибка при расчёте. Попробуйте ещё раз"), http.StatusSeeOther)
 		return
 	}
 
 	minWage := web.GetMinLivingWage()
 	showWarning := req.GrossSalary < minWage
 
+	// Суммируем премии и использованный НПД-вычет за период
+	var annualBonus, npdDeductionUsed uint64
+	for _, m := range res.MonthlyDetails {
+		annualBonus += m.MonthlyBonus
+		npdDeductionUsed += m.NpdDeductionUsed
+	}
+	startMonthNum := 1
+	if len(res.MonthlyDetails) > 0 && res.MonthlyDetails[0].Month != nil {
+		startMonthNum = int(res.MonthlyDetails[0].Month.AsTime().Month())
+	}
+
+	// Нормализуем бонусы в срез из 12 элементов для шаблона
+	bonuses := make([]uint64, 12)
+	for _, m := range res.MonthlyDetails {
+		if m.Month != nil {
+			idx := int(m.Month.AsTime().Month()) - 1
+			bonuses[idx] = m.MonthlyBonus
+		}
+	}
+
+	// Первый месяц без премии — для виджета «На руки в месяц»
+	var baseMonth *pb.MonthlyPrivateTax
+	for _, m := range res.MonthlyDetails {
+		if m.MonthlyBonus == 0 {
+			baseMonth = m
+			break
+		}
+	}
+	if baseMonth == nil && len(res.MonthlyDetails) > 0 {
+		baseMonth = res.MonthlyDetails[0]
+	}
+
+	indexData := PrepareIndexData()
+
 	// Prepare data
-	data := struct {
-		AnnualTaxAmount   uint64
-		AnnualGrossIncome uint64
-		AnnualNetIncome   uint64
-		GrossSalary       uint64
-		TerritorialMult   uint64
-		NorthernCoeff     uint64
-		MonthlyDetails    []*pb.MonthlyPrivateTax
-		ShowWarning       bool
-		HasTaxPrivilege   bool
-		IsNotResident     bool
-		AnnualPFR         uint64
-		AnnualFOMS        uint64
-		AnnualFSS         uint64
-	}{
+	data := ResultPayload{
 		AnnualTaxAmount:   res.AnnualTaxAmount,
 		AnnualGrossIncome: res.AnnualGrossIncome,
 		AnnualNetIncome:   res.AnnualNetIncome,
@@ -153,9 +177,31 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 		ShowWarning:       showWarning,
 		HasTaxPrivilege:   getBool(req.HasTaxPrivilege),
 		IsNotResident:     getBool(req.IsNotResident),
+		IsGPH:                    req.GetEmploymentType() == pb.EmploymentType_GPH,
+		IsSelfEmployed:            req.GetEmploymentType() == pb.EmploymentType_SELF_EMPLOYED,
+		EmploymentTypeStr:         req.GetEmploymentType().String(),
+		NpdIncomeSourceStr:        req.GetNpdIncomeSource().String(),
+		HasRegistrationDeduction:  req.GetHasRegistrationDeduction(),
+		NpdLimitExceeded:          res.GetNpdLimitExceeded(),
+		NpdDeductionUsed:          npdDeductionUsed,
+		NpdDeductionRemaining:     npdDeductionRemaining(req.GetHasRegistrationDeduction(), npdDeductionUsed),
 		AnnualPFR:         res.AnnualPFR,
 		AnnualFOMS:        res.AnnualFOMS,
 		AnnualFSS:         res.AnnualFSS,
+		MonthlyBonuses:    bonuses,
+		AnnualBonus:       annualBonus,
+		StartMonthNum:     startMonthNum,
+		BaseMonth:         baseMonth,
+		Months:            indexData.Months,
+		Territorial:       indexData.Territorial,
+		Northern:          indexData.Northern,
+		DeductionResult:            res.DeductionResult,
+		ChildrenCountInput:         req.GetChildrenCount(),
+		DisabledChildrenCountInput: req.GetDisabledChildrenCount(),
+		HousingExpenseInput:        req.GetHousingExpense() / 100,
+		MortgageExpenseInput:       req.GetMortgageExpense() / 100,
+		SocialExpenseInput:         req.GetSocialExpense() / 100,
+		ChildEduExpenseInput:       req.GetChildEduExpense() / 100,
 	}
 
 	// render template
@@ -192,35 +238,42 @@ func (s *Server) Calculate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) About(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "about", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "about", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "about", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
 
 func (s *Server) RegionalInfo(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "regional_info", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "regional_info", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "regional_info", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
 
 func (s *Server) SpecialTaxModes(w http.ResponseWriter, r *http.Request) {
-	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", nil); err != nil {
+	if err := s.Tmpl.ExecuteTemplate(w, "special_tax_modes", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "special_tax_modes", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }
 
-func (s *Server) HandleApiDocs(w http.ResponseWriter, r *http.Request) {
-
-	data, err := PrepareApiData()
-	if err != nil {
-		http.Error(w, "cannot load api docs", 500)
-		return
+func (s *Server) TaxDeductions(w http.ResponseWriter, r *http.Request) {
+	if err := s.Tmpl.ExecuteTemplate(w, "tax_deductions", PrepareTaxConstants()); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "tax_deductions", "err", err)
+		http.Error(w, "internal server error", 500)
 	}
+}
 
-	if err := s.Tmpl.ExecuteTemplate(w, "api-docs", data); err != nil {
+func (s *Server) EmploymentTypes(w http.ResponseWriter, r *http.Request) {
+	if err := s.Tmpl.ExecuteTemplate(w, "employment_types", PrepareTaxConstants()); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "employment_types", "err", err)
+		http.Error(w, "internal server error", 500)
+	}
+}
+
+func (s *Server) HandleApiDocs(w http.ResponseWriter, r *http.Request) {
+	if err := s.Tmpl.ExecuteTemplate(w, "swagger", nil); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "err", err)
 		http.Error(w, "internal server error", 500)
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/kiselevos/new_tax/internal/config"
 	"github.com/kiselevos/new_tax/internal/middleware"
+	"github.com/kiselevos/new_tax/internal/middleware/ratelimit"
 	"github.com/kiselevos/new_tax/pkg/logx"
 
 	pb "github.com/kiselevos/new_tax/gen/grpc/api"
@@ -27,16 +28,18 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		return nil, err
 	}
 
+	limiter := ratelimit.NewMemoryLimiter(cfg.RateLimitCfg.TTL, cfg.RateLimitCfg.CleanupEvery)
+
 	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			middleware.UnaryRecovery(),
 			middleware.UnaryLogger(),
 			middleware.Auth(cfg.ApiKey),
-			middleware.RateLimitInterceptor(cfg.RateLimitCfg),
+			ratelimit.RateLimitInterceptor(limiter, cfg.RateLimitCfg),
 		),
 	)
 
-	pb.RegisterTaxServiceServer(s, NewGRPCServer())
+	pb.RegisterTaxServiceServer(s, NewGRPCServer(logger))
 	reflection.Register(s)
 
 	return &Server{Grpc: s, Lis: lis}, nil
@@ -47,14 +50,14 @@ func (s *Server) Serve() error {
 }
 
 // ShutdownGRPCServer завершает работу gRPC-сервера с использованием GracefulStop.
-func ShutdownGRPCServer(ctx context.Context, srv *grpc.Server) {
+func ShutdownGRPCServer(ctx context.Context, srv *Server) {
 	log := logx.From(ctx)
 	log.Info("Shutting down gRPC server gracefully...")
 
 	done := make(chan struct{})
 
 	go func() {
-		srv.GracefulStop()
+		srv.Grpc.GracefulStop()
 		close(done)
 	}()
 
@@ -63,6 +66,6 @@ func ShutdownGRPCServer(ctx context.Context, srv *grpc.Server) {
 		log.Info("gRPC server graceful shutdown complete")
 	case <-ctx.Done():
 		log.Warn("graceful shutdown timed out, forcing stop")
-		srv.Stop()
+		srv.Grpc.Stop()
 	}
 }

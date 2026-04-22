@@ -63,5 +63,5 @@ func main() {
 	// Делаем graceful с таймаутом
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	server.ShutdownGRPCServer(ctx, srv.Grpc)
+	server.ShutdownGRPCServer(ctx, srv)
 }

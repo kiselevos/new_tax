@@ -1,6 +1,6 @@
 {{define "employer_contributions"}}
 <section class="employer-contrib">
-  <button class="employer-toggle" id="toggle-employer">
+  <button type="button" class="employer-toggle" id="toggle-employer">
     Сколько на самом деле стоит ваш труд?
     <span class="arrow">▼</span>
   </button>
@@ -8,12 +8,15 @@
   <div class="employer-content" id="employer-content">
     <p>
       Когда вы получаете зарплату, кажется, что государство забирает лишь НДФЛ.
-      Однако, ваш труд создаёт <strong>гораздо большую ценность</strong>. Часть идёт вам, 
+      Однако, ваш труд создаёт <strong>гораздо большую ценность</strong>. Часть идёт вам,
       остальное распределяется между налогами, фондами и системой.
     </p>
 
-    <p>Если вы работаете официально, по трудовому договору, за выбранный период ваш работодатель перечислит в 
-    государственные фонды:</p>
+    {{if .IsGPH}}
+    <p>По договору ГПХ за выбранный период заказчик перечислит в государственные фонды:</p>
+    {{else}}
+    <p>По трудовому договору за выбранный период ваш работодатель перечислит в государственные фонды:</p>
+    {{end}}
 
     <div class="employer-table">
       <div class="employer-row">
@@ -24,8 +27,11 @@
         <span class="employer-fund">Фонд обязательного медицинского страхования (ФОМС):</span>
         <span class="employer-value">{{fmtMoney .AnnualFOMS}}</span>
       </div>
-      <div class="employer-row">
-        <span class="employer-fund">Фонд социального страхования (ФСС):</span>
+      <div class="employer-row{{if .IsGPH}} employer-row--zero{{end}}">
+        <span class="employer-fund">
+          Фонд социального страхования (ФСС):
+          {{if .IsGPH}}<span class="employer-fss-note">не начисляется по ГПХ</span>{{end}}
+        </span>
         <span class="employer-value">{{fmtMoney .AnnualFSS}}</span>
       </div>
       <hr>
@@ -36,19 +42,15 @@
     </div>
 
     <p class="employer-note">
-        Эти деньги не видны в вашем платёжном листе, не проходят через ваши руки, 
+        Эти деньги не видны в вашем платёжном листе, не проходят через ваши руки,
         но они часть стоимости, которую создаёт ваш труд.
     </p>
 
 <div class="employer-highlight">
-  <strong>Итого, за выбранный период государство получит налогов и взносов  
+  <strong>Итого, за выбранный период государство получит налогов и взносов
   на сумму {{fmtMoney (sum .AnnualTaxAmount .AnnualPFR .AnnualFOMS .AnnualFSS)}}</strong>
 </div>
 
-<p class="employer-note">
-  Ваш труд создаёт больше, чем вы получаете.
-<strong>Понимание этого - первый шаг к реальной экономической зрелости.</strong>
-</p>
 
   </div>
 </section>

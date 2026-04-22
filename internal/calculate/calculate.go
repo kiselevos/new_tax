@@ -1,6 +1,10 @@
 package calculate
 
-import "time"
+import (
+	"time"
+
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
+)
 
 // CalculateMonthlyTax рассчитывает помесячные значения налога на основе входных данных.
 // Учитывает районный (территориальный) коэффициент и северную надбавку, если они заданы.
@@ -19,38 +23,61 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 
 	var months []MonthlyTax
 
+	bonuses := input.MonthlyBonuses
+	if len(bonuses) < 12 {
+		normalized := make([]uint64, 12)
+		copy(normalized, bonuses)
+		bonuses = normalized
+	}
+
 	switch {
+	case input.EmploymentType == pb.EmploymentType_SELF_EMPLOYED: // НПД: 4% или 6%, без взносов работодателя
+		rate := uint64(NpdRateLegal)
+		if input.NpdIncomeSource == pb.NpdIncomeSource_INDIVIDUAL {
+			rate = NpdRateIndividual
+		}
+		months = TaxCalculateForSelfEmployed(grossSalary, rate, input.HasRegistrationDeduction, startDate, startMonth, bonuses)
+
 	case input.IsNotResident: // Для нерезидентов: 30% со всего дохода
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
-		months = TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth)
+		months = TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth, bonuses)
 
 	case input.HasTaxPrivilege: // Для льготников (силовые ведомства): единая шкала 13%/15%
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
-		months = TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth)
+		months = TaxCalculateWithPrivilege(totalMonthlyGross, startDate, startMonth, bonuses)
 
 	case noTerritorial && noNorthern: // Без РК и СН
-		months = TaxCalculateOnlySalary(grossSalary, startDate, startMonth)
+		months = TaxCalculateOnlySalary(grossSalary, startDate, startMonth, bonuses)
 
 	case noNorthern: // Есть РК, нет СН
-		months = TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth)
+		months = TaxCalculateOnlySalary(monthlyGrossWithTerritorial, startDate, startMonth, bonuses)
 
 	case noTerritorial: // Нет РК, есть СН
 		northernAddition := grossSalary * (northernCoefficient - 100) / 100
-		months = TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth)
+		months = TaxCalculateWithNorth(grossSalary, northernAddition, startDate, startMonth, bonuses)
 
 	default: // Есть и РК, и СН (СН начисляется на оклад с РК)
 		northernAddition := monthlyGrossWithTerritorial * (northernCoefficient - 100) / 100
-		months = TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth)
+		months = TaxCalculateWithNorth(monthlyGrossWithTerritorial, northernAddition, startDate, startMonth, bonuses)
 	}
 
 	// Добавляем взносы от работодателя.
+	// При ГПХ ФСС не начисляется; при НПД взносы не начисляются вовсе.
+	isGPH := input.EmploymentType == pb.EmploymentType_GPH
+	isSelfEmployed := input.EmploymentType == pb.EmploymentType_SELF_EMPLOYED
 	var annualPFR, annualFOMS, annualFSS uint64
 
 	for i := range months {
 		gross := months[i].MonthlyGrossIncome
 		incomeYTD := months[i].AnnualGrossIncome
 
-		pfr, foms, fss := calcEmployerContributions(incomeYTD-gross, gross)
+		var pfr, foms, fss uint64
+		if !isSelfEmployed {
+			pfr, foms, fss = calcEmployerContributions(incomeYTD-gross, gross)
+			if isGPH {
+				fss = 0
+			}
+		}
 
 		months[i].MonthlyPFR = pfr
 		months[i].MonthlyFOMS = foms
@@ -70,7 +97,7 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 
 // TaxCalculateForNotResident - расчёт налога для налоговых нерезидентов РФ (30% со всех доходов).
 // Округление выполняется на месячной дельте.
-func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
+func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth int, bonuses []uint64) []MonthlyTax {
 	var (
 		result            []MonthlyTax
 		annualGrossIncome uint64
@@ -79,7 +106,9 @@ func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth i
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		annualGrossIncome += salary
+		bonus := bonuses[m-1]
+		monthlyGross := salary + bonus
+		annualGrossIncome += monthlyGross
 
 		newTaxRaw := CalculateNotResidentTax(annualGrossIncome) // YTD без округления
 		monthlyRaw := newTaxRaw - annualTaxRaw                  // «сырая» месячная дельта
@@ -88,19 +117,20 @@ func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth i
 		annualTaxRaw = newTaxRaw
 		annualTaxAmount += monthlyRounded
 
-		monthlyNetIncome := salary - monthlyRounded
+		monthlyNetIncome := monthlyGross - monthlyRounded
 		annualNetIncome := annualGrossIncome - annualTaxAmount
 		month := IntMonthFromDate(m, startDate)
 
 		result = append(result, MonthlyTax{
 			Month:              month,
-			MonthlyGrossIncome: salary,
+			MonthlyGrossIncome: monthlyGross,
 			MonthlyNetIncome:   monthlyNetIncome,
 			MonthlyTaxAmount:   monthlyRounded,
 			AnnualGrossIncome:  annualGrossIncome,
 			AnnualNetIncome:    annualNetIncome,
 			AnnualTaxAmount:    annualTaxAmount,
 			TaxRate:            NotResident.Rate,
+			MonthlyBonus:       bonus,
 		})
 	}
 	return result
@@ -108,7 +138,7 @@ func TaxCalculateForNotResident(salary uint64, startDate time.Time, startMonth i
 
 // TaxCalculateWithPrivilege - расчёт для льготников (силовые ведомства) по упрощённой шкале 13%/15%.
 // Округление выполняется на месячной дельте.
-func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
+func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth int, bonuses []uint64) []MonthlyTax {
 	var (
 		result            []MonthlyTax
 		annualGrossIncome uint64
@@ -117,7 +147,9 @@ func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth in
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		annualGrossIncome += salary
+		bonus := bonuses[m-1]
+		monthlyGross := salary + bonus
+		annualGrossIncome += monthlyGross
 
 		newTaxRaw := CalculateSimpleProgressiveTax(annualGrossIncome) // RAW 13/15
 		monthlyRaw := newTaxRaw - annualTaxRaw
@@ -126,20 +158,21 @@ func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth in
 		annualTaxRaw = newTaxRaw
 		annualTaxAmount += monthlyRounded
 
-		monthlyNetIncome := salary - monthlyRounded
+		monthlyNetIncome := monthlyGross - monthlyRounded
 		annualNetIncome := annualGrossIncome - annualTaxAmount
 		currentRate := findSimpleCurrentRate(annualGrossIncome)
 		month := IntMonthFromDate(m, startDate)
 
 		result = append(result, MonthlyTax{
 			Month:              month,
-			MonthlyGrossIncome: salary,
+			MonthlyGrossIncome: monthlyGross,
 			MonthlyNetIncome:   monthlyNetIncome,
 			MonthlyTaxAmount:   monthlyRounded,
 			AnnualGrossIncome:  annualGrossIncome,
 			AnnualNetIncome:    annualNetIncome,
 			AnnualTaxAmount:    annualTaxAmount,
 			TaxRate:            currentRate,
+			MonthlyBonus:       bonus,
 		})
 	}
 	return result
@@ -147,7 +180,7 @@ func TaxCalculateWithPrivilege(salary uint64, startDate time.Time, startMonth in
 
 // TaxCalculateOnlySalary - расчёт по общей пятиступенчатой шкале (без учёта северной надбавки).
 // Округление выполняется на месячной дельте.
-func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) []MonthlyTax {
+func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int, bonuses []uint64) []MonthlyTax {
 	var (
 		result            []MonthlyTax
 		annualGrossIncome uint64
@@ -156,7 +189,9 @@ func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) 
 	)
 
 	for m := startMonth; m <= 12; m++ {
-		annualGrossIncome += salary
+		bonus := bonuses[m-1]
+		monthlyGross := salary + bonus
+		annualGrossIncome += monthlyGross
 
 		newTaxRaw := CalculateProgressiveTax(annualGrossIncome) // RAW по 5-ступ. шкале
 		monthlyRaw := newTaxRaw - annualTaxRaw
@@ -165,20 +200,21 @@ func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) 
 		annualTaxRaw = newTaxRaw
 		annualTaxAmount += monthlyRounded
 
-		monthlyNetIncome := salary - monthlyRounded
+		monthlyNetIncome := monthlyGross - monthlyRounded
 		annualNetIncome := annualGrossIncome - annualTaxAmount
 		currentRate := findCurrentRate(annualGrossIncome)
 		month := IntMonthFromDate(m, startDate)
 
 		result = append(result, MonthlyTax{
 			Month:              month,
-			MonthlyGrossIncome: salary,
+			MonthlyGrossIncome: monthlyGross,
 			MonthlyNetIncome:   monthlyNetIncome,
 			MonthlyTaxAmount:   monthlyRounded,
 			AnnualGrossIncome:  annualGrossIncome,
 			AnnualNetIncome:    annualNetIncome,
 			AnnualTaxAmount:    annualTaxAmount,
 			TaxRate:            currentRate,
+			MonthlyBonus:       bonus,
 		})
 	}
 	return result
@@ -186,8 +222,9 @@ func TaxCalculateOnlySalary(salary uint64, startDate time.Time, startMonth int) 
 
 // TaxCalculateWithNorth - расчёт при наличии северной надбавки.
 // База A (оклад с РК) облагается по общей шкале; база B (северная надбавка) - по упрощённой 13%/15%.
+// Бонус относится к базе A (общая прогрессивная шкала).
 // Округление выполняется на месячной дельте по КАЖДОЙ базе отдельно.
-func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time, startMonth int) []MonthlyTax {
+func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time, startMonth int, bonuses []uint64) []MonthlyTax {
 	var (
 		result []MonthlyTax
 
@@ -205,8 +242,10 @@ func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time,
 	)
 
 	for m := startMonth; m <= 12; m++ {
+		bonus := bonuses[m-1] // бонус идёт в базу A (общая шкала)
+
 		// Доходы YTD по базам
-		annualBaseGrossIncome += salary
+		annualBaseGrossIncome += salary + bonus
 		annualNorthGrossIncome += northernAddition
 
 		// «Сырые» YTD налоги по базам
@@ -227,7 +266,7 @@ func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time,
 
 		// Итоги месяца/года
 		monthlyTaxAmount := monthlyBaseRounded + monthlyNorthRounded
-		monthlyGrossIncome := salary + northernAddition
+		monthlyGrossIncome := salary + northernAddition + bonus
 		monthlyNetIncome := monthlyGrossIncome - monthlyTaxAmount
 
 		annualGrossIncome := annualBaseGrossIncome + annualNorthGrossIncome
@@ -244,6 +283,7 @@ func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time,
 			MonthlyNetIncome:   monthlyNetIncome,
 			MonthlyTaxAmount:   monthlyTaxAmount,
 			TaxRate:            currentRate,
+			MonthlyBonus:       bonus,
 
 			AnnualGrossIncome: annualGrossIncome,
 			AnnualNetIncome:   annualNetIncome,
@@ -251,7 +291,7 @@ func TaxCalculateWithNorth(salary, northernAddition uint64, startDate time.Time,
 
 			MonthlyNorthGrossIncome: northernAddition,
 			MonthlyNorthTaxAmount:   monthlyNorthRounded,
-			MonthlyBaseGrossIncome:  salary,
+			MonthlyBaseGrossIncome:  salary + bonus,
 			MonthlyBaseTaxAmount:    monthlyBaseRounded,
 
 			AnnualNorthGrossIncome: annualNorthGrossIncome,

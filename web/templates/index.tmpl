@@ -34,7 +34,7 @@
   }
   </script>
 
-  <title>Калькулятор НДФЛ {{.CurrentYear}} — прогрессивный налог и зарплата на руки</title>
+  <title>Калькулятор НДФЛ {{.CurrentYear}} - прогрессивный налог и зарплата на руки</title>
 
   
   <link rel="stylesheet" href="/static/style.css">
@@ -87,6 +87,7 @@ window.APP_CONFIG = {
                 />
                 <span class="ruble">₽</span>
             </div>
+            <div class="field-message{{if .FormError}} error{{end}}">{{.FormError}}</div>
         </div>
     </div>
 </div>
@@ -113,6 +114,55 @@ window.APP_CONFIG = {
         </div>
       </div>
 
+
+      <!-- Тип занятости -->
+      <div class="field-row employment-type-row">
+        <div class="field-left">
+          <div class="field-header">
+            <label>Тип занятости:</label>
+          </div>
+          <a href="/employment-types" class="under-title">В чём разница? →</a>
+        </div>
+        <div class="field-right employment-type-options">
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="TD" checked>
+            <span class="employment-option-label">Трудовой договор</span>
+          </label>
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="GPH">
+            <span class="employment-option-label">Договор ГПХ</span>
+          </label>
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="SELF_EMPLOYED">
+            <span class="employment-option-label">Самозанятый (НПД)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Параметры НПД — показываются только при выборе «Самозанятый» -->
+      <div id="npd-params" class="npd-params hidden">
+        <div class="field-row">
+          <div class="field-left">
+            <div class="field-header">
+              <div class="field-tooltip">
+                <span class="tooltip-icon">?</span>
+                <div class="tooltip-text">
+                  Ставка НПД зависит от источника дохода:
+                  4% — если платит физическое лицо, 6% — если организация или ИП.
+                </div>
+              </div>
+              <label for="npdIncomeSource">Источник дохода:</label>
+            </div>
+          </div>
+          <div class="field-right date-field">
+            <select id="npdIncomeSource" name="npdIncomeSource" class="wide-select">
+              <option value="INDIVIDUAL">Физическое лицо — 4%</option>
+              <option value="LEGAL_ENTITY">Организация / ИП — 6%</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
 
       <button type="button" class="additional-toggle">
       <span class="icon-plus">
@@ -208,29 +258,13 @@ window.APP_CONFIG = {
       <button type="submit" class="calculate-btn">Рассчитать</button>
 
       <div class="calculator-note">
-        <p>
-          🔍 Все расчёты выполняются по открытым формулам и <b>не сохраняются на сервере</b>.
-          Калькулятор предназначен исключительно <i>для справочных целей</i>, чтобы вы могли
-          оценить свой чистый доход и размер НДФЛ, который будете уплачивать после 2025 года.
-        </p>
-      <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
+        <p>Расчёты выполняются по открытым формулам и <b>не сохраняются на сервере</b>. Калькулятор показывает расчётный лист на выбранный период, <a href="/tax-deductions" class="calculator-link">возможность налогового вычета</a> и налоговую нагрузку работодателя.</p>
+        <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
       </div>
     </form>
   </main>
 
-  <footer class="site-footer">
-    <div class="footer-links">
-      <a class="footer-link" href="/about">О проекте</a>
-      <a class="footer-link" href="/api-docs">API для разработчиков</a>
-      <a class="footer-link" href="mailto:{{.FeedbackEmail}}?subject=Калькулятор%20НДФЛ">
-        Написать разработчику
-      </a>
-    </div>
-
-    <div class="footer-copy">
-      © 2025 Калькулятор НДФЛ
-    </div>
-  </footer>
+  {{template "footer" .}}
 
 </body>
 </html>

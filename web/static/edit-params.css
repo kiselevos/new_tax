@@ -1,0 +1,262 @@
+/* ===== ПАНЕЛЬ РЕДАКТИРОВАНИЯ ПАРАМЕТРОВ ===== */
+
+/* --- Кнопка-тоггл --- */
+.edit-params-toggle-wrap {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e5e9f0;
+    text-align: right;
+}
+
+.edit-params-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #f0f7ff;
+    color: #1c7ed6;
+    border: 1px solid #a5c8f5;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.edit-params-toggle:hover {
+    background: #e1effe;
+    border-color: #1c7ed6;
+    box-shadow: none;
+    transform: none;
+}
+
+.edit-params-toggle.active {
+    background: #e1effe;
+    border-color: #1c7ed6;
+}
+
+/* --- Коллапсируемая панель --- */
+.edit-params-panel {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease;
+    padding: 0;
+}
+
+.edit-params-panel.open {
+    max-height: 800px;
+    opacity: 1;
+    padding-top: 1rem;
+    overflow: visible;
+}
+
+/* --- Сетка полей --- */
+.edit-params-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem 1.25rem;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+/* --- Одно поле --- */
+.edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.edit-field--full {
+    grid-column: 1 / -1;
+}
+
+.edit-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.edit-label-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: #3498db;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: background 0.15s;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.edit-label-link:hover {
+    background: #1c7ed6;
+}
+
+/* --- Поле оклада --- */
+.edit-salary-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fff;
+    border: 1px solid #d0dae6;
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.edit-salary-wrap:focus-within {
+    border-color: #1c7ed6;
+    box-shadow: 0 0 0 3px rgba(28, 126, 214, 0.1);
+}
+
+.edit-input--salary {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.95rem;
+    background: transparent;
+    color: #2c3e50;
+    padding: 0;
+    min-width: 0;
+}
+
+.edit-currency {
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* --- Селекты --- */
+.edit-select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #d0dae6;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.edit-select:focus {
+    outline: none;
+    border-color: #1c7ed6;
+    box-shadow: 0 0 0 3px rgba(28, 126, 214, 0.1);
+}
+
+/* --- Чекбоксы --- */
+.edit-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.edit-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.edit-checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    flex-shrink: 0;
+    accent-color: #1c7ed6;
+    cursor: pointer;
+}
+
+/* --- Кнопки действий --- */
+.edit-params-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.edit-params-submit {
+    padding: 9px 22px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #1c7ed6, #1558a8);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(28, 126, 214, 0.3);
+    transition: background 0.2s, box-shadow 0.2s;
+    transform: none;
+}
+
+.edit-params-submit:hover {
+    background: linear-gradient(135deg, #1558a8, #104090);
+    box-shadow: 0 6px 16px rgba(28, 126, 214, 0.4);
+    transform: none;
+}
+
+.edit-params-cancel {
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: none;
+    color: #888;
+    border: 1px solid #d0dae6;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: none;
+    transform: none;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.edit-params-cancel:hover {
+    color: #555;
+    border-color: #999;
+    background: none;
+    box-shadow: none;
+    transform: none;
+}
+
+/* --- Мобильная адаптация --- */
+@media (max-width: 480px) {
+    .edit-params-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .edit-params-toggle-wrap {
+        text-align: left;
+    }
+
+    .edit-params-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .edit-params-submit,
+    .edit-params-cancel {
+        text-align: center;
+    }
+}

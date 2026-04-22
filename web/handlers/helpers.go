@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -36,6 +35,7 @@ type IndexData struct {
 	Months        []Month
 	Territorial   []CoefficientOption
 	Northern      []BonusOption
+	FormError     string
 }
 
 type ResultPayload struct {
@@ -52,6 +52,30 @@ type ResultPayload struct {
 	AnnualPFR         uint64
 	AnnualFOMS        uint64
 	AnnualFSS         uint64
+	MonthlyBonuses    []uint64              // 12 элементов, индекс 0 = январь (копейки)
+	AnnualBonus       uint64                // сумма всех премий за год (копейки)
+	StartMonthNum     int                   // номер месяца начала расчёта (1-12)
+	BaseMonth         *pb.MonthlyPrivateTax // первый месяц без премии (для виджета «На руки»)
+	Months            []Month               // опции для select месяца в панели редактирования
+	Territorial       []CoefficientOption   // опции РК
+	Northern          []BonusOption         // опции СН
+	IsGPH                    bool   // договор ГПХ (нет ФСС, нет трудовых гарантий)
+	IsSelfEmployed            bool   // самозанятый (НПД)
+	NpdIncomeSourceStr        string // "INDIVIDUAL" | "LEGAL_ENTITY" — для pre-select в форме
+	HasRegistrationDeduction  bool   // был ли вычет 10 000 ₽ при регистрации
+	NpdLimitExceeded          bool   // годовой доход превысил 2 400 000 ₽
+	NpdDeductionUsed          uint64 // суммарный использованный регистрационный вычет за период (копейки)
+	NpdDeductionRemaining     uint64 // остаток регистрационного вычета (kopecks); 0 если вычет не применялся
+	EmploymentTypeStr         string // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
+	DeductionResult   *pb.DeductionResult   // результат расчёта налоговых вычетов (если переданы параметры)
+
+	// Значения из последнего запроса вычетов (для предзаполнения формы после пересчёта)
+	ChildrenCountInput         uint32
+	DisabledChildrenCountInput uint32
+	HousingExpenseInput        uint64 // рубли (для input[type=number])
+	MortgageExpenseInput       uint64
+	SocialExpenseInput         uint64
+	ChildEduExpenseInput       uint64
 }
 
 func PrepareMonths() []Month {
@@ -121,6 +145,9 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	northernStr := r.FormValue("northernCoefficient")
 	hasTaxPrivilege := r.FormValue("hasTaxPrivilege") != ""
 	isNotResident := r.FormValue("isNotResident") != ""
+	employmentType := parseEmploymentType(r.FormValue("employmentType"))
+	npdIncomeSource := parseNpdIncomeSource(r.FormValue("npdIncomeSource"))
+	hasRegistrationDeduction := r.FormValue("hasRegistrationDeduction") != ""
 
 	// Месяц
 	monthNum, err := strconv.Atoi(monthStr)
@@ -150,56 +177,133 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		}
 	}
 
-	return &pb.CalculatePrivateRequest{
+	// Бонусы по месяцам: поля bonus_1 … bonus_12
+	bonuses := make([]uint64, 12)
+	for i := 1; i <= 12; i++ {
+		raw := strings.TrimSpace(r.FormValue(fmt.Sprintf("bonus_%d", i)))
+		if raw == "" {
+			continue
+		}
+		raw = strings.ReplaceAll(raw, "\u00A0", "")
+		raw = strings.ReplaceAll(raw, " ", "")
+		raw = strings.ReplaceAll(raw, ",", ".")
+		if v, err := strconv.ParseFloat(raw, 64); err == nil && v >= 0 {
+			bonuses[i-1] = uint64(math.Round(v * 100))
+		}
+	}
+
+	// Налоговые вычеты (опциональные поля, передаются только при заполнении)
+	childrenCount := parseUint32Form(r, "childrenCount")
+	disabledChildrenCount := parseUint32Form(r, "disabledChildrenCount")
+	housingExpense := parseKopecksForm(r, "housingExpense")
+	mortgageExpense := parseKopecksForm(r, "mortgageExpense")
+	socialExpense := parseKopecksForm(r, "socialExpense")
+	childEduExpense := parseKopecksForm(r, "childEduExpense")
+
+	req := &pb.CalculatePrivateRequest{
 		GrossSalary:           grossSalary,
 		StartDate:             startTS,
 		TerritorialMultiplier: uint64Ptr(uint64(territorial)),
 		NorthernCoefficient:   uint64Ptr(uint64(northern)),
 		HasTaxPrivilege:       boolPtr(hasTaxPrivilege),
 		IsNotResident:         boolPtr(isNotResident),
-	}, nil
+		EmploymentType:        employmentTypePtr(employmentType),
+		MonthlyBonuses:        bonuses,
+		NpdIncomeSource:       npdIncomeSourcePtr(npdIncomeSource),
+	}
+	if hasRegistrationDeduction {
+		req.HasRegistrationDeduction = boolPtr(true)
+	}
+	if childrenCount > 0 {
+		req.ChildrenCount = &childrenCount
+	}
+	if disabledChildrenCount > 0 {
+		req.DisabledChildrenCount = &disabledChildrenCount
+	}
+	if housingExpense > 0 {
+		req.HousingExpense = &housingExpense
+	}
+	if mortgageExpense > 0 {
+		req.MortgageExpense = &mortgageExpense
+	}
+	if socialExpense > 0 {
+		req.SocialExpense = &socialExpense
+	}
+	if childEduExpense > 0 {
+		req.ChildEduExpense = &childEduExpense
+	}
+	return req, nil
 }
 
-func PrepareApiData() (*ApiDocsData, error) {
-
-	raw, err := web.ApiDocsFS.ReadFile("api_docs/swagger.json")
-	if err != nil {
-		return nil, err
+// parseUint32Form читает числовое поле формы как uint32.
+func parseUint32Form(r *http.Request, field string) uint32 {
+	s := strings.TrimSpace(r.FormValue(field))
+	if s == "" {
+		return 0
 	}
-
-	var d ApiDocsData
-	if err := json.Unmarshal(raw, &d); err != nil {
-		return nil, err
+	v, err := strconv.ParseUint(s, 10, 32)
+	if err != nil || v == 0 {
+		return 0
 	}
+	return uint32(v)
+}
 
-	v := web.GetApiVersion()
-	d.ApiVers = v
-
-	for i := range d.Endpoints {
-		d.Endpoints[i].Path = strings.ReplaceAll(
-			d.Endpoints[i].Path,
-			"{version}",
-			v,
-		)
-
-		if obj, ok := d.Endpoints[i].ExampleRequest.(map[string]interface{}); ok {
-			pretty, err := json.MarshalIndent(obj, "", "  ")
-			if err == nil {
-				d.Endpoints[i].ExampleRequest = string(pretty)
-			}
-		}
-
-		if obj, ok := d.Endpoints[i].ExampleResponse.(map[string]interface{}); ok {
-			pretty, err := json.MarshalIndent(obj, "", "  ")
-			if err == nil {
-				d.Endpoints[i].ExampleResponse = string(pretty)
-			}
-		}
+// parseKopecksForm читает поле суммы в рублях и конвертирует в копейки (uint64).
+func parseKopecksForm(r *http.Request, field string) uint64 {
+	s := strings.TrimSpace(r.FormValue(field))
+	if s == "" {
+		return 0
 	}
+	s = strings.ReplaceAll(s, "\u00A0", "")
+	s = strings.ReplaceAll(s, " ", "")
+	s = strings.ReplaceAll(s, ",", ".")
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil || v <= 0 {
+		return 0
+	}
+	return uint64(math.Round(v * 100))
+}
 
-	return &d, nil
+// parseNpdIncomeSource конвертирует строку формы в proto-enum NpdIncomeSource.
+func parseNpdIncomeSource(s string) pb.NpdIncomeSource {
+	if s == "LEGAL_ENTITY" {
+		return pb.NpdIncomeSource_LEGAL_ENTITY
+	}
+	return pb.NpdIncomeSource_INDIVIDUAL
+}
+
+// parseEmploymentType конвертирует строку формы в proto-enum EmploymentType.
+func parseEmploymentType(s string) pb.EmploymentType {
+	switch s {
+	case "GPH":
+		return pb.EmploymentType_GPH
+	case "SELF_EMPLOYED":
+		return pb.EmploymentType_SELF_EMPLOYED
+	default:
+		return pb.EmploymentType_TD
+	}
+}
+
+// employmentTypePtr возвращает указатель на pb.EmploymentType для proto optional-поля.
+func employmentTypePtr(v pb.EmploymentType) *pb.EmploymentType {
+	return &v
+}
+
+
+// npdDeductionRemaining вычисляет остаток регистрационного бонуса НПД.
+// Размер бонуса — 10 000 ₽ (1 000 000 копеек) по ст. 12 Закона № 422-ФЗ.
+func npdDeductionRemaining(hasDeduction bool, used uint64) uint64 {
+	if !hasDeduction {
+		return 0
+	}
+	const total = uint64(1_000_000) // 10 000 ₽ в копейках
+	if used >= total {
+		return 0
+	}
+	return total - used
 }
 
 // Вспомогательные функции:
 func uint64Ptr(v uint64) *uint64 { return &v }
 func boolPtr(v bool) *bool       { return &v }
+func npdIncomeSourcePtr(v pb.NpdIncomeSource) *pb.NpdIncomeSource { return &v }

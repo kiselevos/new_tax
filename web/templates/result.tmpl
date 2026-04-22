@@ -4,19 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Результаты расчёта</title>
+    <title>Результат расчёта НДФЛ - {{fmtMoney .GrossSalary}} в месяц</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="/static/result.css">
     <link rel="stylesheet" href="/static/monthly_accordion.css">
     <link rel="stylesheet" href="/static/parameters_section.css">
     <link rel="stylesheet" href="/static/summary_section.css">
     <link rel="stylesheet" href="/static/employer_contrib.css">
+    <link rel="stylesheet" href="/static/bonuses.css">
+    <link rel="stylesheet" href="/static/edit-params.css">
+    <link rel="stylesheet" href="/static/deductions.css">
 
     <!-- favicon -->
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
   <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
+<form id="bonuses-form" method="POST" action="/calculate">
     <div class="container">
         <!-- Предупреждение -->
         {{if .ShowWarning}}
@@ -26,31 +30,88 @@
         <!-- Блок с параметрами расчета --->
         {{template "parameters_section" .}}
 
+        <!-- Баннер ГПХ -->
+        {{if .IsGPH}}
+        <div class="gph-banner">
+            <div class="gph-banner-title">Договор ГПХ — важные отличия</div>
+            <ul class="gph-banner-list">
+                <li>Нет оплачиваемого отпуска и больничного</li>
+                <li>Нет защиты по Трудовому кодексу РФ</li>
+                <li>Работодатель не платит ФСС — вы не застрахованы от несчастных случаев</li>
+            </ul>
+            <div class="gph-banner-note">НДФЛ рассчитывается по той же прогрессивной шкале, что и при трудовом договоре.</div>
+        </div>
+        {{end}}
+
+        <!-- Баннер НПД (самозанятый) -->
+        {{if .IsSelfEmployed}}
+        <div class="npd-banner">
+            <div class="npd-banner-title">Самозанятый (НПД) — особенности режима</div>
+            <ul class="npd-banner-list">
+                <li>Ставка {{if eq .NpdIncomeSourceStr "INDIVIDUAL"}}4% — доход от физических лиц{{else}}6% — доход от организаций и ИП{{end}}</li>
+                <li>Страховые взносы (ПФР, ФОМС, ФСС) — не начисляются</li>
+                <li>Стандартные налоговые вычеты по НДФЛ не применяются</li>
+                {{if .HasRegistrationDeduction}}<li>Применяется налоговый бонус 10 000 ₽ при регистрации</li>{{end}}
+            </ul>
+            <div class="npd-banner-note">Годовой доход не должен превышать 2 400 000 ₽. При превышении лимита необходимо перейти на другой налоговый режим.</div>
+        </div>
+
+        <!-- Предупреждение о превышении лимита НПД -->
+        {{if .NpdLimitExceeded}}
+        <div class="npd-limit-warning">
+            <div class="npd-limit-warning-title">⚠️ Превышен годовой лимит НПД</div>
+            <div class="npd-limit-warning-text">
+                Ваш годовой доход превысил 2 400 000 ₽. Применение режима самозанятости (НПД) становится невозможным.
+                Вам необходимо перейти на другой налоговый режим (например, ИП на УСН) и уведомить налоговую инспекцию.
+                Расчёт показан до момента превышения лимита.
+            </div>
+        </div>
+        {{end}}
+        {{end}}
+
         <!-- Блок с результатами расчета --->
 
         <!-- Основная сводка -->
         {{template "summary_section" .}}
 
-        <!-- Вкладка: взносы работодателя -->
+        <!-- Вкладка: взносы работодателя (не для самозанятых) -->
+        {{if .IsSelfEmployed}}{{else}}
         {{template "employer_contributions" .}}
+        {{end}}
+
+        <!-- Блок налоговых вычетов -->
+        {{if .IsSelfEmployed}}
+        {{template "npd_deductions_section" .}}
+        {{else}}
+        {{template "deductions_section" .}}
+        {{end}}
 
         <!-- Помесячная детализация -->
         {{template "monthly_accordion" .}}
 
-        <!-- Кнопка -->
-        <div class="actions">
-            <a href="/" class="primary-button">
-                Сделать новый расчёт
+        <!-- Кнопки -->
+        <div class="actions actions--result">
+            <a href="/" class="back-button">
+                ← Назад к калькулятору
             </a>
+            <button type="submit" class="bonus-recalc-btn" id="bonus-recalc-btn">
+                Пересчитать с премиями →
+            </button>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const headers = document.querySelectorAll('.accordion-header');
-            headers.forEach(h => h.addEventListener('click', () => h.parentElement.classList.toggle('active')));
-        });
-    </script>
+    {{template "footer" .}}
+
+    <!-- Липкая панель пересчёта (появляется при вводе премий) -->
+    <div class="bonus-sticky-bar" id="bonus-sticky-bar">
+        <div class="bonus-sticky-inner">
+            <span class="bonus-sticky-label" id="bonus-sticky-label">Пересчитать с 1 премией</span>
+            <button type="submit" class="bonus-sticky-btn">Пересчитать →</button>
+        </div>
+    </div>
+</form>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>
 {{end}}
