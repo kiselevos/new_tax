@@ -201,7 +201,6 @@
             <!-- Скрытые поля НПД — сохраняют параметры при пересчёте через панель редактирования -->
             {{if .IsSelfEmployed}}
             <input type="hidden" name="npdIncomeSource" value="{{.NpdIncomeSourceStr}}">
-            {{if .HasRegistrationDeduction}}<input type="hidden" name="hasRegistrationDeduction" value="on">{{end}}
             {{end}}
 
             <!-- Льготы -->
