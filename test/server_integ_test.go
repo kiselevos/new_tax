@@ -35,15 +35,13 @@ func waitForReady(ctx context.Context, conn *grpc.ClientConn) error {
 
 const testAPIKey = "test-api-key-1234"
 
-// newTestServer поднимает gRPC-сервер с переданным RedisConfig и возвращает клиент и cleanup.
-func newTestServer(t *testing.T, redisCfg *config.RedisConfig) pb.TaxServiceClient {
+func newTestServer(t *testing.T) pb.TaxServiceClient {
 	t.Helper()
 
 	logger := logx.NewTest()
 	cfg := config.Config{
 		ApiKey:   testAPIKey,
 		BackPort: "127.0.0.1:0",
-		RedisCfg: redisCfg,
 		RateLimitCfg: &config.RateLimitConfig{
 			PublicRPS:    1000,
 			PublicBurst:  1000,
@@ -80,98 +78,18 @@ func newTestServer(t *testing.T, redisCfg *config.RedisConfig) pb.TaxServiceClie
 }
 
 func Test_Server_Healthz(t *testing.T) {
-	t.Helper()
-
-	logger := logx.NewTest()
-	cfg := config.Config{
-		ApiKey:   "1",
-		BackPort: "127.0.0.1:0",
-		RedisCfg: &config.RedisConfig{Enabled: false},
-
-		RateLimitCfg: &config.RateLimitConfig{
-			PublicRPS:    1000,
-			PublicBurst:  1000,
-			PrivateRPS:   1000,
-			PrivateBurst: 1000,
-			TTL:          time.Minute,
-			CleanupEvery: 100,
-		},
-	}
-
-	srv, err := server.New(&cfg, logger)
-	if err != nil {
-		t.Fatalf("server.New: %v", err)
-	}
-	go func() {
-		_ = srv.Serve()
-	}()
-	t.Cleanup(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		defer cancel()
-		server.ShutdownGRPCServer(ctx, srv)
-	})
-
-	laddr := srv.Lis.Addr()
-	t.Logf("listening on %s", laddr.String())
-
-	var port int
-	if ta, ok := laddr.(*net.TCPAddr); ok {
-		port = ta.Port
-	} else {
-		t.Fatalf("unexpected listener addr type: %T", laddr)
-	}
-
-	target := fmt.Sprintf("dns:///127.0.0.1:%d", port)
-
-	conn, err := grpc.NewClient(
-		target,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		t.Fatalf("grpc.NewClient: %v", err)
-	}
-	t.Cleanup(func() { _ = conn.Close() })
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := waitForReady(ctx, conn); err != nil {
-		t.Fatalf("wait for ready: %v (state=%v)", err, conn.GetState())
-	}
-
-	cli := pb.NewTaxServiceClient(conn)
-	res, err := cli.Healthz(ctx, &pb.HealthzRequest{})
-	if err != nil {
-		t.Fatalf("Healthz RPC failed: %v", err)
-	}
-	if res.GetStatus() != "ok" {
-		t.Fatalf("unexpected healthz: %q", res.GetStatus())
-	}
-}
-
-// -------------------------------------------------------------------
-// Graceful degradation: Redis недоступен
-// -------------------------------------------------------------------
-
-// Test_Server_StartsWhenRedisUnavailable проверяет, что сервер поднимается
-// корректно, если Redis включён в конфиге, но физически недоступен.
-func Test_Server_StartsWhenRedisUnavailable(t *testing.T) {
-	cli := newTestServer(t, &config.RedisConfig{
-		Enabled: true,
-		Addr:    "127.0.0.1:1", // заведомо нерабочий адрес
-	})
+	cli := newTestServer(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	res, err := cli.Healthz(ctx, &pb.HealthzRequest{})
-	require.NoError(t, err, "сервер должен отвечать даже без Redis")
+	require.NoError(t, err)
 	assert.Equal(t, "ok", res.GetStatus())
 }
 
-// Test_CalculatePublic_WorksWithoutRedis проверяет, что CalculatePublic
-// возвращает корректный расчёт при redis = nil (Enabled: false).
-func Test_CalculatePublic_WorksWithoutRedis(t *testing.T) {
-	cli := newTestServer(t, &config.RedisConfig{Enabled: false})
+func Test_CalculatePublic(t *testing.T) {
+	cli := newTestServer(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -188,10 +106,8 @@ func Test_CalculatePublic_WorksWithoutRedis(t *testing.T) {
 	assert.Equal(t, uint64(156_000_00), res.GetAnnualTaxAmount())
 }
 
-// Test_CalculatePrivate_WorksWithoutRedis проверяет, что CalculatePrivate
-// возвращает полный ответ (включая взносы работодателя) при redis = nil.
-func Test_CalculatePrivate_WorksWithoutRedis(t *testing.T) {
-	cli := newTestServer(t, &config.RedisConfig{Enabled: false})
+func Test_CalculatePrivate(t *testing.T) {
+	cli := newTestServer(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -204,7 +120,6 @@ func Test_CalculatePrivate_WorksWithoutRedis(t *testing.T) {
 
 	assert.Len(t, res.GetMonthlyDetails(), 12)
 	assert.Equal(t, uint64(156_000_00), res.GetAnnualTaxAmount())
-	// Взносы работодателя тоже должны быть заполнены
 	assert.Greater(t, res.GetAnnualPFR(), uint64(0), "ПФР должен быть ненулевым")
 	assert.Greater(t, res.GetAnnualFOMS(), uint64(0), "ФОМС должен быть ненулевым")
 }
