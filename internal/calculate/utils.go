@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	pb "github.com/kiselevos/new_tax/gen/grpc/api"
 	"github.com/oapi-codegen/runtime/types"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -21,6 +22,27 @@ func ValidateCalculateInput(input CalculateInput) error {
 
 	if !validateCoefficient(input.NorthernCoefficient) {
 		return fmt.Errorf("northern_coefficient must be between 100 and 200 with step 10")
+	}
+
+	// Валидация типа занятости и совместимости с особыми режимами.
+	switch input.EmploymentType {
+	case pb.EmploymentType_SELF_EMPLOYED:
+		// При НПД нельзя применять льготы силовых структур или режим нерезидента.
+		if input.HasTaxPrivilege {
+			return errors.New("has_tax_privilege несовместим с employment_type SELF_EMPLOYED")
+		}
+		if input.IsNotResident {
+			return errors.New("is_not_resident несовместим с employment_type SELF_EMPLOYED: нерезиденты не могут применять НПД")
+		}
+
+	case pb.EmploymentType_GPH:
+		// Льготы силовых структур применяются только к трудовому договору.
+		if input.HasTaxPrivilege {
+			return errors.New("has_tax_privilege несовместим с employment_type GPH: льготы силовых структур применяются только к трудовому договору")
+		}
+
+	case pb.EmploymentType_TD:
+		// Все особые режимы применимы — дополнительных ограничений нет.
 	}
 
 	return nil

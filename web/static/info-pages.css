@@ -5,8 +5,8 @@
 
 .info-page {
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+  margin: 0 auto;
+  padding: 1.75rem 1rem 2rem;
   font-family: system-ui, sans-serif;
   color: #333;
   line-height: 1.6;
@@ -31,12 +31,26 @@
 
 /* Карточки */
 .info-card {
+  position: relative;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.info-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3498db, #2980b9, #3498db);
+  border-radius: 10px 10px 0 0;
+  opacity: 0.7;
 }
 
 .info-card-title {
@@ -68,7 +82,7 @@
 .info-link {
   display: flex;
   align-items: center;
-  color: #007bff;
+  color: #1c7ed6;
   text-decoration: none;
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
@@ -76,7 +90,7 @@
 }
 
 .info-link:hover {
-  color: #0056b3;
+  color: #1558a8;
   text-decoration: underline;
 }
 
@@ -87,6 +101,38 @@
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
+}
+
+.info-source-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.info-source-list li {
+  font-size: 0.88rem;
+  color: #555;
+  padding-left: 0.25rem;
+}
+
+.info-source-list a.info-source-link {
+  color: #1c7ed6;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.info-source-list a.info-source-link::before {
+  content: "↗ ";
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.info-source-list a.info-source-link:hover {
+  color: #1558a8;
+  text-decoration: underline;
 }
 
 /* Примеры */
@@ -111,14 +157,196 @@
   color: #856404;
 }
 
-/* Кнопки */
+/* Предупреждение */
+.info-warning {
+  background: #fff8e1;
+  border-left: 4px solid #ffb300;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+  color: #5a3e00;
+}
+
+/* === Сравнительная таблица типов занятости === */
+.info-compare-table {
+  margin: 1rem 0;
+  border: 1px solid #e0e4ea;
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+.info-compare-header,
+.info-compare-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.5fr;
+  gap: 0;
+}
+
+.info-compare-table--wide .info-compare-header,
+.info-compare-table--wide .info-compare-row {
+  grid-template-columns: 1.2fr 0.85fr 0.9fr 1.1fr 1.1fr;
+}
+
+.info-compare-header {
+  background: #f0f4ff;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.info-compare-header > div,
+.info-compare-row > div {
+  padding: 0.6rem 0.75rem;
+  border-right: 1px solid #e0e4ea;
+}
+
+.info-compare-header > div:last-child,
+.info-compare-row > div:last-child {
+  border-right: none;
+}
+
+.info-compare-row {
+  border-top: 1px solid #e8ecf2;
+}
+
+.info-compare-row:nth-child(even) {
+  background: #fafbfc;
+}
+
+.info-compare-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.info-compare-yes {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.info-compare-no {
+  color: #aaa;
+}
+
+@media (max-width: 600px) {
+  .info-compare-table {
+    font-size: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .info-compare-header,
+  .info-compare-row {
+    grid-template-columns: 1.2fr 0.8fr 0.8fr 1.2fr;
+  }
+
+  .info-compare-table--wide .info-compare-header,
+  .info-compare-table--wide .info-compare-row {
+    grid-template-columns: 1.1fr 0.75fr 0.8fr 1fr 1fr;
+    font-size: 0.68rem;
+  }
+
+  .info-compare-header > div,
+  .info-compare-row > div {
+    padding: 0.45rem 0.3rem;
+  }
+}
+
+/* === Навигация между инфо-страницами (sticky) === */
+.info-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #d3eaff 0%, #c7ddff 35%, #bad1ff 70%, #aec5ff 100%);
+  background-attachment: fixed;
+  border-bottom: 1px solid rgba(180, 200, 240, 0.6);
+}
+
+.info-nav-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.info-nav-home {
+  color: #555;
+  text-decoration: none;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  padding: 0.3rem 0;
+}
+
+.info-nav-home:hover {
+  color: #1c7ed6;
+}
+
+.info-nav-links {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: nowrap;
+}
+
+.info-nav-link {
+  color: #555;
+  text-decoration: none;
+  font-size: 0.875rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.info-nav-link:hover {
+  background: #e8f0fe;
+  color: #1c7ed6;
+}
+
+.info-nav-link--active {
+  background: #1c7ed6;
+  color: #fff;
+  font-weight: 500;
+}
+
+.info-nav-link--active:hover {
+  background: #1558a8;
+  color: #fff;
+}
+
+/* Мобильный select — скрыт на десктопе */
+.info-nav-select {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .info-nav-links {
+    display: none;
+  }
+
+  .info-nav-select {
+    display: block;
+    font-size: 0.875rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    max-width: 160px;
+  }
+}
+
 .info-button-container {
   text-align: center;
   margin-top: 2rem;
 }
 
 .info-button {
-  background: #007bff;
+  background: #1c7ed6;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -130,7 +358,7 @@
 }
 
 .info-button:hover {
-  background: #0056b3;
+  background: #1558a8;
 }
 
 /* Адаптивность */

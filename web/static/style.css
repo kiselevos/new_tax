@@ -393,6 +393,15 @@ input::placeholder {
     color: #2c3e50;
 }
 
+.exclusive-option--disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.exclusive-option--disabled:hover {
+    background: transparent;
+}
+
 /* === UNDER-TITLE LINKS === */
 .under-title {
     font-size: 0.875rem;
@@ -501,25 +510,51 @@ a.button.large {
 
 /* === FOOTER === */
 .site-footer {
-    text-align: center;
     padding: 40px 20px 30px;
     font-size: 13px;
     color: #8a8a8a;
     margin-top: 60px;
-    border-top: 1px solid rgba(255, 255, 255, 0.4); /* мягкий белый разделитель */
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+/* Двухколоночный грид футера */
+.footer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2rem 4rem;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 160px;
+}
+
+.footer-col-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #aaa;
+    margin-bottom: 0.2rem;
+}
+
+/* Старые одноколоночные ссылки (обратная совместимость) */
 .footer-links {
     display: flex;
-    flex-wrap: wrap;           /* позволяет переносить строки */
-    justify-content: center;   /* центрует даже при переносе */
-    gap: 10px 16px;            /* вертикальный и горизонтальный отступ */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 16px;
     max-width: 100%;
     margin-bottom: 8px;
 }
 
 .footer-link {
-    white-space: nowrap;       /* пункт всегда целиком, не делится по словам */
+    white-space: nowrap;
     color: #597ccf;
     text-decoration: none;
     font-size: 13px;
@@ -534,8 +569,87 @@ a.button.large {
     font-size: 12px;
     color: #9c9c9c;
     margin-top: 4px;
+    text-align: center;
 }
 
+
+/* === NPD PARAMS BLOCK === */
+.npd-params {
+    border-left: 3px solid #2980b9;
+    margin: 0.25rem 0 0.5rem 0;
+    padding-left: 0.75rem;
+    animation: fadeInNpd 0.2s ease;
+}
+
+.npd-params.hidden {
+    display: none;
+}
+
+@keyframes fadeInNpd {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* === EMPLOYMENT TYPE === */
+.employment-type-row .field-right {
+    padding-top: 0.25rem;
+}
+
+.employment-type-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.employment-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.employment-option:hover {
+    background: #f8f9fa;
+}
+
+.employment-option input[type="radio"] {
+    width: auto;
+    margin: 0;
+    transform: scale(1.2);
+    accent-color: #3498db;
+    cursor: pointer;
+}
+
+.employment-option-label {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.employment-option--soon {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.employment-option--soon:hover {
+    background: transparent;
+}
+
+.employment-soon-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: #e8f4fd;
+    color: #2980b9;
+    border: 1px solid #bde0f7;
+    border-radius: 4px;
+    padding: 1px 5px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
 
 /* === ADDITIONAL PARAMETERS === */
 .additional-toggle {
@@ -624,25 +738,11 @@ a.button.large {
         font-size: 2rem;
     }
 
-    /* УПРОЩЕННЫЕ СТИЛИ ТУЛТИПОВ */
+    /* Тултипы на мобильных позиционируются через JS (position: fixed) */
     .field-tooltip .tooltip-text {
         font-size: 0.9rem;
-        z-index: 10000;
         padding: 12px 14px;
-        box-sizing: border-box;
-        background: rgba(44,62,80,0.95);
-        color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         line-height: 1.4;
-        position: absolute;
-        width: 300px;
-        max-width: 300px;
-        top: auto;
-        bottom: auto;
-        left: auto;
-        right: auto;
-        transform: none;
     }
 
     /* Скрываем стрелки на мобильных */
@@ -722,6 +822,24 @@ a.button.large {
     
     .checkbox-inline {
         padding: 0.5rem 0.75rem;
+    }
+
+    .footer-grid {
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .footer-col {
+        align-items: center;
+        text-align: center;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .footer-link {
+        white-space: normal;
+        text-align: center;
     }
 }
 

@@ -2,21 +2,76 @@
 <div class="results-header">
             <h2>Результаты расчёта</h2>
             <a href="/" class="back-button">
-                Новый расчёт
+                ← Назад к калькулятору
             </a>
 </div>
+
+{{if .BaseMonth}}
+<div class="monthly-net-highlight">
+    <div class="monthly-net-label">На руки в месяц</div>
+    <div class="monthly-net-value">{{fmtMoney .BaseMonth.MonthlyNetIncome}}</div>
+    <div class="monthly-net-sub">из {{fmtMoney .BaseMonth.MonthlyGrossIncome}} до налогов - НДФЛ {{fmtMoney .BaseMonth.MonthlyTaxAmount}}</div>
+</div>
+{{end}}
+
 <div class="summary-grid">
     <div class="summary-card">
         <div>Общий доход</div>
         <div class="summary-value">{{fmtMoney .AnnualGrossIncome}}</div>
     </div>
     <div class="summary-card">
-        <div>Уплачено НДФЛ</div>
+        <div>{{if .IsSelfEmployed}}Уплачено НПД{{else}}Уплачено НДФЛ{{end}}</div>
         <div class="summary-value">{{fmtMoney .AnnualTaxAmount}}</div>
     </div>
     <div class="summary-card">
         <div>Чистый доход</div>
         <div class="summary-value">{{fmtMoney .AnnualNetIncome}}</div>
     </div>
+    {{if gt .AnnualBonus 0}}
+    <div class="summary-card summary-card--bonus">
+        <div>Премии за год</div>
+        <div class="summary-value">{{fmtMoney .AnnualBonus}}</div>
+    </div>
+    {{end}}
 </div>
+
+{{if .DeductionResult}}
+<div class="deduction-summary-card">
+  <div class="deduction-summary-header">
+    <span class="deduction-summary-title">Налоговый вычет</span>
+    <span class="deduction-summary-total">{{fmtMoney .DeductionResult.TotalReturn}}</span>
+  </div>
+  <div class="deduction-summary-breakdown">
+    {{if .DeductionResult.ChildrenReturn}}
+    <div class="deduction-summary-line">
+      <span>Вычет на детей</span>
+      <span class="deduction-summary-amount">{{fmtMoney .DeductionResult.ChildrenReturn}}</span>
+    </div>
+    {{end}}
+    {{if .DeductionResult.PropertyReturnThisYear}}
+    <div class="deduction-summary-line">
+      <span>Покупка жилья / ипотека — в этом году</span>
+      <span class="deduction-summary-amount">{{fmtMoney .DeductionResult.PropertyReturnThisYear}}</span>
+    </div>
+    {{if gt .DeductionResult.PropertyReturnTotal .DeductionResult.PropertyReturnThisYear}}
+    <div class="deduction-summary-line deduction-summary-line--note">
+      <span>Остаток на следующие годы</span>
+      <span class="deduction-summary-amount">{{fmtMoney (subU64 .DeductionResult.PropertyReturnTotal .DeductionResult.PropertyReturnThisYear)}}</span>
+    </div>
+    {{end}}
+    {{end}}
+    {{if .DeductionResult.SocialReturn}}
+    <div class="deduction-summary-line">
+      <span>Лечение и обучение</span>
+      <span class="deduction-summary-amount">{{fmtMoney .DeductionResult.SocialReturn}}</span>
+    </div>
+    {{end}}
+  </div>
+  {{if or (and .DeductionResult.ChildrenReturn .DeductionResult.PropertyReturnThisYear) (and .DeductionResult.ChildrenReturn .DeductionResult.SocialReturn) (and .DeductionResult.PropertyReturnThisYear .DeductionResult.SocialReturn)}}
+  <div class="deduction-summary-caveat">
+    ℹ️ При одновременном расчёте нескольких вычетов используется упрощённый метод — реальная сумма может незначительно отличаться.
+  </div>
+  {{end}}
+</div>
+{{end}}
 {{end}}

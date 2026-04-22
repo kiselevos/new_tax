@@ -19,6 +19,7 @@
   <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
 </head>
 <body>
+  {{template "info_nav" "regional-info"}}
   <div class="info-page">
     <h1 class="info-page-title">Районные коэффициенты и северные надбавки</h1>
 
@@ -101,12 +102,8 @@
       или кадровые документы вашего работодателя.
     </div>
 
-    <div class="info-button-container">
-      <button onclick="window.location.href='/'" class="info-button">
-        Вернуться к калькулятору
-      </button>
-    </div>
   </div>
+  {{template "footer" .}}
 </body>
 </html>
 {{end}}

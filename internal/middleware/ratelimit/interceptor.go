@@ -1,36 +1,24 @@
-package middleware
+package ratelimit
 
 import (
 	"context"
+	"net"
 	"strings"
-	"sync"
 
 	"github.com/kiselevos/new_tax/internal/config"
+	"github.com/kiselevos/new_tax/internal/middleware"
 	"github.com/kiselevos/new_tax/pkg/logx"
-	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 )
 
-var mu sync.Mutex
-var limiters = make(map[string]*rate.Limiter)
-
-func getLimiter(key string, r rate.Limit, burst int) *rate.Limiter {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if l, ok := limiters[key]; ok {
-		return l
-	}
-
-	l := rate.NewLimiter(r, burst)
-	limiters[key] = l
-	return l
+type Limiter interface {
+	Allow(ctx context.Context, key string, rps float64, burst int) (bool, error)
 }
 
-func RateLimitInterceptor(cfg *config.RateLimitConfig) grpc.UnaryServerInterceptor {
+func RateLimitInterceptor(limiter Limiter, cfg *config.RateLimitConfig) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context,
 		req interface{},
 		info *grpc.UnaryServerInfo,
@@ -44,23 +32,46 @@ func RateLimitInterceptor(cfg *config.RateLimitConfig) grpc.UnaryServerIntercept
 		}
 
 		// Не тротлим UI
-		if ai, ok := GetAuthInfo(ctx); ok && ai.Type == "internal" {
+		if ai, ok := middleware.GetAuthInfo(ctx); ok && ai.Type == "internal" {
 			return handler(ctx, req)
 		}
 
 		ip := getClientIP(ctx)
-		var limiter *rate.Limiter
+
+		var (
+			rps   float64
+			burst int
+			scope string
+		)
 
 		if isPrivate(method) {
-			limiter = getLimiter("ip_"+ip, rate.Limit(cfg.PrivateRPS), cfg.PrivateBurst)
+			rps = cfg.PrivateRPS
+			burst = cfg.PrivateBurst
+			scope = "private"
 		} else {
-			limiter = getLimiter("ip_"+ip, rate.Limit(cfg.PublicRPS), cfg.PublicBurst)
+			rps = cfg.PublicRPS
+			burst = cfg.PublicBurst
+			scope = "public"
 		}
 
-		if !limiter.Allow() {
+		key := "ip_" + scope + "_" + ip
+
+		allowed, err := limiter.Allow(ctx, key, rps, burst)
+		if err != nil {
+			logx.From(ctx).Warn("rate_limiter_failed",
+				"err", err,
+				"ip", ip,
+				"method", method,
+				"scope", scope,
+			)
+			return handler(ctx, req)
+		}
+
+		if !allowed {
 			logx.From(ctx).Warn("rate_limit_blocked",
 				"ip", ip,
 				"method", method,
+				"scope", scope,
 			)
 			return nil, status.Error(codes.ResourceExhausted, "too many requests")
 		}
@@ -71,6 +82,9 @@ func RateLimitInterceptor(cfg *config.RateLimitConfig) grpc.UnaryServerIntercept
 
 func getClientIP(ctx context.Context) string {
 	if p, ok := peer.FromContext(ctx); ok && p.Addr != nil {
+		if ta, ok := p.Addr.(*net.TCPAddr); ok {
+			return ta.IP.String()
+		}
 		return p.Addr.String()
 	}
 	return "unknown"

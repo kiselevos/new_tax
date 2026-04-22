@@ -1,0 +1,71 @@
+{{define "npd_deductions_section"}}
+<section class="deductions-section">
+
+  <button type="button" class="deductions-toggle" id="toggle-deductions">
+    {{if and .HasRegistrationDeduction (gt .NpdDeductionUsed 0)}}
+    Налоговый бонус · использовано {{fmtMoney .NpdDeductionUsed}}
+    {{else}}
+    Налоговые вычеты при НПД
+    {{end}}
+    <span class="deductions-arrow">▼</span>
+  </button>
+
+  <div class="deductions-content" id="deductions-content">
+
+    <div class="deductions-notice deductions-notice--warn">
+      Стандартные вычеты по НДФЛ (на детей, имущественный, социальный) при режиме НПД <strong>не применяются</strong> —
+      самозанятые платят НПД вместо НДФЛ (ст. 10, 15 Закона № 422-ФЗ).
+    </div>
+
+    <div class="deduction-block">
+      <div class="deduction-block-header">
+        <h4 class="deduction-block-title">
+          Налоговый бонус при регистрации
+          <span class="deduction-law">ст. 12 Закона № 422-ФЗ</span>
+        </h4>
+        <p class="deduction-block-desc">
+          При регистрации каждый самозанятый получает бонус 10 000 ₽, который снижает ставку:
+          4% → 3%, 6% → 4% — пока бонус не исчерпан.
+        </p>
+      </div>
+
+      <div class="deduction-inputs">
+        <div class="deduction-input-row">
+          <label class="deduction-checkbox-label">
+            <input type="checkbox" name="hasRegistrationDeduction" class="deduction-checkbox"
+              {{if .HasRegistrationDeduction}}checked{{end}}>
+            <span>Есть вычет 10 000 ₽ при регистрации</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="deductions-recalc-row">
+        <button type="submit" class="deductions-recalc-btn">Пересчитать →</button>
+      </div>
+
+      {{if .HasRegistrationDeduction}}
+      <div class="npd-bonus-status">
+        <div class="npd-bonus-row">
+          <span class="npd-bonus-label">Размер бонуса:</span>
+          <span class="npd-bonus-value">10 000 ₽</span>
+        </div>
+        <div class="npd-bonus-row">
+          <span class="npd-bonus-label">Использовано за период:</span>
+          <span class="npd-bonus-value npd-bonus-value--used">{{fmtMoney .NpdDeductionUsed}}</span>
+        </div>
+        <div class="npd-bonus-row npd-bonus-row--total">
+          <span class="npd-bonus-label">Остаток:</span>
+          {{if gt .NpdDeductionRemaining 0}}
+          <span class="npd-bonus-value npd-bonus-value--remaining">{{fmtMoney .NpdDeductionRemaining}}</span>
+          {{else}}
+          <span class="npd-bonus-value npd-bonus-value--exhausted">Исчерпан</span>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+
+    </div>
+
+  </div>
+</section>
+{{end}}

@@ -1,0 +1,247 @@
+/* ===== ПРЕМИИ / BONUSES ===== */
+
+/* --- Кнопка «＋ Добавить премию» --- */
+.bonus-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: #f0f7ff;
+    color: #1c7ed6;
+    border: 1px dashed #74b8f5;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.bonus-add-btn:hover {
+    background: #e1effe;
+    border-color: #1c7ed6;
+    box-shadow: none;
+    transform: none;
+}
+
+/* --- Секция премии внутри аккордеона --- */
+.bonus-section {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e5e9f0;
+}
+
+/* --- Строка ввода --- */
+.bonus-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.bonus-input-row--hidden {
+    display: none;
+}
+
+.bonus-label {
+    font-size: 0.85rem;
+    color: #555;
+    white-space: nowrap;
+}
+
+/* --- Обёртка поля ввода: инпут + ₽ + кнопка × --- */
+.bonus-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fff;
+    border: 1px solid #a5c8f5;
+    border-radius: 8px;
+    padding: 4px 8px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.bonus-input-wrap:focus-within {
+    border-color: #1c7ed6;
+    box-shadow: 0 0 0 3px rgba(28, 126, 214, 0.1);
+}
+
+.bonus-input {
+    width: 110px;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    background: transparent;
+    color: #2c3e50;
+    padding: 2px 0;
+}
+
+/* Скрываем стрелки у числового поля */
+.bonus-input::-webkit-outer-spin-button,
+.bonus-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.bonus-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.bonus-currency {
+    color: #888;
+    font-size: 0.9rem;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+/* --- Кнопка × (убрать премию) --- */
+.bonus-clear-btn {
+    background: none;
+    border: none;
+    color: #bbb;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0 2px;
+    cursor: pointer;
+    box-shadow: none;
+    transform: none;
+    min-width: 0;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.bonus-clear-btn:hover {
+    color: #e74c3c;
+    background: none;
+    box-shadow: none;
+    transform: none;
+}
+
+/* --- Бейдж «＋ X ₽» в заголовке месяца --- */
+.bonus-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    padding: 1px 8px;
+    background: #f0fdf4;
+    color: #27ae60;
+    border: 1px solid #a8e6be;
+    border-radius: 12px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* --- Карточка «Премии за год» в сводке --- */
+.summary-card--bonus {
+    background: linear-gradient(135deg, #fff9f0, #ffffff);
+    border-left: 4px solid #f39c12;
+}
+
+.summary-card--bonus .summary-value {
+    color: #e67e22;
+}
+
+.summary-card--bonus:hover {
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.15);
+}
+
+/* --- Липкая панель пересчёта --- */
+.bonus-sticky-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 500;
+    background: #1a2a4a;
+    padding: 12px 20px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bonus-sticky-bar.visible {
+    transform: translateY(0);
+}
+
+.bonus-sticky-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.bonus-sticky-label {
+    font-size: 0.95rem;
+    color: #c8d8f0;
+    font-weight: 500;
+}
+
+.bonus-sticky-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    transform: none;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.bonus-sticky-btn:hover {
+    background: linear-gradient(135deg, #2980b9, #2471a3);
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.5);
+    transform: none;
+}
+
+/* --- Кнопка «Пересчитать с премиями» в блоке actions --- */
+.actions--result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.bonus-recalc-btn {
+    display: none; /* показывается через JS */
+    padding: 10px 24px;
+    font-size: 14px;
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
+}
+
+.bonus-recalc-btn:hover {
+    background: linear-gradient(135deg, #1e8449, #196f3d);
+    box-shadow: 0 6px 16px rgba(39, 174, 96, 0.45);
+    transform: translateY(-2px);
+}
+
+/* --- Мобильная адаптация --- */
+@media (max-width: 480px) {
+    .bonus-sticky-inner {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .bonus-sticky-btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .bonus-add-btn {
+        font-size: 0.8rem;
+        padding: 5px 12px;
+    }
+
+    .bonus-input {
+        width: 85px;
+    }
+}

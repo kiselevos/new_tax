@@ -3,14 +3,20 @@
   <div class="results-header">
     <h2>Помесячная детализация</h2>
   </div>
+  {{$prevRate := 0}}
   {{range $i, $m := .MonthlyDetails}}
-  <div class="accordion-item {{if eq $i 0}}active{{end}}">
+  {{$rateChanged := and (gt $i 0) (ne $m.TaxRate $prevRate)}}
+  {{$mNum := monthNum $m.Month}}
+  {{$bonus := index $.MonthlyBonuses (sub $mNum 1)}}
+  <div class="accordion-item {{if eq $i 0}}active{{end}} {{if $rateChanged}}rate-jumped{{end}}">
     <div class="accordion-header">
       <div class="month-title">
         <strong>{{russianMonth $m.Month}}</strong>
+        {{if gt $bonus 0}}<span class="bonus-badge">＋ {{fmtMoney $bonus}}</span>{{end}}
       </div>
       <div class="month-rate">
-        Ставка НДФЛ: <span class="tax-rate-value">{{$m.TaxRate}}%</span>
+        {{if $.IsSelfEmployed}}Ставка НПД{{else}}Ставка НДФЛ{{end}}: <span class="tax-rate-value">{{$m.TaxRate}}%</span>
+        {{if $rateChanged}}<span class="rate-up-badge">↑ {{$prevRate}}%&nbsp;→&nbsp;{{$m.TaxRate}}%</span>{{end}}
       </div>
     </div>
 
@@ -59,8 +65,16 @@
           </div>
           {{end}}
 
+          {{if gt $m.NpdDeductionUsed 0}}
+          <div class="calc-row small breakdown npd-deduction-row">
+            <span class="label">Налоговый бонус (вычет при регистрации)</span>
+            <span class="dots"></span>
+            <span class="value">−{{fmtMoney $m.NpdDeductionUsed}}</span>
+          </div>
+          {{end}}
+
           <div class="calc-row minus">
-            <span class="label">Уплачено НДФЛ</span>
+            <span class="label">{{if $.IsSelfEmployed}}Уплачен НПД{{else}}Удержан налог{{end}}</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.MonthlyTaxAmount}}</span>
           </div>
@@ -116,7 +130,7 @@
           {{end}}
 
           <div class="calc-row minus">
-            <span class="label">Уплачено НДФЛ</span>
+            <span class="label">{{if $.IsSelfEmployed}}Уплачен НПД{{else}}Удержан налог{{end}}</span>
             <span class="dots"></span>
             <span class="value">{{fmtMoney $m.AnnualTaxAmount}}</span>
           </div>
@@ -127,8 +141,34 @@
           </div>
         </div>
       </div>
+      <!-- Премия -->
+      <div class="bonus-section">
+        {{if gt $bonus 0}}
+        <div class="bonus-input-row">
+          <label class="bonus-label">Премия в этот месяц</label>
+          <div class="bonus-input-wrap">
+            <input type="text" inputmode="numeric" name="bonus_{{$mNum}}" value="{{fmtMoneyRaw $bonus}}"
+                   class="bonus-input" placeholder="0">
+            <span class="bonus-currency">₽</span>
+            <button type="button" class="bonus-clear-btn" aria-label="Убрать премию">✕</button>
+          </div>
+        </div>
+        {{else}}
+        <button type="button" class="bonus-add-btn">＋ Добавить премию</button>
+        <div class="bonus-input-row bonus-input-row--hidden">
+          <label class="bonus-label">Премия в этот месяц</label>
+          <div class="bonus-input-wrap">
+            <input type="text" inputmode="numeric" name="bonus_{{$mNum}}" value=""
+                   class="bonus-input" placeholder="0">
+            <span class="bonus-currency">₽</span>
+            <button type="button" class="bonus-clear-btn" aria-label="Убрать премию">✕</button>
+          </div>
+        </div>
+        {{end}}
+      </div>
     </div>
   </div>
+  {{$prevRate = $m.TaxRate}}
   {{end}}
 </div>
 {{end}}
