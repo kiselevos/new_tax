@@ -83,7 +83,8 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 		log.Warn("grpc_error", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
 		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
-		writeError(w, r, err.Error(), grpcToHTTP(err))
+		httpStatus := grpcToHTTP(err)
+		writeError(w, r, grpcClientMsg(err, httpStatus), httpStatus)
 		return
 	}
 
@@ -97,6 +98,7 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 		"rid", middleware.GetRID(ctx),
 
 		"gross_salary_rub", gross,
+		"employment_type", dtoReq.EmploymentType,
 		"territorial_multiplier", dtoReq.TerritorialMultiplier,
 		"northern_coefficient", dtoReq.NorthernCoefficient,
 		"has_tax_privilege", dtoReq.HasTaxPrivilege,

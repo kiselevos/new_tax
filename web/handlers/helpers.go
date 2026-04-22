@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"net/http"
@@ -60,8 +59,14 @@ type ResultPayload struct {
 	Months            []Month               // опции для select месяца в панели редактирования
 	Territorial       []CoefficientOption   // опции РК
 	Northern          []BonusOption         // опции СН
-	IsGPH             bool                  // договор ГПХ (нет ФСС, нет трудовых гарантий)
-	EmploymentTypeStr string                // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
+	IsGPH                    bool   // договор ГПХ (нет ФСС, нет трудовых гарантий)
+	IsSelfEmployed            bool   // самозанятый (НПД)
+	NpdIncomeSourceStr        string // "INDIVIDUAL" | "LEGAL_ENTITY" — для pre-select в форме
+	HasRegistrationDeduction  bool   // был ли вычет 10 000 ₽ при регистрации
+	NpdLimitExceeded          bool   // годовой доход превысил 2 400 000 ₽
+	NpdDeductionUsed          uint64 // суммарный использованный регистрационный вычет за период (копейки)
+	NpdDeductionRemaining     uint64 // остаток регистрационного вычета (kopecks); 0 если вычет не применялся
+	EmploymentTypeStr         string // "TD" | "GPH" | "SELF_EMPLOYED" — для pre-select в форме
 	DeductionResult   *pb.DeductionResult   // результат расчёта налоговых вычетов (если переданы параметры)
 
 	// Значения из последнего запроса вычетов (для предзаполнения формы после пересчёта)
@@ -141,6 +146,8 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 	hasTaxPrivilege := r.FormValue("hasTaxPrivilege") != ""
 	isNotResident := r.FormValue("isNotResident") != ""
 	employmentType := parseEmploymentType(r.FormValue("employmentType"))
+	npdIncomeSource := parseNpdIncomeSource(r.FormValue("npdIncomeSource"))
+	hasRegistrationDeduction := r.FormValue("hasRegistrationDeduction") != ""
 
 	// Месяц
 	monthNum, err := strconv.Atoi(monthStr)
@@ -202,6 +209,10 @@ func ParseFormToRequest(r *http.Request) (*pb.CalculatePrivateRequest, error) {
 		IsNotResident:         boolPtr(isNotResident),
 		EmploymentType:        employmentTypePtr(employmentType),
 		MonthlyBonuses:        bonuses,
+		NpdIncomeSource:       npdIncomeSourcePtr(npdIncomeSource),
+	}
+	if hasRegistrationDeduction {
+		req.HasRegistrationDeduction = boolPtr(true)
 	}
 	if childrenCount > 0 {
 		req.ChildrenCount = &childrenCount
@@ -253,6 +264,14 @@ func parseKopecksForm(r *http.Request, field string) uint64 {
 	return uint64(math.Round(v * 100))
 }
 
+// parseNpdIncomeSource конвертирует строку формы в proto-enum NpdIncomeSource.
+func parseNpdIncomeSource(s string) pb.NpdIncomeSource {
+	if s == "LEGAL_ENTITY" {
+		return pb.NpdIncomeSource_LEGAL_ENTITY
+	}
+	return pb.NpdIncomeSource_INDIVIDUAL
+}
+
 // parseEmploymentType конвертирует строку формы в proto-enum EmploymentType.
 func parseEmploymentType(s string) pb.EmploymentType {
 	switch s {
@@ -270,46 +289,21 @@ func employmentTypePtr(v pb.EmploymentType) *pb.EmploymentType {
 	return &v
 }
 
-func PrepareApiData() (*ApiDocsData, error) {
 
-	raw, err := web.ApiDocsFS.ReadFile("api_docs/swagger.json")
-	if err != nil {
-		return nil, err
+// npdDeductionRemaining вычисляет остаток регистрационного бонуса НПД.
+// Размер бонуса — 10 000 ₽ (1 000 000 копеек) по ст. 12 Закона № 422-ФЗ.
+func npdDeductionRemaining(hasDeduction bool, used uint64) uint64 {
+	if !hasDeduction {
+		return 0
 	}
-
-	var d ApiDocsData
-	if err := json.Unmarshal(raw, &d); err != nil {
-		return nil, err
+	const total = uint64(1_000_000) // 10 000 ₽ в копейках
+	if used >= total {
+		return 0
 	}
-
-	v := web.GetApiVersion()
-	d.ApiVers = v
-
-	for i := range d.Endpoints {
-		d.Endpoints[i].Path = strings.ReplaceAll(
-			d.Endpoints[i].Path,
-			"{version}",
-			v,
-		)
-
-		if obj, ok := d.Endpoints[i].ExampleRequest.(map[string]interface{}); ok {
-			pretty, err := json.MarshalIndent(obj, "", "  ")
-			if err == nil {
-				d.Endpoints[i].ExampleRequest = string(pretty)
-			}
-		}
-
-		if obj, ok := d.Endpoints[i].ExampleResponse.(map[string]interface{}); ok {
-			pretty, err := json.MarshalIndent(obj, "", "  ")
-			if err == nil {
-				d.Endpoints[i].ExampleResponse = string(pretty)
-			}
-		}
-	}
-
-	return &d, nil
+	return total - used
 }
 
 // Вспомогательные функции:
 func uint64Ptr(v uint64) *uint64 { return &v }
 func boolPtr(v bool) *bool       { return &v }
+func npdIncomeSourcePtr(v pb.NpdIncomeSource) *pb.NpdIncomeSource { return &v }

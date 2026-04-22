@@ -31,6 +31,13 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	}
 
 	switch {
+	case input.EmploymentType == pb.EmploymentType_SELF_EMPLOYED: // НПД: 4% или 6%, без взносов работодателя
+		rate := uint64(NpdRateLegal)
+		if input.NpdIncomeSource == pb.NpdIncomeSource_INDIVIDUAL {
+			rate = NpdRateIndividual
+		}
+		months = TaxCalculateForSelfEmployed(grossSalary, rate, input.HasRegistrationDeduction, startDate, startMonth, bonuses)
+
 	case input.IsNotResident: // Для нерезидентов: 30% со всего дохода
 		totalMonthlyGross := monthlyGrossWithTerritorial * northernCoefficient / 100
 		months = TaxCalculateForNotResident(totalMonthlyGross, startDate, startMonth, bonuses)
@@ -55,17 +62,21 @@ func CalculateMonthlyTax(input CalculateInput) []MonthlyTax {
 	}
 
 	// Добавляем взносы от работодателя.
-	// При ГПХ ФСС не начисляется (нет трудового договора — нет соцстрахования).
+	// При ГПХ ФСС не начисляется; при НПД взносы не начисляются вовсе.
 	isGPH := input.EmploymentType == pb.EmploymentType_GPH
+	isSelfEmployed := input.EmploymentType == pb.EmploymentType_SELF_EMPLOYED
 	var annualPFR, annualFOMS, annualFSS uint64
 
 	for i := range months {
 		gross := months[i].MonthlyGrossIncome
 		incomeYTD := months[i].AnnualGrossIncome
 
-		pfr, foms, fss := calcEmployerContributions(incomeYTD-gross, gross)
-		if isGPH {
-			fss = 0
+		var pfr, foms, fss uint64
+		if !isSelfEmployed {
+			pfr, foms, fss = calcEmployerContributions(incomeYTD-gross, gross)
+			if isGPH {
+				fss = 0
+			}
 		}
 
 		months[i].MonthlyPFR = pfr

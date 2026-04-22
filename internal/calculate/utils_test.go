@@ -96,12 +96,28 @@ func TestValidateCalculateInput_EmploymentType(t *testing.T) {
 		assert.Contains(t, err.Error(), "несовместим с employment_type GPH")
 	})
 
-	t.Run("SELF_EMPLOYED — ошибка", func(t *testing.T) {
+	t.Run("SELF_EMPLOYED без ограничений — OK", func(t *testing.T) {
 		in := base
 		in.EmploymentType = pb.EmploymentType_SELF_EMPLOYED
+		require.NoError(t, ValidateCalculateInput(in))
+	})
+
+	t.Run("SELF_EMPLOYED + силовики — ошибка", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_SELF_EMPLOYED
+		in.HasTaxPrivilege = true
 		err := ValidateCalculateInput(in)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "SELF_EMPLOYED не поддерживается")
+		assert.Contains(t, err.Error(), "несовместим с employment_type SELF_EMPLOYED")
+	})
+
+	t.Run("SELF_EMPLOYED + нерезидент — ошибка", func(t *testing.T) {
+		in := base
+		in.EmploymentType = pb.EmploymentType_SELF_EMPLOYED
+		in.IsNotResident = true
+		err := ValidateCalculateInput(in)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "нерезиденты не могут применять НПД")
 	})
 
 	t.Run("TD + силовики — OK", func(t *testing.T) {

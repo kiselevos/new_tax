@@ -142,6 +142,64 @@
     line-height: 1.4;
 }
 
+/* === NPD BANNER === */
+.npd-banner {
+    background: #eaf6ee;
+    border-left: 4px solid #27ae60;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    color: #1a5c32;
+}
+
+.npd-banner-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.npd-banner-list {
+    margin: 0 0 0.6rem 1.2rem;
+    padding: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.npd-banner-note {
+    font-size: 0.85rem;
+    color: #1e7040;
+    border-top: 1px solid #9dd4af;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+/* === NPD LIMIT WARNING === */
+.npd-limit-warning {
+    background: #fff3cd;
+    border-left: 4px solid #f39c12;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    color: #7d5000;
+}
+
+.npd-limit-warning-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.4rem;
+}
+
+.npd-limit-warning-text {
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+/* === NPD DEDUCTION USED === */
+.npd-deduction-row {
+    font-size: 0.85rem;
+    color: #1e7040;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .container {

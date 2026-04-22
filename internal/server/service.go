@@ -72,6 +72,9 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 
 	last := months[len(months)-1]
 
+	npdLimitExceeded := input.EmploymentType == pb.EmploymentType_SELF_EMPLOYED &&
+		last.AnnualGrossIncome > calculate.NpdIncomeLimit
+
 	resp := &pb.CalculatePrivateResponse{
 		MonthlyDetails:        calculate.ToGRPCPrivateResponse(months),
 		AnnualTaxAmount:       last.AnnualTaxAmount,
@@ -84,6 +87,7 @@ func (s *serverStruct) CalculatePrivate(ctx context.Context, req *pb.CalculatePr
 		TerritorialMultiplier: &input.TerritorialMultiplier,
 		NorthernCoefficient:   &input.NorthernCoefficient,
 		DeductionResult:       calculate.CalcDeductions(input.Deductions, months),
+		NpdLimitExceeded:      npdLimitExceeded,
 	}
 
 	if !hasDeductions {

@@ -132,11 +132,36 @@ window.APP_CONFIG = {
             <input type="radio" name="employmentType" value="GPH">
             <span class="employment-option-label">Договор ГПХ</span>
           </label>
-          <label class="employment-option employment-option--soon">
-            <input type="radio" name="employmentType" value="SELF_EMPLOYED" disabled>
-            <span class="employment-option-label">Самозанятый <span class="employment-soon-badge">Скоро</span></span>
+          <label class="employment-option">
+            <input type="radio" name="employmentType" value="SELF_EMPLOYED">
+            <span class="employment-option-label">Самозанятый (НПД)</span>
           </label>
         </div>
+      </div>
+
+      <!-- Параметры НПД — показываются только при выборе «Самозанятый» -->
+      <div id="npd-params" class="npd-params hidden">
+        <div class="field-row">
+          <div class="field-left">
+            <div class="field-header">
+              <div class="field-tooltip">
+                <span class="tooltip-icon">?</span>
+                <div class="tooltip-text">
+                  Ставка НПД зависит от источника дохода:
+                  4% — если платит физическое лицо, 6% — если организация или ИП.
+                </div>
+              </div>
+              <label for="npdIncomeSource">Источник дохода:</label>
+            </div>
+          </div>
+          <div class="field-right date-field">
+            <select id="npdIncomeSource" name="npdIncomeSource" class="wide-select">
+              <option value="INDIVIDUAL">Физическое лицо — 4%</option>
+              <option value="LEGAL_ENTITY">Организация / ИП — 6%</option>
+            </select>
+          </div>
+        </div>
+
       </div>
 
       <button type="button" class="additional-toggle">
@@ -233,12 +258,8 @@ window.APP_CONFIG = {
       <button type="submit" class="calculate-btn">Рассчитать</button>
 
       <div class="calculator-note">
-        <p>
-          🔍 Все расчёты выполняются по открытым формулам и <b>не сохраняются на сервере</b>.
-          Калькулятор предназначен исключительно <i>для справочных целей</i>, чтобы вы могли
-          оценить свой чистый доход и размер НДФЛ, который вы уплачиваете по прогрессивной шкале с 2025 года.
-        </p>
-      <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
+        <p>Расчёты выполняются по открытым формулам и <b>не сохраняются на сервере</b>. Калькулятор показывает расчётный лист на выбранный период, <a href="/tax-deductions" class="calculator-link">возможность налогового вычета</a> и налоговую нагрузку работодателя.</p>
+        <a href="/about" class="calculator-link">подробнее о работе калькулятора →</a>
       </div>
     </form>
   </main>

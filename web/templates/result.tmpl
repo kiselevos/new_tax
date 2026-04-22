@@ -43,16 +43,48 @@
         </div>
         {{end}}
 
+        <!-- Баннер НПД (самозанятый) -->
+        {{if .IsSelfEmployed}}
+        <div class="npd-banner">
+            <div class="npd-banner-title">Самозанятый (НПД) — особенности режима</div>
+            <ul class="npd-banner-list">
+                <li>Ставка {{if eq .NpdIncomeSourceStr "INDIVIDUAL"}}4% — доход от физических лиц{{else}}6% — доход от организаций и ИП{{end}}</li>
+                <li>Страховые взносы (ПФР, ФОМС, ФСС) — не начисляются</li>
+                <li>Стандартные налоговые вычеты по НДФЛ не применяются</li>
+                {{if .HasRegistrationDeduction}}<li>Применяется налоговый бонус 10 000 ₽ при регистрации</li>{{end}}
+            </ul>
+            <div class="npd-banner-note">Годовой доход не должен превышать 2 400 000 ₽. При превышении лимита необходимо перейти на другой налоговый режим.</div>
+        </div>
+
+        <!-- Предупреждение о превышении лимита НПД -->
+        {{if .NpdLimitExceeded}}
+        <div class="npd-limit-warning">
+            <div class="npd-limit-warning-title">⚠️ Превышен годовой лимит НПД</div>
+            <div class="npd-limit-warning-text">
+                Ваш годовой доход превысил 2 400 000 ₽. Применение режима самозанятости (НПД) становится невозможным.
+                Вам необходимо перейти на другой налоговый режим (например, ИП на УСН) и уведомить налоговую инспекцию.
+                Расчёт показан до момента превышения лимита.
+            </div>
+        </div>
+        {{end}}
+        {{end}}
+
         <!-- Блок с результатами расчета --->
 
         <!-- Основная сводка -->
         {{template "summary_section" .}}
 
-        <!-- Вкладка: взносы работодателя -->
+        <!-- Вкладка: взносы работодателя (не для самозанятых) -->
+        {{if .IsSelfEmployed}}{{else}}
         {{template "employer_contributions" .}}
+        {{end}}
 
         <!-- Блок налоговых вычетов -->
+        {{if .IsSelfEmployed}}
+        {{template "npd_deductions_section" .}}
+        {{else}}
         {{template "deductions_section" .}}
+        {{end}}
 
         <!-- Помесячная детализация -->
         {{template "monthly_accordion" .}}

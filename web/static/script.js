@@ -387,25 +387,51 @@ else {
         }
     }
 
-    // === Тип занятости: блокировка несовместимых опций ===
+    // === Тип занятости: блок НПД и блокировка несовместимых опций ===
     function initEmploymentType() {
         var radios = document.querySelectorAll('input[name="employmentType"]');
         var privilegeCheckbox = document.querySelector('input[name="hasTaxPrivilege"]');
-        if (!radios.length || !privilegeCheckbox) return;
+        var residentCheckbox = document.querySelector('input[name="isNotResident"]');
+        var npdParams = document.getElementById("npd-params");
+        if (!radios.length) return;
+
+        function setDisabled(checkbox, disabled) {
+            if (!checkbox) return;
+            if (disabled) checkbox.checked = false;
+            checkbox.disabled = disabled;
+            var optionEl = checkbox.closest(".exclusive-option");
+            if (optionEl) {
+                optionEl.classList.toggle("exclusive-option--disabled", disabled);
+                if (disabled) optionEl.classList.remove("selected");
+            }
+        }
 
         function updateCompatibility() {
             var selected = document.querySelector('input[name="employmentType"]:checked');
-            var isGPH = selected && selected.value === "GPH";
+            var value = selected ? selected.value : "TD";
+            var isGPH = value === "GPH";
+            var isSelfEmployed = value === "SELF_EMPLOYED";
 
-            if (isGPH) {
-                privilegeCheckbox.checked = false;
-                privilegeCheckbox.disabled = true;
-                privilegeCheckbox.closest(".exclusive-option").classList.add("exclusive-option--disabled");
-                privilegeCheckbox.closest(".exclusive-option").classList.remove("selected");
-            } else {
-                privilegeCheckbox.disabled = false;
-                privilegeCheckbox.closest(".exclusive-option").classList.remove("exclusive-option--disabled");
+            // Блок НПД
+            if (npdParams) {
+                npdParams.classList.toggle("hidden", !isSelfEmployed);
             }
+
+            // Льготы: недоступны при ГПХ и самозанятости
+            setDisabled(privilegeCheckbox, isGPH || isSelfEmployed);
+
+            // Нерезидент: недоступен при самозанятости (НПД только для резидентов РФ)
+            setDisabled(residentCheckbox, isSelfEmployed);
+
+            // Территориальный коэффициент и северная надбавка: только для ТД
+            var hideCoeffs = isGPH || isSelfEmployed;
+            ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
+                var el = document.querySelector('[name="' + name + '"]');
+                if (!el) return;
+                var row = el.closest(".field-row");
+                if (row) row.style.display = hideCoeffs ? "none" : "";
+                if (hideCoeffs) el.value = "100";
+            });
         }
 
         radios.forEach(function(radio) {
@@ -613,6 +639,64 @@ function initEditParams() {
             }
         });
     });
+
+    // Скрываем территориальный/северный при самозанятом в панели редактирования
+    var editRadios = panel.querySelectorAll('input[name="employmentType"]');
+    function updateEditPanelFields() {
+        var sel = panel.querySelector('input[name="employmentType"]:checked');
+        var isSE = sel && sel.value === "SELF_EMPLOYED";
+        var isGPH = sel && sel.value === "GPH";
+
+        // Территориальный и северный — только для ТД
+        var hideCoeffs = isSE || isGPH;
+        ["territorialMultiplier", "northernCoefficient"].forEach(function(name) {
+            var el = panel.querySelector('[name="' + name + '"]');
+            if (!el) return;
+            var field = el.closest(".edit-field");
+            if (field) field.style.display = hideCoeffs ? "none" : "";
+        });
+
+        // Особые условия (льготы и нерезидент) — скрываем всё поле при НПД,
+        // при ГПХ оставляем видимым но отключаем только льготы
+        var privilegeCb = panel.querySelector('input[name="hasTaxPrivilege"]');
+        var residentCb  = panel.querySelector('input[name="isNotResident"]');
+
+        if (isSE) {
+            // Самозанятый: несовместимо ни с льготами, ни с нерезидентством
+            [privilegeCb, residentCb].forEach(function(cb) {
+                if (!cb) return;
+                cb.checked = false;
+                cb.disabled = true;
+                var item = cb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "0.4";
+            });
+        } else if (isGPH) {
+            // ГПХ: только льготы недоступны
+            if (privilegeCb) {
+                privilegeCb.checked = false;
+                privilegeCb.disabled = true;
+                var item = privilegeCb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "0.4";
+            }
+            if (residentCb) {
+                residentCb.disabled = false;
+                var item2 = residentCb.closest(".edit-checkbox-item");
+                if (item2) item2.style.opacity = "";
+            }
+        } else {
+            // ТД: всё доступно
+            [privilegeCb, residentCb].forEach(function(cb) {
+                if (!cb) return;
+                cb.disabled = false;
+                var item = cb.closest(".edit-checkbox-item");
+                if (item) item.style.opacity = "";
+            });
+        }
+    }
+    editRadios.forEach(function(r) {
+        r.addEventListener("change", updateEditPanelFields);
+    });
+    updateEditPanelFields();
 
     // Если после пересчёта были изменены параметры - открываем панель
     // (определяем по наличию query-параметра, который не нужен - панель закрыта по умолчанию)

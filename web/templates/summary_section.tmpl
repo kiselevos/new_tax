@@ -20,7 +20,7 @@
         <div class="summary-value">{{fmtMoney .AnnualGrossIncome}}</div>
     </div>
     <div class="summary-card">
-        <div>Уплачено НДФЛ</div>
+        <div>{{if .IsSelfEmployed}}Уплачено НПД{{else}}Уплачено НДФЛ{{end}}</div>
         <div class="summary-value">{{fmtMoney .AnnualTaxAmount}}</div>
     </div>
     <div class="summary-card">

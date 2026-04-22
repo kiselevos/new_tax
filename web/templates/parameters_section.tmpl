@@ -46,6 +46,13 @@
         </div>
         {{end}}
 
+        {{if .IsSelfEmployed}}
+        <div class="parameter-item">
+            <span class="parameter-label">Режим:</span>
+            <span class="parameter-value">Самозанятый (НПД) · {{if eq .NpdIncomeSourceStr "INDIVIDUAL"}}4%{{else}}6%{{end}}</span>
+        </div>
+        {{end}}
+
         {{if .HasTaxPrivilege}}
         <div class="parameter-item">
             <span class="parameter-label">Льготы:</span>
@@ -175,7 +182,7 @@
                 <div class="edit-checkboxes">
                     <label class="edit-checkbox-item">
                         <input type="radio" name="employmentType" value="TD"
-                               {{if .IsGPH}}{{else}}checked{{end}}>
+                               {{if or .IsGPH .IsSelfEmployed}}{{else}}checked{{end}}>
                         Трудовой договор
                     </label>
                     <label class="edit-checkbox-item">
@@ -183,8 +190,18 @@
                                {{if .IsGPH}}checked{{end}}>
                         Договор ГПХ
                     </label>
+                    <label class="edit-checkbox-item">
+                        <input type="radio" name="employmentType" value="SELF_EMPLOYED"
+                               {{if .IsSelfEmployed}}checked{{end}}>
+                        Самозанятый (НПД)
+                    </label>
                 </div>
             </div>
+
+            <!-- Скрытые поля НПД — сохраняют параметры при пересчёте через панель редактирования -->
+            {{if .IsSelfEmployed}}
+            <input type="hidden" name="npdIncomeSource" value="{{.NpdIncomeSourceStr}}">
+            {{end}}
 
             <!-- Льготы -->
             <div class="edit-field edit-field--full">
