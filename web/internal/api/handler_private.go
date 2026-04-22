@@ -97,6 +97,7 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 		"rid", middleware.GetRID(ctx),
 
 		"gross_salary_rub", gross,
+		"employment_type", dtoReq.EmploymentType,
 		"territorial_multiplier", dtoReq.TerritorialMultiplier,
 		"northern_coefficient", dtoReq.NorthernCoefficient,
 		"has_tax_privilege", dtoReq.HasTaxPrivilege,
