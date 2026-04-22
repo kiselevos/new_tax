@@ -241,7 +241,29 @@
         padding: 5px 12px;
     }
 
+    .bonus-input-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bonus-label {
+        white-space: normal;
+    }
+
+    .bonus-input-wrap {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        min-height: 44px;
+    }
+
     .bonus-input {
-        width: 85px;
+        width: 100%;
+        min-width: 0;
+        font-size: 16px; /* предотвращает автозум на iOS */
+        padding: 0;
     }
 }

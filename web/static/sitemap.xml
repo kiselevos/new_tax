@@ -25,4 +25,16 @@
     <changefreq>yearly</changefreq>
   </url>
 
+  <url>
+    <loc>https://calculator-ndfl.ru/tax-deductions</loc>
+    <priority>0.7</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://calculator-ndfl.ru/employment-types</loc>
+    <priority>0.6</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+
 </urlset>
