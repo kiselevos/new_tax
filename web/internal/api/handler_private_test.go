@@ -131,6 +131,40 @@ func TestPrivateCalc_BackendError(t *testing.T) {
 	if w.Code != http.StatusInternalServerError {
 		t.Fatalf("expected 500, got %d", w.Code)
 	}
+
+	var body map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("invalid json: %v", err)
+	}
+	if body["error"] != "internal server error" {
+		t.Errorf("5xx must not leak details, got %q", body["error"])
+	}
+}
+
+func TestPrivateCalc_BackendValidationError(t *testing.T) {
+	fake := &testutils.FakeTaxClient{
+		PrivateErr: status.Error(codes.InvalidArgument, "salary must be > 0"),
+	}
+
+	h := NewPrivateHandler(fake)
+
+	w := doPostPrivate(h.HandlePrivateCalc,
+		`{"gross_salary": 120000}`,
+		map[string]string{"x-api-key": "valid"},
+	)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
+	}
+
+	var body map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("invalid json: %v", err)
+	}
+	// Должна быть только description, без "rpc error: code = X desc = ..."
+	if body["error"] != "salary must be > 0" {
+		t.Errorf("expected clean message, got %q", body["error"])
+	}
 }
 
 func TestPrivateCalc_InvalidEmploymentType(t *testing.T) {

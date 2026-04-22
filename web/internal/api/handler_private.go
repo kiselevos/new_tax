@@ -83,7 +83,8 @@ func (h *PrivateHandler) HandlePrivateCalc(w http.ResponseWriter, r *http.Reques
 		log.Warn("grpc_error", "err", err)
 		metrics.M.ErrorTypes.WithLabelValues(client, "grpc").Inc()
 		metrics.M.Calculator.Failed.WithLabelValues(client, region.Label).Inc()
-		writeError(w, r, err.Error(), grpcToHTTP(err))
+		httpStatus := grpcToHTTP(err)
+		writeError(w, r, grpcClientMsg(err, httpStatus), httpStatus)
 		return
 	}
 
