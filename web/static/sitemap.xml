@@ -3,38 +3,44 @@
 
   <url>
     <loc>https://calculator-ndfl.ru/</loc>
+    <lastmod>2026-04-23</lastmod>
     <priority>1.0</priority>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
   </url>
 
   <url>
     <loc>https://calculator-ndfl.ru/about</loc>
+    <lastmod>2026-04-23</lastmod>
     <priority>0.7</priority>
-    <changefreq>yearly</changefreq>
+    <changefreq>monthly</changefreq>
   </url>
 
   <url>
     <loc>https://calculator-ndfl.ru/regional-info</loc>
+    <lastmod>2026-04-23</lastmod>
     <priority>0.6</priority>
-    <changefreq>yearly</changefreq>
+    <changefreq>monthly</changefreq>
   </url>
 
   <url>
     <loc>https://calculator-ndfl.ru/special-tax-modes</loc>
+    <lastmod>2026-04-23</lastmod>
     <priority>0.6</priority>
-    <changefreq>yearly</changefreq>
+    <changefreq>monthly</changefreq>
   </url>
 
   <url>
     <loc>https://calculator-ndfl.ru/tax-deductions</loc>
+    <lastmod>2026-04-23</lastmod>
     <priority>0.7</priority>
-    <changefreq>yearly</changefreq>
+    <changefreq>monthly</changefreq>
   </url>
 
   <url>
     <loc>https://calculator-ndfl.ru/employment-types</loc>
+    <lastmod>2026-04-23</lastmod>
     <priority>0.6</priority>
-    <changefreq>yearly</changefreq>
+    <changefreq>monthly</changefreq>
   </url>
 
 </urlset>
