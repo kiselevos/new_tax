@@ -42,6 +42,7 @@ func (s *Server) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("/special-tax-modes", s.SpecialTaxModes)
 	mux.HandleFunc("/tax-deductions", s.TaxDeductions)
 	mux.HandleFunc("/employment-types", s.EmploymentTypes)
+	mux.HandleFunc("/privacy", s.Privacy)
 	mux.HandleFunc("/api-docs", s.HandleApiDocs)
 	mux.HandleFunc("/robots.txt", s.GetRobots)
 	mux.HandleFunc("/sitemap.xml", s.GetSitemap)
@@ -268,6 +269,13 @@ func (s *Server) TaxDeductions(w http.ResponseWriter, r *http.Request) {
 func (s *Server) EmploymentTypes(w http.ResponseWriter, r *http.Request) {
 	if err := s.Tmpl.ExecuteTemplate(w, "employment_types", PrepareTaxConstants()); err != nil {
 		logx.From(r.Context()).Error("template_render_failed", "page", "employment_types", "err", err)
+		http.Error(w, "internal server error", 500)
+	}
+}
+
+func (s *Server) Privacy(w http.ResponseWriter, r *http.Request) {
+	if err := s.Tmpl.ExecuteTemplate(w, "privacy", nil); err != nil {
+		logx.From(r.Context()).Error("template_render_failed", "page", "privacy", "err", err)
 		http.Error(w, "internal server error", 500)
 	}
 }

@@ -21,7 +21,7 @@ func TestTemplatesRender(t *testing.T) {
 		t.Errorf("index template execution failed: %v", err)
 	}
 
-	for _, name := range []string{"about", "regional_info", "special_tax_modes"} {
+	for _, name := range []string{"about", "regional_info", "special_tax_modes", "privacy"} {
 		if err := tmpls.ExecuteTemplate(httptest.NewRecorder(), name, nil); err != nil {
 			t.Errorf("%s template execution failed: %v", name, err)
 		}
@@ -55,6 +55,7 @@ func TestHandlers_StatusOK(t *testing.T) {
 		{"about", "/about", s.About},
 		{"regional_info", "/regional-info", s.RegionalInfo},
 		{"special_tax_modes", "/special-tax-modes", s.SpecialTaxModes},
+		{"privacy", "/privacy", s.Privacy},
 	}
 
 	for _, tt := range tests {
