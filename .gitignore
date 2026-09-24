@@ -10,3 +10,5 @@ bin/
 
 # tools
 .tools/
+
+/.env
