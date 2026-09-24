@@ -17,6 +17,8 @@ var Funcs = template.FuncMap{
 	"getMinSalary":     GetMinSalary,
 	"getMinLivingWage": GetMinLivingWage,
 	"getFeedbackEmail": GetFeedbackEmail,
+	"getOperatorName":  GetOperatorName,
+	"getRepoURL":       GetRepoURL,
 	"russianMonth":     formatRussianMonth,
 	"sub": func(a, b int) int {
 		return a - b
@@ -80,6 +82,22 @@ func GetFeedbackEmail() string {
 		return "okiselev421@gmail.com"
 	}
 	return feedbackEmail
+}
+
+func GetOperatorName() string {
+	name := os.Getenv("OPERATOR_NAME")
+	if name == "" {
+		return "Киселев Олег Сергеевич"
+	}
+	return name
+}
+
+func GetRepoURL() string {
+	url := os.Getenv("REPO_URL")
+	if url == "" {
+		return "https://github.com/kiselevos/new_tax"
+	}
+	return url
 }
 
 func GetApiVersion() string {

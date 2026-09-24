@@ -43,4 +43,11 @@
     <changefreq>monthly</changefreq>
   </url>
 
+  <url>
+    <loc>https://calculator-ndfl.ru/privacy</loc>
+    <lastmod>2026-09-04</lastmod>
+    <priority>0.3</priority>
+    <changefreq>yearly</changefreq>
+  </url>
+
 </urlset>
